@@ -2,7 +2,7 @@ package com.jacobo.gradle.plugins
 
 import groovy.io.FileType
 
-class findNamespaces { 
+class FindNamespaces { 
   def baseDir
   def nsMap = [:]
   def schemaList = []

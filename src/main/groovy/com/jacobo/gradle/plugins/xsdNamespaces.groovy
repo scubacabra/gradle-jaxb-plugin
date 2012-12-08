@@ -1,6 +1,6 @@
 package com.jacobo.gradle.plugins
 
-class xsdNamespaces { 
+class XsdNamespaces { 
   List xsdFiles = []
   List fileImports = []
   List fileIncludes = []
@@ -34,8 +34,8 @@ class xsdNamespaces {
     return list.contains(namespace)
   }
 
-  def isExternalDependency = { nsMap, ns ->
-    if(!nsMap.containsKey(ns)) { 
+  def isExternalDependency = { collection, ns ->
+    if(!collection.find { it.namespace == ns}) { 
       externalDependencies << ns
       return true
     }
