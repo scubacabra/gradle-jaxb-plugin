@@ -4,6 +4,8 @@ import org.gradle.api.Project
 import org.gradle.api.Plugin
 import org.gradle.api.logging.Logging
 import org.gradle.api.logging.Logger
+import com.jacobo.gradle.plugins.task.JaxbNamespaceTask
+
 /**
  * @author djmijares
  * Created: Tue Dec 04 09:01:34 EST 2012
@@ -11,7 +13,7 @@ import org.gradle.api.logging.Logger
 class JaxbNamespacePlugin implements Plugin<Project> {
   static final String JAXB_NAMESPACE_TASK_GROUP = 'parse'
   static final String JAXB_NAMESPACE_TASK = 'jaxbNamespaceResolve'
-  static final Logger log = Logging.getLogger(this.getClass())
+  static final Logger log = Logging.getLogger(JaxbNamespacePlugin.class)
 
   void apply (Project project) {
     JaxbNamespacePluginConvention jaxbNamespaceConvention = new JaxbNamespacePluginConvention(project)

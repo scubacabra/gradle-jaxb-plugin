@@ -1,12 +1,12 @@
-package com.jacobo.gradle.plugins
+package com.jacobo.gradle.plugins.task
 
 import org.gradle.api.logging.Logging
 import org.gradle.api.logging.Logger
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.DefaultTask
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-
+import com.jacobo.gradle.plugins.structures.OrderGraph
+import com.jacobo.gradle.plugins.structures.XsdNamespaces
+import com.jacobo.gradle.plugins.structures.FindNamespaces
 
 /**
  * @author djmijares

@@ -1,4 +1,4 @@
-package com.jacobo.gradle.plugins
+package com.jacobo.gradle.plugins.structures
 
 import groovy.io.FileType
 
