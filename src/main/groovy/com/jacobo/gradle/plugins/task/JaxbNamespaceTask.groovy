@@ -46,20 +46,26 @@ class JaxbNamespaceTask extends DefaultTask {
     log.info("namespace dependency graph is resolved")
     project.convention.plugins.JaxbNamespacePlugin.target = nsCollection
     log.info ("asafasf, {}", project.convention.plugins.JaxbNamespacePlugin.target[0])
+    order.orderGraph.each { order ->
+      order.each { namespace ->
+	def nsData = order.nsCollection.find{ it.namespace == namespace}
+	doTheSchemaParsing(nsData)
+      }
+    }
   }
 
-  def doTheSchemaParsing(String episodeFile, List namespaceDependencies) { 
+  def doTheSchemaParsing(XsdNamespaces ns) { 
     ant.taskdef (name : 'xjc', classname : 'com.sun.tools.xjc.XJCTask', classpath : project.configurations[JaxbNamespacePlugin.JAXB_CONFIGURATION].asPath)
     ant.xjc(destdir : "src/main/java", extension : 'true', removeOldOutput : 'yes', header : false, target : '2.1') {
       produces (dir : "src/main/java")
-      schema (dir : schemaDir , includes : schemas2gen )
+      schema (dir : getXsdDir(), includes : ns.xsdFiles )
       binding(dir : "${rootDir}/XMLSchema", includes : '*.xjb')
-      namespaceDependencies.each { episode ->
+      ns.fileImports.each { episode ->
 	log.debug("binding with file {}", episodeDir+episode+".episode")
 	binding (dir : "${rootDir}/XMLSchema/Episodes", includes : "${episode}.episode")
       }
       arg(value : '-episode')
-      arg(value: "${rootDir}/XMLSchema/Episodes/${subProject.name}.episode")
+      arg(value: "${rootDir}/XMLSchema/Episodes/${ns.namespace}.episode")
       arg(value : '-verbose')
       arg(value : '-npa')
     }
