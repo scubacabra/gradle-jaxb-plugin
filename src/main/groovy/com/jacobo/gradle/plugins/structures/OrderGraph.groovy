@@ -1,8 +1,14 @@
 package com.jacobo.gradle.plugins.structures
 
+import org.gradle.api.logging.Logging
+import org.gradle.api.logging.Logger
+
 class OrderGraph { 
+  static final Logger log = Logging.getLogger(OrderGraph.class)
+
   List orderGraph = []
   List dependentNamespaces = []
+  List nsCollection = []
 
   //  def isAlreadyInList = nsCollection[0].&isAlreadyInList
   def boolean isAlreadyInList(List list, String namespace) { 
@@ -18,6 +24,103 @@ class OrderGraph {
       list = [ns]
     }
     return list
+  }
+
+  def grabNamespaceImports() { 
+    this.nsCollection.each { ns -> 
+      ns.xsdFiles.each { doc ->
+	def schema = new XmlSlurper().parse(doc)
+	def imports = schema.import
+	if(!imports.isEmpty()) { 
+	  imports.@namespace.each {
+	    if(!ns.isExternalDependency(this.nsCollection, it.text()))
+	      ns.addImports(it.text())
+	  }
+	}
+      }
+      if(!ns.fileImports) ns.fileImports << "none"
+    }
+  }
+
+  def findBaseSchemaNamespaces() { 
+    this.orderGraph[0] = this.nsCollection.findAll { it.fileImports == ["none"] }.namespace
+  }
+
+  def findDependentSchemaNamespaces() { 
+    this.dependentNamespaces = this.nsCollection.findAll { !this.orderGraph[0].contains(it.namespace) }
+  }
+
+  def parseEachDependentNamespace() { 
+    def notMatchingMap = [:]
+    this.dependentNamespaces.each { ns ->
+      def orderDepth = this.orderGraph.size() // how long is the depth parse list
+      def matchesIdx = []
+      def notMatching = []
+      def fileCount = 0;
+      log.debug( "looking at namespace ${ns.namespace}")
+      ns.fileImports.each { namespace ->
+	fileCount++
+	  log.debug("import count is ${fileCount}, looking at import ${namespace}")
+	  for (def i = 0; i< orderDepth; i++) { 
+	    if(this.orderGraph[i].contains(namespace)) { 
+	      log.debug("List ${this.orderGraph[i]} contains import ${namespace}")
+	      matchesIdx << i
+	    }
+	  }
+	  if(matchesIdx.size() != fileCount - notMatching.size()) { 
+	    log.debug "matches size is ${matchesIdx.size()}"
+	    log.debug "not matching size is ${notMatching.size()}"
+	    log.debug "file count is ${fileCount}" 
+	    log.debug "fileCount - notMatching.size() is ${fileCount - notMatching.size()}"
+	    notMatching << namespace		    
+	    log.debug "not matching is ${notMatching}"
+	    log.debug "import count is ${fileCount}"
+	    log.debug "matchesIds is ${matchesIdx}"
+	  }
+      }
+      def max = matchesIdx.max() //get the max dependency depth
+      log.debug "max match depth is ${max}"
+      if(ns.fileImports.size() != matchesIdx.size()) { // this namespace imports something not in our map yet :/ boo
+	log.debug "something is not matching yet"
+	log.debug notMatching
+	def size = this.orderGraph.size()
+	this.orderGraph[size+1] = this.addToDependencyLevel(this.orderGraph[size+1], ns.namespace)
+	this.orderGraph[size] = notMatching.each { 
+	  this.addToDependencyLevel(this.orderGraph[size], it) 
+	  notMatchingMap[it] = size
+	}
+      } else { // every import has a match works nicely!
+	this.orderGraph[max+1] = this.addToDependencyLevel(this.orderGraph[max+1], ns.namespace)
+      }
+
+      //find out if this namespace is already in the graph, just in case becuase it could be
+      log.debug "is there anything in the not matching map : ${notMatchingMap}"
+      if(notMatchingMap.containsKey(ns.namespace)) { 
+	log.debug "OMG redone no matching, need to remove it from this.orderGraph and re insert somewhere"
+	log.debug "depth in original is ${notMatchingMap[ns.namespace]}"
+	log.debug "it is in this list ${this.orderGraph[notMatchingMap[ns.namespace]]}"
+	def depth =  notMatchingMap[ns.namespace]
+	log.debug this.orderGraph[depth]
+	log.debug this.orderGraph[depth..-1]
+	log.trace this.orderGraph[max]
+	if(max+1 < depth) { // if this is true, then delete the depth portion
+	  this.orderGraph[depth] -= ns.namespace
+	  if(this.orderGraph[depth].isEmpty()) { 
+	    this.orderGraph.remove(depth)
+	  }
+	}
+	notMatchingMap = notMatchingMap.findAll { it.key != ns.namespace} // get rid of the namespace we just corrected
+      }
+    }
+
+    log.info("size is : ${nsCollection.size()}")
+
+    def count = 0
+    this.orderGraph.each { 
+      count += it.size()
+    }
+    log.info("matching count is ${count}") 
+    log.debug(this.toString())
   }
 
   def String toString() { 

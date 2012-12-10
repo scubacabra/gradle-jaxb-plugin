@@ -7,11 +7,6 @@ class XsdNamespaces {
   List externalDependencies = []
   String namespace
   
-  // public xsdNamespaces(namespace, files) { 
-  //   this.namespace = namespace
-  //   this.xsdFiles = files
-  // }
-
   def addImports(nsImport) { 
     if( !isAlreadyInList(fileImports, nsImport) ) { 
       this.fileImports << nsImport
