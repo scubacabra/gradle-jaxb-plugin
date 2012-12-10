@@ -44,8 +44,8 @@ class JaxbNamespaceTask extends DefaultTask {
     log.info("aquired the rest of the namespaces to be graphed out")
     order.parseEachDependentNamespace()
     log.info("namespace dependency graph is resolved")
-    project.convention.plugins.JaxbNamespacePlugin.target = nsCollection
-    log.info ("asafasf, {}", project.convention.plugins.JaxbNamespacePlugin.target[0])
+    // project.convention.plugins.JaxbNamespacePlugin.target = nsCollection
+    // log.info ("asafasf, {}", project.convention.plugins.JaxbNamespacePlugin.target[0])
     log.debug("order Graph is {}", order.orderGraph)
     order.orderGraph.each { order -> // fix this declaration, conflicting
       order.each { namespace ->
@@ -91,6 +91,10 @@ class JaxbNamespaceTask extends DefaultTask {
       log.info("file ns Import is {}, dependency List is {}", it, depList)
       depList = addToDependencyList(depList, it)
     }
+    xsdData.externalDependencies.each {
+      log.info("external dependency is {}, dependency List is {}", it, depList)
+      depList = addToDependencyList(depList, it)
+    }
     log.info("current dependency List {}", depList)
     xsdData.fileImports.each { ns ->
       def xsdDependency = order.nsCollection.find{ it.namespace == ns}
@@ -106,9 +110,6 @@ class JaxbNamespaceTask extends DefaultTask {
     def allDeps = []
     log.info("Traversing the Graph up to the top for dependencies")
     allDeps = findDependenciesUpGraph(ns, allDeps)
-    // allDeps.addAll(ns.fileImports.findAll{ it != "none"})
-    // if(ns.externalDependencies)
-    //   allDeps.addAll(ns.externalDependencies)
     log.info("all dependencies are {}", allDeps)
     return allDeps
   }
