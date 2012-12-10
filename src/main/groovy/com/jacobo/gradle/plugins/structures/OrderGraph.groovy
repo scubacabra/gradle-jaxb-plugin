@@ -42,6 +42,21 @@ class OrderGraph {
     }
   }
 
+  def grabNamespaceIncludes() { 
+    this.nsCollection.each { ns -> 
+      ns.xsdFiles.each { doc ->
+	def schema = new XmlSlurper().parse(doc)
+	def imports = schema.include
+	if(!imports.isEmpty()) { 
+	  imports.@namespace.each {
+	    if(!ns.isExternalDependency(this.nsCollection, it.text()))
+	      ns.addImports(it.text())
+	  }
+	}
+      }
+    }
+  }
+
   def findBaseSchemaNamespaces() { 
     this.orderGraph[0] = this.nsCollection.findAll { it.fileImports == ["none"] }.namespace
   }
@@ -58,6 +73,8 @@ class OrderGraph {
       def notMatching = []
       def fileCount = 0;
       log.debug( "looking at namespace ${ns.namespace}")
+      log.debug("namespace has files {}", ns.xsdFiles)
+      log.debug("namespace has imports {}", ns.fileImports)
       ns.fileImports.each { namespace ->
 	fileCount++
 	  log.debug("import count is ${fileCount}, looking at import ${namespace}")
@@ -100,9 +117,9 @@ class OrderGraph {
 	log.debug "depth in original is ${notMatchingMap[ns.namespace]}"
 	log.debug "it is in this list ${this.orderGraph[notMatchingMap[ns.namespace]]}"
 	def depth =  notMatchingMap[ns.namespace]
-	log.debug this.orderGraph[depth]
-	log.debug this.orderGraph[depth..-1]
-	log.trace this.orderGraph[max]
+	log.debug("order @ depth is {}", this.orderGraph[depth])
+	log.debug(" range of orders from {}", this.orderGraph[depth..-1])
+	log.debug("order @ max depth {}", this.orderGraph[max])
 	if(max+1 < depth) { // if this is true, then delete the depth portion
 	  this.orderGraph[depth] -= ns.namespace
 	  if(this.orderGraph[depth].isEmpty()) { 

@@ -20,8 +20,8 @@ class XsdNamespaces {
   }
 
   def addExternalDependency(extDep) { 
-    if( !isAlreadyInList(fileIncludes, extDep) ) { 
-      this.fileIncludes << extDep
+    if( !isAlreadyInList(externalDependencies, extDep) ) { 
+      this.externalDependencies << extDep
     }
   }
 
@@ -31,12 +31,18 @@ class XsdNamespaces {
 
   def isExternalDependency = { collection, ns ->
     if(!collection.find { it.namespace == ns}) { 
-      externalDependencies << ns
+      addExternalDependency(ns)
       return true
     }
     return false
   }
-  
+
+  public static String convertNamespaceToEpisodeName(String ns) { 
+    def ret = ns.replace("http://", "")
+    ret = ret.replace(":", "-")
+    ret = ret.replace("/", "-")
+  }
+
   def String toString() { 
     def out = "Namespace: ${namespace} \n"
     out += "files with this namespace:\n ${xsdFiles ?: "none" }\n"

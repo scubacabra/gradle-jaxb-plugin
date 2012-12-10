@@ -21,7 +21,7 @@ class FindNamespaces {
   def nsClosure = { schemaDoc ->
     def records = new XmlSlurper().parse(schemaDoc)
     def target = records.@targetNamespace
-    target = (!target.isEmpty()) ? target.text() : null
+    target = (!target.isEmpty()) ? target.text() : "null"
     if(nsMap.containsKey(target)) {
       nsMap[target] << schemaDoc
     }
