@@ -5,6 +5,8 @@ import org.gradle.api.Plugin
 import org.gradle.api.logging.Logging
 import org.gradle.api.logging.Logger
 import com.jacobo.gradle.plugins.task.JaxbNamespaceTask
+import com.jacobo.gradle.plugins.task.JaxbXJCTask
+import com.jacobo.gradle.plugins.JaxbExtension
 
 /**
  * @author djmijares
@@ -12,23 +14,34 @@ import com.jacobo.gradle.plugins.task.JaxbNamespaceTask
  */
 class JaxbNamespacePlugin implements Plugin<Project> {
   static final String JAXB_NAMESPACE_TASK_GROUP = 'parse'
-  static final String JAXB_NAMESPACE_TASK = 'jaxbNamespaceResolve'
-  static final String JAXB_CONFIGURATION = 'jaxb'
+  static final String JAXB_NAMESPACE_GRAPH_TASK = 'jaxb-generate-dependency-graph'
+  static final String JAXB_NAMESPACE_GENERATE_TASK = 'xjc'
+  static final String JAXB_CONFIGURATION = 'jaxbXjc'
 
   static final Logger log = Logging.getLogger(JaxbNamespacePlugin.class)
 
+  private JaxbExtension extension
   void apply (Project project) {
-    JaxbNamespacePluginConvention jaxbNamespaceConvention = new JaxbNamespacePluginConvention(project)
-    project.convention.plugins.JaxbNamespacePlugin = jaxbNamespaceConvention
-
-       configureJaxbNamespaceTask(project, jaxbNamespaceConvention)
-
+    extension = project.extensions.create("jaxb", JaxbExtension, project)
+    extension.with { 
+      jaxbSchemaDirectory = "${project.rootDir}/schema"
+      jaxbEpisodeDirectory = "${project.rootDir}/schema/episodes" 
+      jaxbBindingDirectory = "${project.rootDir}/schema/bindings"
+      jaxbSchemaDestinationDirectory = "src/main/java"
+      extension = 'true'
+      removeOldOutput = 'yes'
     }
+    configureJaxbNamespaceDependencyGraph(project, extension)
+  }
 
-  private void configureJaxbNamespaceTask(final Project project, JaxbNamespacePluginConvention convention) { 
-    JaxbNamespaceTask jnt = project.tasks.add(JAXB_NAMESPACE_TASK,  JaxbNamespaceTask)
-    jnt.description = "go through the ${convention.xsdDir} folder and find all unique namespaces, create a namespace graph and parse in teh graph order with jaxb"
-    jnt.conventionMapping.map('xsdDir') { convention.xsdDir } //this mapping already has a convention for xsdDir so need to use this inconvenient but safer mapping instead of just jnt.conventionMapping.xsdDir or something like that
+  private void configureJaxbNamespaceDependencyGraph(final Project project, JaxbExtension jaxb) { 
+    JaxbNamespaceTask jnt = project.tasks.add(JAXB_NAMESPACE_GRAPH_TASK,  JaxbNamespaceTask)
+    jnt.description = "go through the ${jaxb.xsdDirectoryForGraph} folder and find all unique namespaces, create a namespace graph and parse in teh graph order with jaxb"
+  }
 
+  private void configureJaxbGenerateSchemas(final Project project, JaxbExtension jaxb) { 
+    JaxbXJCTask xjc = project.tasks.add(JAXB_NAMESPACE_GENERATE_TASK,  JaxbXJCTask)
+    xjc.description = "run through the Directory Graph for ${jaxb.xsdDirectoryForGraph} and parse all schemas in order generating episode files to ${jaxb.jaxbEpisodeDirectory}"
+    xjc.dependsOn('')
   }
 }

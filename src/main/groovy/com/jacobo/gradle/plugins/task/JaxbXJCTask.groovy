@@ -15,41 +15,16 @@ import com.jacobo.gradle.plugins.JaxbNamespacePlugin
  * Created: Tue Dec 04 09:01:34 EST 2012
  */
 
-class JaxbNamespaceTask extends DefaultTask { 
+class JaxbXJCTask extends DefaultTask { 
   
-  static final Logger log = Logging.getLogger(JaxbNamespaceTask.class)
+  static final Logger log = Logging.getLogger(JaxbXJCTask.class)
   
-  String xsdDir
-  OrderGraph order = new OrderGraph()
-
-  def grabUniqueNamespaces() { 
-    def findNs = new FindNamespaces(baseDir: project.jaxb.xsdDirectoryForGraph)
-    findNs.startFinding()
-    findNs.nsMap.each { key, val -> 
-      order.nsCollection << new XsdNamespaces(namespace: key, xsdFiles: val)
-    }
-  }
-
   @TaskAction
   void start() { 
-    log.info("starting jaxb namespace dependency task at: {}", project.jaxb.xsdDirectoryForGraph)
-    grabUniqueNamespaces()
-    log.info("unique namespaces aquired")
-    log.info("getting all import statments in namespace files to see what they depend on")
-    order.grabNamespaceImports()
-    //order.grabNamespaceIncludes()
-    order.findBaseSchemaNamespaces()
-    log.info("found the base namespace packages to be parsed first")
-    order.findDependentSchemaNamespaces()
-    log.info("aquired the rest of the namespaces to be graphed out")
-    order.parseEachDependentNamespace()
-    log.info("namespace dependency graph is resolved")
-    // project.convention.plugins.JaxbNamespacePlugin.target = nsCollection
-    // log.info ("asafasf, {}", project.convention.plugins.JaxbNamespacePlugin.target[0])
-    log.debug("order Graph is {}", order.orderGraph)
+    OrderGraph dependencyGraph = project.jaxb.dependencyGraph
     order.orderGraph.each { order -> // fix this declaration, conflicting
       order.each { namespace ->
-    	def nsData = this.order.nsCollection.find{ it.namespace == namespace}
+    	def nsData = dependencyGraph.nsCollection.find{ it.namespace == namespace}
     	log.info("found structure {}", nsData)
    	doTheSchemaParsing(nsData)
       }
