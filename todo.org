@@ -1,0 +1,9 @@
+
+* TODO Separate tasks into *xjc* and *jaxb-generate-dependency-graph*
+** TODO Add ~xjc dependsOn(jaxb-generate-dependency-graph)~
+
+* TODO add the extra external binding files until I figure out a way to share memory between tasks??
+
+* TODO Add the includes xsd processing, not there yet
+
+* TODO add a configuration in the Plugin class for the *jaxb* configuration
