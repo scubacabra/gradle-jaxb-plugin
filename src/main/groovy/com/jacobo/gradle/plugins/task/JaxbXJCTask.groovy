@@ -21,6 +21,7 @@ class JaxbXJCTask extends DefaultTask {
   
   @TaskAction
   void start() { 
+    log.info("getting the order graph from the jaxb Extension on the project")
     OrderGraph dependencyGraph = project.jaxb.dependencyGraph
     order.orderGraph.each { order -> // fix this declaration, conflicting
       order.each { namespace ->
