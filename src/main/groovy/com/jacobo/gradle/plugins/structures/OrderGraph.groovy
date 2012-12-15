@@ -5,7 +5,8 @@ import org.gradle.api.logging.Logger
 
 class OrderGraph { 
   static final Logger log = Logging.getLogger(OrderGraph.class)
-
+  
+  String startingDirectory
   List orderGraph = []
   List dependentNamespaces = []
   List nsCollection = []

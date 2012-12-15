@@ -16,12 +16,20 @@ class JaxbNamespacePlugin implements Plugin<Project> {
   static final String JAXB_NAMESPACE_TASK_GROUP = 'parse'
   static final String JAXB_NAMESPACE_GRAPH_TASK = 'jaxb-generate-dependency-graph'
   static final String JAXB_NAMESPACE_GENERATE_TASK = 'xjc'
-  static final String JAXB_CONFIGURATION = 'jaxbXjc'
+  static final String JAXB_CONFIGURATION_NAME = 'jaxb'
 
   static final Logger log = Logging.getLogger(JaxbNamespacePlugin.class)
 
   private JaxbExtension extension
+
   void apply (Project project) {
+    configureJaxbExtension(project)
+    configureJaxbNamespaceConfiguration(project)
+    JaxbNamespaceTask jnt = configureJaxbNamespaceDependencyGraph(project, extension)
+    configureJaxbGenerateSchemas(project, extension, jnt)
+  }
+  
+  private void configureJaxbExtension(final Project project) { 
     extension = project.extensions.create("jaxb", JaxbExtension, project)
     extension.with { 
       jaxbSchemaDirectory = "${project.rootDir}/schema"
@@ -31,17 +39,28 @@ class JaxbNamespacePlugin implements Plugin<Project> {
       extension = 'true'
       removeOldOutput = 'yes'
     }
-    configureJaxbNamespaceDependencyGraph(project, extension)
   }
 
-  private void configureJaxbNamespaceDependencyGraph(final Project project, JaxbExtension jaxb) { 
+  private void configureJaxbNamespaceConfiguration(final Project project) { 
+    project.confiugrations.add(JAXB_CONFIGURATION_NAME) { 
+      visible = false
+      transitive = false
+      description = "The JAXB XJC libraries to be used for this project."
+    }
+  }
+
+  private JaxbNamespaceTask configureJaxbNamespaceDependencyGraph(final Project project, JaxbExtension jaxb) { 
     JaxbNamespaceTask jnt = project.tasks.add(JAXB_NAMESPACE_GRAPH_TASK,  JaxbNamespaceTask)
     jnt.description = "go through the ${jaxb.xsdDirectoryForGraph} folder and find all unique namespaces, create a namespace graph and parse in teh graph order with jaxb"
+    jnt.group = JAXB_NAMESPACE_TASK_GROUP
+    return jnt
   }
 
-  private void configureJaxbGenerateSchemas(final Project project, JaxbExtension jaxb) { 
+  private void configureJaxbGenerateSchemas(final Project project, JaxbExtension jaxb, JaxbNamespaceTask jnt) { 
     JaxbXJCTask xjc = project.tasks.add(JAXB_NAMESPACE_GENERATE_TASK,  JaxbXJCTask)
     xjc.description = "run through the Directory Graph for ${jaxb.xsdDirectoryForGraph} and parse all schemas in order generating episode files to ${jaxb.jaxbEpisodeDirectory}"
-    xjc.dependsOn('')
+    xjc.group = JAXB_NAMESPACE_TASK_GROUP
+    xjc.dependsOn(jnt)
+    
   }
 }
