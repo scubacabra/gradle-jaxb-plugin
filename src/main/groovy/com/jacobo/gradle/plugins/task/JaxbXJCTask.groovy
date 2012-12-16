@@ -41,10 +41,12 @@ class JaxbXJCTask extends DefaultTask {
     ant.xjc(destdir : project.jaxb.jaxbSchemaDestinationDirectory, extension : project.jaxb.extension, removeOldOutput : project.jaxb.removeOldOutput, header : project.jaxb.header, target : '2.1') {
       //      produces (dir : "src/main/java")
       schema (dir : project.jaxb.xsdDirectoryForGraph, includes : getIncludesList(ns) )
-      binding(dir : project.jaxb.jaxbBindingDirectory, includes : '*.xjb')
+      if (project.jaxb.bindingIncludes) {
+	binding(dir : project.jaxb.jaxbBindingDirectory, includes : getBindingIncludesList(project.jaxb.bindingIncludes))
+      }
       gatherAllDependencies(ns).each { episode ->
-	log.info("binding with file {}", ns.convertNamespaceToEpisodeName(episode)+ ".episode")
-	binding (dir : project.jaxb.jaxbEpisodeDirectory, includes : "${ns.convertNamespaceToEpisodeName(episode)}.episode")
+	log.info("binding with file {}.episode", episode)
+	binding (dir : project.jaxb.jaxbEpisodeDirectory, includes : "${episode}.episode")
       }
       log.info("episode file is {}", "${project.jaxb.jaxbEpisodeDirectory}/${ns.convertNamespaceToEpisodeName(ns.namespace)}.episode")
       arg(value : '-episode')
@@ -91,7 +93,19 @@ class JaxbXJCTask extends DefaultTask {
     log.info("Traversing the Graph up to the top for dependencies")
     allDeps = findDependenciesUpGraph(ns, allDeps)
     log.info("all dependencies are {}", allDeps)
+    allDeps = allDeps.collect{ ns.convertNamespaceToEpisodeName(it) }
+    allDeps = addExternalEpisodeFileBindings(allDeps)
     return allDeps
+  }
+
+  List addExternalEpisodeFileBindings(List dependencies) { 
+    project.jaxb.episodeBindings.each { binding ->
+      log.debug("trying to add {}, to {}", binding, dependencies)
+      if(!dependencies.contains(binding)) { 
+	dependencies << binding
+      }
+    }
+    return dependencies
   }
 
   def String getIncludesList(XsdNamespaces data) { 
@@ -107,5 +121,15 @@ class JaxbXJCTask extends DefaultTask {
     }
     log.debug("argument to inludes is {}", includes)
     return includes
+  }
+  
+  String getBindingIncludesList(List bindings) { 
+    def bindingInlcudes = ""
+    log.debug("Binding list is {}", bindings)
+    bindings.each { 
+      bindingIncludes += bindings + " "
+    }
+    log.debug("binding list into xjc is {}", bindingIncludes)
+    return bindingIncludes
   }
 }

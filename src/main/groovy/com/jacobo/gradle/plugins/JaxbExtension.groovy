@@ -31,6 +31,4 @@ class JaxbExtension {
   JaxbExtension(Project project) { 
     this.project = project
   }
-
-
 }

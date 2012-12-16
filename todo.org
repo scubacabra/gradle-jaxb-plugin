@@ -4,9 +4,15 @@
 ** DONE Add ~xjc dependsOn(jaxb-generate-dependency-graph)~
    CLOSED: [2012-12-15 Sat 15:44]
 
-* TODO add the extra external binding files until I figure out a way to share memory between tasks??
-
+* DONE add the extra external binding files until I figure out a way to share memory between tasks??
+  CLOSED: [2012-12-16 Sun 10:06]
+** if there could be some way to share memory between tasks, I could eliminate the need for this
 * TODO Add the includes xsd processing, not there yet
 
 * DONE add a configuration in the Plugin class for the *jaxb* configuration
   CLOSED: [2012-12-15 Sat 15:44]
+* TODO Add error checkers and throw specific errors if things aren't where they should be
+* TODO add groovy docs to the methods and variables
+* TODO add inputs and outputs dependencies to maybe not run a task if you don't need to
+* DONE add the binding includes portion
+  CLOSED: [2012-12-16 Sun 09:55]
