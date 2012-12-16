@@ -13,7 +13,7 @@ class XsdNamespaces {
     }
   }
   
-  def addInclude(nsInclude) { 
+  def addIncludes(nsInclude) { 
     if( !isAlreadyInList(fileIncludes, nsInclude) ) { 
       this.fileIncludes << nsInclude
     }

@@ -47,15 +47,22 @@ class OrderGraph {
     this.nsCollection.each { ns -> 
       ns.xsdFiles.each { doc ->
 	def schema = new XmlSlurper().parse(doc)
-	def imports = schema.include
-	if(!imports.isEmpty()) { 
-	  imports.@namespace.each {
-	    if(!ns.isExternalDependency(this.nsCollection, it.text()))
-	      ns.addImports(it.text())
+	def includes = schema.include
+	if(!includes.isEmpty()) { 
+	  includes.@schemaLocation.each {
+	      ns.addIncludes(it.text())
 	  }
 	}
       }
     }
+  }
+
+  def performIncludesProcessing() { 
+    def withIncludes = this.nsCollection.findAll { !it.fileIncludes.isEmpty() }
+    log.info("Total includes over the whole Directory")
+    withIncludes.each { ns ->
+      log.info("namespace {}, includes {}", ns.namespace, ns.fileIncludes)
+    }    
   }
 
   def findBaseSchemaNamespaces() { 
