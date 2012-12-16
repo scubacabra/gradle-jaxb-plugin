@@ -19,11 +19,13 @@ class JaxbXJCTask extends DefaultTask {
   
   static final Logger log = Logging.getLogger(JaxbXJCTask.class)
   
+  OrderGraph dependencyGraph
+
   @TaskAction
   void start() { 
     log.info("getting the order graph from the jaxb Extension on the project")
-    OrderGraph dependencyGraph = project.jaxb.dependencyGraph
-    order.orderGraph.each { order -> // fix this declaration, conflicting
+    dependencyGraph = project.jaxb.dependencyGraph
+    dependencyGraph.orderGraph.each { order -> // fix this declaration, conflicting
       order.each { namespace ->
     	def nsData = dependencyGraph.nsCollection.find{ it.namespace == namespace}
     	log.info("found structure {}", nsData)
@@ -33,7 +35,9 @@ class JaxbXJCTask extends DefaultTask {
   }
 
   def doTheSchemaParsing(XsdNamespaces ns) { 
-    ant.taskdef (name : 'xjc', classname : 'com.sun.tools.xjc.XJCTask', classpath : project.configurations[JaxbNamespacePlugin.JAXB_CONFIGURATION].asPath)
+    ant.taskdef (name : 'xjc', classname : 'com.sun.tools.xjc.XJCTask', classpath : project.configurations[JaxbNamespacePlugin.JAXB_CONFIGURATION_NAME].asPath)
+    log.info("classpath for xjc is {}", project.configurations[JaxbNamespacePlugin.JAXB_CONFIGURATION_NAME].asPath)
+    log.info("classpath for xjc is {}", project.configurations[JaxbNamespacePlugin.JAXB_CONFIGURATION_NAME])
     ant.xjc(destdir : project.jaxb.jaxbSchemaDestinationDirectory, extension : project.jaxb.extension, removeOldOutput : project.jaxb.removeOldOutput, header : project.jaxb.header, target : '2.1') {
       //      produces (dir : "src/main/java")
       schema (dir : project.jaxb.xsdDirectoryForGraph, includes : getIncludesList(ns) )
@@ -73,7 +77,7 @@ class JaxbXJCTask extends DefaultTask {
     }
     log.info("current dependency List {}", depList)
     xsdData.fileImports.each { ns ->
-      def xsdDependency = order.nsCollection.find{ it.namespace == ns}
+      def xsdDependency = dependencyGraph.nsCollection.find{ it.namespace == ns}
       if(xsdDependency) { 
     	depList = findDependenciesUpGraph(xsdDependency, depList)
     	log.info("current dependency List {}", depList)

@@ -42,9 +42,9 @@ class JaxbNamespacePlugin implements Plugin<Project> {
   }
 
   private void configureJaxbNamespaceConfiguration(final Project project) { 
-    project.confiugrations.add(JAXB_CONFIGURATION_NAME) { 
-      visible = false
-      transitive = false
+    project.configurations.add(JAXB_CONFIGURATION_NAME) { 
+      visible = true
+      transitive = true
       description = "The JAXB XJC libraries to be used for this project."
     }
   }
