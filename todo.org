@@ -1,5 +1,6 @@
 
-* TODO Separate tasks into *xjc* and *jaxb-generate-dependency-graph*
+* DONE Separate tasks into *xjc* and *jaxb-generate-dependency-graph*
+  CLOSED: [2012-12-15 Sat 18:40]
 ** DONE Add ~xjc dependsOn(jaxb-generate-dependency-graph)~
    CLOSED: [2012-12-15 Sat 15:44]
 
