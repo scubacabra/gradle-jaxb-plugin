@@ -41,7 +41,8 @@ class JaxbXJCTask extends DefaultTask {
     ant.xjc(destdir : project.jaxb.jaxbSchemaDestinationDirectory, extension : project.jaxb.extension, removeOldOutput : project.jaxb.removeOldOutput, header : project.jaxb.header, target : '2.1') {
       //      produces (dir : "src/main/java")
       schema (dir : project.jaxb.xsdDirectoryForGraph, includes : getIncludesList(ns) )
-      if (project.jaxb.bindingIncludes) {
+      if (!project.jaxb.bindingIncludes.isEmpty() || project.jaxb.bindingIncludes != null) {
+	log.info("binding {}, in directory {}", getBindingIncludesList(project.jaxb.bindingIncludes), project.jaxb.jaxbBindingDirectory)
 	binding(dir : project.jaxb.jaxbBindingDirectory, includes : getBindingIncludesList(project.jaxb.bindingIncludes))
       }
       gatherAllDependencies(ns).each { episode ->
@@ -124,10 +125,10 @@ class JaxbXJCTask extends DefaultTask {
   }
   
   String getBindingIncludesList(List bindings) { 
-    def bindingInlcudes = ""
+    def bindingIncludes = ""
     log.debug("Binding list is {}", bindings)
     bindings.each { 
-      bindingIncludes += bindings + " "
+      bindingIncludes += it + " "
     }
     log.debug("binding list into xjc is {}", bindingIncludes)
     return bindingIncludes
