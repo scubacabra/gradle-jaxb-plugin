@@ -10,10 +10,10 @@
 *** TODO Fix the external binding, need to take away that property and do it in code because not every namespace needs that external set and needs to be dynamic
 * DONE Add the includes xsd processing, not there yet
   CLOSED: [2012-12-16 Sun 21:18]
-** TODO Once done with the includes processing, check for empty xsdFiles fields and if there are, then:
-*** TODO Remove from nsCollection
-*** TODO Remove From Order Graph
-*** TODO if order graph has an empty row, then remove that row as well. 
+** DONE Once done with the includes processing, check for empty xsdFiles fields and if there are, then:
+   CLOSED: [2012-12-17 Mon 08:22]
+*** DONE Remove from nsCollection
+    CLOSED: [2012-12-17 Mon 08:22]
 * DONE add a configuration in the Plugin class for the *jaxb* configuration
   CLOSED: [2012-12-15 Sat 15:44]
 * TODO Add error checkers and throw specific errors if things aren't where they should be
