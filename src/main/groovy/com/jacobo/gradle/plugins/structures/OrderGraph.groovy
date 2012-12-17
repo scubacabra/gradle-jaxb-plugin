@@ -27,37 +27,39 @@ class OrderGraph {
     return list
   }
 
-  def grabNamespaceImports() { 
-    this.nsCollection.each { ns -> 
-      ns.xsdFiles.each { doc ->
-	def schema = new XmlSlurper().parse(doc)
-	def imports = schema.import
-	if(!imports.isEmpty()) { 
-	  imports.@namespace.each {
-	    if(!ns.isExternalDependency(this.nsCollection, it.text()))
-	      ns.addImports(it.text())
-	  }
-	}
+  def slurpXsdFiles = { doc, namespace ->
+    def schema = new XmlSlurper().parse(doc)
+    def imports = schema.import
+    def includes = schema.include
+    slurpImports(imports, namespace)
+    slurpIncludes(includes, namespace, doc)
+  }
+
+  def slurpIncludes = { includes, ns, doc ->
+    if(!includes.isEmpty()) { 
+      includes.@schemaLocation.each {
+	def includePath = new File(doc.parent, it.text()).canonicalPath
+	log.debug("includes the path {}", includePath)
+	def includeFile = new File(includePath)
+	log.debug("include File is {}", includeFile)
+	ns.addIncludes(includeFile)
       }
-      if(!ns.fileImports) ns.fileImports << "none"
     }
   }
 
-  def grabNamespaceIncludes() { 
-    this.nsCollection.each { ns -> 
-      ns.xsdFiles.each { doc ->
-	def schema = new XmlSlurper().parse(doc)
-	def includes = schema.include
-	if(!includes.isEmpty()) { 
-	  includes.@schemaLocation.each {
-	    def includePath = new File(doc.parent, it.text()).canonicalPath
-	    log.debug("includes the path {}", includePath)
-	    def includeFile = new File(includePath)
-	    log.debug("include File is {}", includeFile)
-	    ns.addIncludes(includeFile)
-	  }
-	}
+  def slurpImports = { imports, ns ->
+    if(!imports.isEmpty()) { 
+      imports.@namespace.each {
+	if(!ns.isExternalDependency(this.nsCollection, it.text()))
+	  ns.addImports(it.text())
       }
+    }
+  }
+
+  def populateIncludesAndImportsData() { 
+    this.nsCollection.each { namespace ->
+      namespace.xsdFiles.each { slurpXsdFiles(it, namespace) } //TODO might be a good currying exercise
+      if(!namespace.fileImports) namespace.fileImports << "none" // if a namespace imports nothing, flag it for being parse first
     }
   }
 
