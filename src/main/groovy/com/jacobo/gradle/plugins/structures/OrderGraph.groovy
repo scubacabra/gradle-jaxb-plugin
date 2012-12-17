@@ -50,7 +50,11 @@ class OrderGraph {
 	def includes = schema.include
 	if(!includes.isEmpty()) { 
 	  includes.@schemaLocation.each {
-	      ns.addIncludes(it.text())
+	    def includePath = new File(doc.parent, it.text()).canonicalPath
+	    log.debug("includes the path {}", includePath)
+	    def includeFile = new File(includePath)
+	    log.debug("include File is {}", includeFile)
+	    ns.addIncludes(includeFile)
 	  }
 	}
       }
@@ -73,6 +77,7 @@ class OrderGraph {
 
   def findBaseSchemaNamespaces() { 
     this.orderGraph[0] = this.nsCollection.findAll { it.fileImports == ["none"] }.namespace
+    log.debug("Base schema meta data information {}", this.nsCollection.findAll { it.fileImports == ["none"]})
   }
 
   def findDependentSchemaNamespaces() { 

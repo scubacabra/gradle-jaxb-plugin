@@ -13,9 +13,9 @@ class XsdNamespaces {
     }
   }
   
-  def addIncludes(nsInclude) { 
-    if( !isAlreadyInList(fileIncludes, nsInclude) ) { 
-      this.fileIncludes << nsInclude
+  def addIncludes(nsIncludeFile) { 
+    if( !isFileAlreadyInList(fileIncludes, nsIncludeFile) ) { 
+      this.fileIncludes << nsIncludeFile
     }
   }
 
@@ -29,6 +29,9 @@ class XsdNamespaces {
     return list.contains(namespace)
   }
 
+  def boolean isFileAlreadyInList(List list, File file) { 
+    return list.contains(file)
+  }
   def isExternalDependency = { collection, ns ->
     if(!collection.find { it.namespace == ns}) { 
       addExternalDependency(ns)

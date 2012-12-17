@@ -7,7 +7,9 @@
 * DONE add the extra external binding files until I figure out a way to share memory between tasks??
   CLOSED: [2012-12-16 Sun 10:06]
 ** if there could be some way to share memory between tasks, I could eliminate the need for this
-* TODO Add the includes xsd processing, not there yet
+*** TODO Fix the external binding, need to take away that property and do it in code because not every namespace needs that external set and needs to be dynamic
+* DONE Add the includes xsd processing, not there yet
+  CLOSED: [2012-12-16 Sun 21:18]
 
 * DONE add a configuration in the Plugin class for the *jaxb* configuration
   CLOSED: [2012-12-15 Sat 15:44]
