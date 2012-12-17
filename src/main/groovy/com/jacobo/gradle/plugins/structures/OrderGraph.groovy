@@ -83,78 +83,91 @@ class OrderGraph {
     }
   }
 
-  def findBaseSchemaNamespaces() { 
-    this.orderGraph[0] = this.nsCollection.findAll { it.fileImports == ["none"] }.namespace
-    log.debug("Base schema meta data information {}", this.nsCollection.findAll { it.fileImports == ["none"]})
+  def gatherInitialNamespaceGraphOrdering() { 
+      this.orderGraph[0] = this.nsCollection.findAll { it.fileImports == ["none"] }.namespace
+      log.info("found the base namespace packages to be parsed first")
+      log.debug("Base schema meta data information {}", this.nsCollection.findAll { it.fileImports == ["none"]})
+      this.dependentNamespaces = this.nsCollection.findAll { !this.orderGraph[0].contains(it.namespace) }
+      log.info("aquired the rest of the dependent namespaces to be graphed out")
   }
 
-  def findDependentSchemaNamespaces() { 
-    this.dependentNamespaces = this.nsCollection.findAll { !this.orderGraph[0].contains(it.namespace) }
+  def processFileNamespaceImports = { String namespace, fileCount = 0 ->
+    fileCount++
+      def importMatches = [matchesIndex: [], noMatches: []]
+      log.debug("import count is ${fileCount}, looking at import ${namespace}")
+      for (def i = 0; i< this.orderGraph.size(); i++) { 
+	if(this.orderGraph[i].contains(namespace)) { 
+	  log.debug("List ${this.orderGraph[i]} contains import ${namespace}")
+	  importMatches.matchesIndex << i
+	}
+      }
+      if(importMatches.matchesIndex.size() != fileCount - importMatches.noMatches.size()) { //if true, we have a namespace imported that is not yet in the graph need to do particular processing on it later
+	// log.debug "matches size is ${matchesIdx.size()}"
+	// log.debug "not matching size is ${notMatching.size()}"
+	// log.debug "file count is ${fileCount}" 
+	// log.debug "fileCount - notMatching.size() is ${fileCount - notMatching.size()}"
+	importMatches.noMatches << namespace		    
+	// log.debug "not matching is ${notMatching}"
+	// log.debug "import count is ${fileCount}"
+	// log.debug "matchesIds is ${matchesIdx}"
+      }
+      return importMatches
+  }
+
+  Map addImportNamespacesToOrderGraph(XsdNamespaces namespace, List matchingNamespaceIndexes, List notMatchingNamespaces, Map notMatchingMap) { 
+    def max = matchingNamespaceIndexes.max() //get the max dependency matching depth
+    log.debug "max match depth is ${max}"
+    if(namespace.fileImports.size() != matchingNamespaceIndexes.size()) { // this namespace imports something not in our map yet :/ boo
+      log.debug("some import namespace(s) {}  not yet in our order graph, {}", notMatchingNamespaces, this.orderGraph)
+      def size = this.orderGraph.size()
+      this.orderGraph[size+1] = this.addToDependencyLevel(this.orderGraph[size+1], namespace.namespace)
+      this.orderGraph[size] = notMatchingNamespaces.each { 
+	this.addToDependencyLevel(this.orderGraph[size], it) 
+	notMatchingMap[it] = size
+      }
+    } else { // every import has a match and works nicely! Add to orderGraph
+      this.orderGraph[max+1] = this.addToDependencyLevel(this.orderGraph[max+1], namespace.namespace)
+    }
+    if(notMatchingMap.containsKey(namespace.namespace)) { 
+      notMatchingMap = processParentNamespaceAlreadyInGraph(namespace, notMatchingMap, max)
+    }
+    return notMatchingMap
+  }
+
+  Map processParentNamespaceAlreadyInGraph(XsdNamespaces ns, Map notMatchingMap, int max) { 
+    //find out if this namespace is already in the graph, just in case becuase it could be
+    log.debug "is there anything in the not matching map : ${notMatchingMap}"
+    log.debug "OMG redone no matching, need to remove it from this.orderGraph and re insert somewhere"
+    log.debug "depth in original is ${notMatchingMap[ns.namespace]}"
+    log.debug "it is in this list ${this.orderGraph[notMatchingMap[ns.namespace]]}"
+    def depth =  notMatchingMap[ns.namespace]
+    log.debug("order @ depth is {}", this.orderGraph[depth])
+    log.debug(" range of orders from {}", this.orderGraph[depth..-1])
+    log.debug("order @ max depth {}", this.orderGraph[max])
+    if(max+1 < depth) { // if this is true, then delete the depth portion
+      this.orderGraph[depth] -= ns.namespace
+      if(this.orderGraph[depth].isEmpty()) { 
+	this.orderGraph.remove(depth)
+      }
+    }
+    notMatchingMap = notMatchingMap.findAll { it.key != ns.namespace} // get rid of the namespace we just corrected
+    return notMatchingMap
   }
 
   def parseEachDependentNamespace() { 
     def notMatchingMap = [:]
     this.dependentNamespaces.each { ns ->
-      def orderDepth = this.orderGraph.size() // how long is the depth parse list
-      def matchesIdx = []
-      def notMatching = []
-      def fileCount = 0;
-      log.debug( "looking at namespace ${ns.namespace}")
+      log.debug("looking at namespace {}", ns.namespace)
       log.debug("namespace has files {}", ns.xsdFiles)
       log.debug("namespace has imports {}", ns.fileImports)
-      ns.fileImports.each { namespace ->
-	fileCount++
-	  log.debug("import count is ${fileCount}, looking at import ${namespace}")
-	  for (def i = 0; i< orderDepth; i++) { 
-	    if(this.orderGraph[i].contains(namespace)) { 
-	      log.debug("List ${this.orderGraph[i]} contains import ${namespace}")
-	      matchesIdx << i
-	    }
-	  }
-	  if(matchesIdx.size() != fileCount - notMatching.size()) { 
-	    log.debug "matches size is ${matchesIdx.size()}"
-	    log.debug "not matching size is ${notMatching.size()}"
-	    log.debug "file count is ${fileCount}" 
-	    log.debug "fileCount - notMatching.size() is ${fileCount - notMatching.size()}"
-	    notMatching << namespace		    
-	    log.debug "not matching is ${notMatching}"
-	    log.debug "import count is ${fileCount}"
-	    log.debug "matchesIds is ${matchesIdx}"
-	  }
+      def matchingNamespaceIndexes = []
+      def notMatching = []
+      ns.fileImports.each { 
+	def importMatch = processFileNamespaceImports(it)
+	matchingNamespaceIndexes.addAll(importMatch.matchesIndex)
+	notMatching.addAll(importMatch.noMatches)
       }
-      def max = matchesIdx.max() //get the max dependency depth
-      log.debug "max match depth is ${max}"
-      if(ns.fileImports.size() != matchesIdx.size()) { // this namespace imports something not in our map yet :/ boo
-	log.debug "something is not matching yet"
-	log.debug notMatching
-	def size = this.orderGraph.size()
-	this.orderGraph[size+1] = this.addToDependencyLevel(this.orderGraph[size+1], ns.namespace)
-	this.orderGraph[size] = notMatching.each { 
-	  this.addToDependencyLevel(this.orderGraph[size], it) 
-	  notMatchingMap[it] = size
-	}
-      } else { // every import has a match works nicely!
-	this.orderGraph[max+1] = this.addToDependencyLevel(this.orderGraph[max+1], ns.namespace)
-      }
-
-      //find out if this namespace is already in the graph, just in case becuase it could be
-      log.debug "is there anything in the not matching map : ${notMatchingMap}"
-      if(notMatchingMap.containsKey(ns.namespace)) { 
-	log.debug "OMG redone no matching, need to remove it from this.orderGraph and re insert somewhere"
-	log.debug "depth in original is ${notMatchingMap[ns.namespace]}"
-	log.debug "it is in this list ${this.orderGraph[notMatchingMap[ns.namespace]]}"
-	def depth =  notMatchingMap[ns.namespace]
-	log.debug("order @ depth is {}", this.orderGraph[depth])
-	log.debug(" range of orders from {}", this.orderGraph[depth..-1])
-	log.debug("order @ max depth {}", this.orderGraph[max])
-	if(max+1 < depth) { // if this is true, then delete the depth portion
-	  this.orderGraph[depth] -= ns.namespace
-	  if(this.orderGraph[depth].isEmpty()) { 
-	    this.orderGraph.remove(depth)
-	  }
-	}
-	notMatchingMap = notMatchingMap.findAll { it.key != ns.namespace} // get rid of the namespace we just corrected
-      }
+      notMatchingMap = addImportNamespacesToOrderGraph(ns, matchingNamespaceIndexes, notMatching, notMatchingMap)
     }
 
     log.info("size is : ${nsCollection.size()}")

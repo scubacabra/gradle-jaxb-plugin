@@ -39,10 +39,7 @@ class JaxbNamespaceTask extends DefaultTask {
     order.populateIncludesAndImportsData()
     log.info("processing includes data and removing from files data accordingly")
     order.performIncludesProcessing()
-    order.findBaseSchemaNamespaces()
-    log.info("found the base namespace packages to be parsed first")
-    order.findDependentSchemaNamespaces()
-    log.info("aquired the rest of the namespaces to be graphed out")
+    order.gatherInitialNamespaceGraphOrdering()
     order.parseEachDependentNamespace()
     log.info("namespace dependency graph is resolved")
 
