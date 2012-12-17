@@ -62,6 +62,12 @@ class OrderGraph {
     log.info("Total includes over the whole Directory")
     withIncludes.each { ns ->
       log.info("namespace {}, includes {}", ns.namespace, ns.fileIncludes)
+      def hasIncludeFiles = this.nsCollection.findAll { !it.xsdFiles.disjoint(ns.fileIncludes)}
+      hasIncludeFiles.each { nsHasIncludes ->
+	log.info("namespaces with these includes are {}", nsHasIncludes.namespace)
+	nsHasIncludes.xsdFiles = nsHasIncludes.xsdFiles.minus(ns.fileIncludes)
+	log.info("New xsd Files for namespace {} is : {}", nsHasIncludes.namespace, nsHasIncludes.xsdFiles)
+      }
     }    
   }
 
