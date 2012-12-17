@@ -73,7 +73,7 @@ class OrderGraph {
 	log.info("New xsd Files for namespace {} is : {}", nsHasIncludes.namespace, nsHasIncludes.xsdFiles)
       }
     }
-    //if any of the field xsdFiles are empty (couldn't be null), then get them off of the nsCollection and get the off of the order GRAPH
+    //if any of the field xsdFiles are empty (couldn't be null), then get them off of the nsCollection
     def emptyData = this.nsCollection.findAll { it.xsdFiles.isEmpty() }
     if(emptyData) {
       log.warn("There is empty Namespace xsd files in {}", emptyData)
