@@ -7,7 +7,12 @@
 * DONE add the extra external binding files until I figure out a way to share memory between tasks??
   CLOSED: [2012-12-16 Sun 10:06]
 ** if there could be some way to share memory between tasks, I could eliminate the need for this
-*** TODO Fix the external binding, need to take away that property and do it in code because not every namespace needs that external set and needs to be dynamic
+*** TODO Fix the external binding,
+*** TODO need to take away that propert externalBindings in the Extension class
+*** TODO do it in code because not every namespace needs that external set and needs to be dynamic
+*** TODO get the file location that the external import lists, if not gives location, don't put in the list
+*** TODO go through the external import file, find imports and go to those files and find imports
+*** TODO go through externam import file and locate includs and find the imports there as well
 * DONE Add the includes xsd processing, not there yet
   CLOSED: [2012-12-16 Sun 21:18]
 ** DONE Once done with the includes processing, check for empty xsdFiles fields and if there are, then:
@@ -21,3 +26,5 @@
 * TODO add inputs and outputs dependencies to maybe not run a task if you don't need to
 * DONE add the binding includes portion
   CLOSED: [2012-12-16 Sun 09:55]
+* TODO is it reasonable to add anything for external include statements??
+** Can't check for namespace, becuase includes doesn't use that, but could check the startingDir

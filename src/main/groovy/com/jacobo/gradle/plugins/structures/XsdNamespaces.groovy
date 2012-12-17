@@ -4,7 +4,7 @@ class XsdNamespaces {
   List xsdFiles = []
   List fileImports = []
   List fileIncludes = []
-  List externalDependencies = []
+  def externalDependencies = [:]
   String namespace
   
   def addImports(nsImport) { 
@@ -19,9 +19,13 @@ class XsdNamespaces {
     }
   }
 
-  def addExternalDependency(extDep) { 
-    if( !isAlreadyInList(externalDependencies, extDep) ) { 
-      this.externalDependencies << extDep
+  def addExternalDependency(String extDep, File file) { 
+    if(externalDependencies.containsKey(extDep)) { 
+      if( !isFileAlreadyInList(externalDependencies[extDep], file) ) { 
+	externalDependencies[extDep] << file
+      }
+    } else { 
+      externalDependencies[extDep] = [file]
     }
   }
 
@@ -32,9 +36,9 @@ class XsdNamespaces {
   def boolean isFileAlreadyInList(List list, File file) { 
     return list.contains(file)
   }
+
   def isExternalDependency = { collection, ns ->
-    if(!collection.find { it.namespace == ns}) { 
-      addExternalDependency(ns)
+    if(!collection.find { it.namespace == ns } ) { //this namespace not in the collection of namespaces available, is external
       return true
     }
     return false

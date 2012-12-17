@@ -25,6 +25,8 @@ class JaxbNamespaceTask extends DefaultTask {
   def grabUniqueNamespaces() { 
     def findNs = new FindNamespaces(baseDir: project.jaxb.xsdDirectoryForGraph)
     findNs.startFinding()
+    log.debug("unique namespace map is {}", findNs.nsMap)
+    log.info("found {} unique namespace in {}", findNs.nsMap.size(), findNs.baseDir)
     findNs.nsMap.each { key, val -> 
       order.nsCollection << new XsdNamespaces(namespace: key, xsdFiles: val)
     }
@@ -44,6 +46,8 @@ class JaxbNamespaceTask extends DefaultTask {
     log.info("namespace dependency graph is resolved")
 
     log.debug("order Graph is {}", order.orderGraph)
+    log.info("nsCollection size (unique namespace) is {}", order.nsCollection.size())
+    log.debug("nsCollection is {}", order.nsCollection)
     project.jaxb.dependencyGraph = order
     log.info("adding order graph to the jaxb extension")
   }
