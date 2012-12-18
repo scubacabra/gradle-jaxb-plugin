@@ -5,6 +5,7 @@ import org.gradle.api.logging.Logger
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.DefaultTask
+import com.jacobo.gradle.plugins.JaxbNamespacePlugin
 import com.jacobo.gradle.plugins.structures.OrderGraph
 import com.jacobo.gradle.plugins.structures.XsdNamespaces
 import com.jacobo.gradle.plugins.structures.FindNamespaces
@@ -38,11 +39,14 @@ class JaxbXJCTask extends DefaultTask {
   }
 
   def doTheSchemaParsing(XsdNamespaces ns) { 
+    // namespace data should have data
+    if(ns == null) throw new RuntimeException("null namespace data trying to be parsed, no xsdFiles or any data present")
+
     def schemaIncludes = getIncludesList(ns)
     def episodeBindings = gatherAllDependencies(ns)
     def episodeName = "${project.jaxb.jaxbEpisodeDirectory}/${ns.convertNamespaceToEpisodeName(ns.namespace)}.episode"
     
-    sanityCheck(episodeBindings, schemaIncludes, ns)
+    sanityChecks(episodeBindings, schemaIncludes, ns)
 
     ant.taskdef (name : 'xjc', 
     classname : 'com.sun.tools.xjc.XJCTask',
@@ -51,7 +55,7 @@ class JaxbXJCTask extends DefaultTask {
     ant.xjc(destdir : project.jaxb.jaxbSchemaDestinationDirectory,
     extension : project.jaxb.extension,
     removeOldOutput : project.jaxb.removeOldOutput,
-    header : project.jaxb.header, target : '2.1') {
+    header : project.jaxb.header) {
       //      produces (dir : "src/main/java")
       schema (dir : project.jaxb.xsdDirectoryForGraph, includes : schemaIncludes )
       if (!project.jaxb.bindingIncludes.isEmpty() || project.jaxb.bindingIncludes != null) {
@@ -128,7 +132,7 @@ class JaxbXJCTask extends DefaultTask {
       log.debug("the relative File Path is {}", relPath)
       includes += relPath + " "
     }
-    log.debug("argument to inludes is {}", includes)
+    log.info("argument to inludes is {}", includes)
     return includes
   }
   
@@ -144,22 +148,19 @@ class JaxbXJCTask extends DefaultTask {
 
   def sanityChecks(episodeBindingsNames, schemaIncludes, ns) { 
     // needs to have include files
-    (schemaIncludes == "") ? throw new RuntimeException("There are no files to include in the parsing in " + ns.xsdFiles + "for
- namespace " + ns.namespace)
+    if(schemaIncludes == "" || schemaIncludes.isEmpty()) throw new RuntimeException("There are no files to include in the parsing in " + ns.xsdFiles + "for namespace " + ns.namespace)
     
     // these Directories need to exist
     [project.jaxb.jaxbSchemaDirectory, project.jaxb.jaxbEpisodeDirectory, project.jaxb.jaxbBindingDirectory, project.jaxb.jaxbSchemaDestinationDirectory].each { 
       def dir = new File(it)
-      (!it.isDirectory() && !it.exists()) ? throw new InvalidUserDataException(it + " is not an existing directory, make this directory or adjust the extensions to point to a proper directory")
+      if(!dir.isDirectory() && !dir.exists()) throw new InvalidUserDataException(" ${dir }is not an existing directory, make this directory or adjust the extensions to point to a proper directory")
     }
     
     // all episode file bindings MUST exist
     episodeBindingsNames.each { 
-      def file = new File(project.jaxb.jaxbEpisodeDirectory, it)
-      (!it.exists()) ? throw new RuntimeException(file + "does not exist, there is most likely a null Namespace data somewhere")
+      def episode = it + ".episode"
+      def file = new File(project.jaxb.jaxbEpisodeDirectory, episode)
+      if(!file.exists()) throw new RuntimeException("${file} does not exist, there is most likely a null Namespace data somewhere")
     }
-
-    // namespace data should have data
-    (ns == null) ? throw new RuntimeException("null namespace data trying to be parse, no xsdFiles or any data present")
   }
 }
