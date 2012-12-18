@@ -42,7 +42,11 @@ class JaxbNamespaceTask extends DefaultTask {
     log.info("processing includes data and removing from files data accordingly")
     order.performIncludesProcessing()
     order.gatherInitialNamespaceGraphOrdering()
+    log.info("found base namespace packages")
     order.parseEachDependentNamespace()
+    log.info("parsed through dependent namespaces")
+    log.info("processing external Dependencies")
+    order.processExternalImports()
     log.info("namespace dependency graph is resolved")
 
     log.debug("order Graph is {}", order.orderGraph)

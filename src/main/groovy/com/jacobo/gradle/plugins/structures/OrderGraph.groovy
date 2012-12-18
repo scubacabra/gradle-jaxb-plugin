@@ -10,6 +10,7 @@ class OrderGraph {
   List orderGraph = []
   List dependentNamespaces = []
   List nsCollection = []
+  List externalDependencyGraphs = []
 
   //  def isAlreadyInList = nsCollection[0].&isAlreadyInList
   def boolean isAlreadyInList(List list, String namespace) { 
@@ -61,6 +62,35 @@ class OrderGraph {
 	}
       }
     }
+  }
+
+  /**
+   * Gather all the nsCollection.externalDependencies maps, make them unique (could be dupes) and attach the starting files
+   * to each namespace
+   */
+  def processExternalImports() { 
+    def containsExternals = this.nsCollection.findAll { !it.externalDependencies.isEmpty() } 
+    log.debug("namespaces with external dependencies are {}", containsExternals)
+    def uniqueExternalNamespaces = [:]
+    containsExternals.each { ns ->
+      ns.externalDependencies.each { key, val ->
+	if (uniqueExternalNamespaces.containsKey(key)) {
+	  if (!uniqueExternalNamespaces[key].contains(val)) {
+	    uniqueExternalNamespaces[key] << val
+	  }
+	} else {
+	  uniqueExternalNamespace[key] = [val]
+	}
+      }
+    }
+    log.debug("unique external namespace is {}", uniqueExternalNamespace)
+    def importedNamespaces = []
+    uniqueExternalNamespaces.each { key, val ->
+      def resolver = new ExternalNamespaceResolver(rootLocation : val)
+      resolver.resolveExternalDependencies()
+      importNamespaces << resolver.importedNamespaces
+    }
+    log.debug("imported Namespaces list is {}", importedNamespaces)
   }
 
   def populateIncludesAndImportsData() { 
