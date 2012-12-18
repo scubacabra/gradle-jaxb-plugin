@@ -10,7 +10,7 @@ class OrderGraph {
   List orderGraph = []
   List dependentNamespaces = []
   List nsCollection = []
-  List externalDependencyGraphs = []
+  def externalDependencies
 
   //  def isAlreadyInList = nsCollection[0].&isAlreadyInList
   def boolean isAlreadyInList(List list, String namespace) { 
@@ -74,23 +74,34 @@ class OrderGraph {
     def uniqueExternalNamespaces = [:]
     containsExternals.each { ns ->
       ns.externalDependencies.each { key, val ->
+	log.debug("trying to add external namespace {}", key)
+	log.debug("schema location is {}", val)
 	if (uniqueExternalNamespaces.containsKey(key)) {
-	  if (!uniqueExternalNamespaces[key].contains(val)) {
-	    uniqueExternalNamespaces[key] << val
+	  log.debug("the key is contained already in {}", uniqueExternalNamespaces)
+	  val.each { file ->
+	    if (!uniqueExternalNamespaces[key].contains(file)) {
+	      log.debug("it doesn't contain this file though {}", file)
+	      uniqueExternalNamespaces[key] << file
+	    }
 	  }
 	} else {
-	  uniqueExternalNamespace[key] = [val]
+	  log.debug("key {} doesn't exist in {} yet", key, uniqueExternalNamespaces)
+	  uniqueExternalNamespaces[key] = val
 	}
       }
     }
-    log.debug("unique external namespace is {}", uniqueExternalNamespace)
-    def importedNamespaces = []
-    uniqueExternalNamespaces.each { key, val ->
-      def resolver = new ExternalNamespaceResolver(rootLocation : val)
-      resolver.resolveExternalDependencies()
-      importNamespaces << resolver.importedNamespaces
+    log.debug("unique external namespace is {}", uniqueExternalNamespaces)
+    def importedNamespaces = [:]
+    uniqueExternalNamespaces.each { map ->
+      map.value.each { file ->
+	def resolver = new ExternalNamespaceResolver(rootLocation : file)
+	resolver.resolveExternalDependencies()
+	importedNamespaces[file.path] = resolver.importedNamespaces
+	importedNamespaces[file.path] << map.key
+      }
     }
     log.debug("imported Namespaces list is {}", importedNamespaces)
+    this.externalDependencies = importedNamespaces
   }
 
   def populateIncludesAndImportsData() { 

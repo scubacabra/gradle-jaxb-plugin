@@ -12,14 +12,14 @@ class ExternalNamespaceResolver {
   def targetDir
 
   def notAlreadyInImportList(location) { 
-    def result = diveDeeper.findAll { new File(it).name == new File(location).name}
+    def result = diveDeeper.findAll { it.name == new File(location)}
     return result ? false : true
   }
 
   def addToImportedNamespaces(String namespace) { 
     if(!isAlreadyInList(namespace)) { 
-      log.debug("adding {} to imported namespace List {}", namespace, importedNamespace )
-      importedNamespace << namespace
+      log.debug("adding {} to imported namespace List {}", namespace, importedNamespaces )
+      importedNamespaces << namespace
     }
   }
 
@@ -27,52 +27,50 @@ class ExternalNamespaceResolver {
     return importedNamespaces.contains(namespace)
   }
 
+  def addToDiveDeeper(File file) { 
+    if(!diveDeeper.contains(file)) { 
+      log.debug("added {} to dive Deeper List", file)
+      diveDeeper << file
+    }
+  }
+
   def locationClosure = { it ->
     def location = it.@schemaLocation.text()
     if (notAlreadyInImportList(location)) { 
-      diveDeeper << parsePaths(location, targetDir)
-      log.debug("added a path to the Dive Deeper list {}", diveDeeper)
+      log.debug(" schema location is {}, and the targetDirectory (Parent Directory) is {}", location, targetDir)
+      addToDiveDeeper(getAbsoluteSchemaLocation(location, targetDir))
     } 
   }
 
-  def getImportedNamespaces { it ->
+  def getImportedNamespaces = { it ->
     def namespace = it.@namespace.text()
     addToImportedNamespaces(namespace)
     locationClosure(it)
   }
 
   def getDependencies (xmlDoc) { 
+    log.debug("resolving imports")
     xmlDoc?.import?.each getImportedNamespaces
+    log.debug("resolving includes of")
     xmlDoc?.include?.each locationClosure
   }
 
-  def startDependencyResolution() {
-    def targetDir = rootLocation.parent
+  def resolveExternalDependencies() {
+    targetDir = rootLocation.parentFile
     log.info("resolving external dependencies starting at {}", rootLocation)
     def xmlDoc = new XmlSlurper().parse(rootLocation)
     getDependencies(xmlDoc)
     while(diveDeeper) { 
-      def docLocation = diveDeeper.pop()
-      log.debug("popping {} from diveDeeper list", docLocation)
-      def document = new File(docLocation)
+      def document = diveDeeper.pop()
+      log.debug("popping {} from diveDeeper list", document)
       xmlDoc = new XmlSlurper().parse(document)
-      targetDir = document.parent
+      targetDir = document.parentFile
       getDependencies(xmlDoc)
     }
   }
 
-  def parsePaths(String relPath, File callerParentDir) { 
-    if (relPath ==~ /[.][\/][A-Za-z]*.*/ ) { 
-      return callerParentDir.path + "/" + relPath.tokenize("/")[1]
-    }
-
-    def grabDirsUpPortion = /([.\/]*)(.*)/
-    def dirsUp = (relPath =~ grabDirsUpPortion)
-    def dirsUpList = dirsUp[0][1].tokenize("/")
-    def restOfPath = dirsUp[0][2]
-    dirsUpList.each { 
-      callerParentDir = new File(callerParentDir.parent)
-    }
-    return callerParentDir.path + "/" + restOfPath
+  def getAbsoluteSchemaLocation(String schemaLocation, File parentDir) { 
+    def relPath = new File(parentDir, schemaLocation)
+    return new File(relPath.canonicalPath)
   }
 }

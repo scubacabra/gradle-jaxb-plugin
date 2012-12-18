@@ -27,17 +27,19 @@ class JaxbXJCTask extends DefaultTask {
     dependencyGraph = project.jaxb.dependencyGraph
     dependencyGraph.orderGraph.each { order -> // fix this declaration, conflicting
       order.each { namespace ->
+	log.info("trying to find {} in nsCollection", namespace)
     	def nsData = dependencyGraph.nsCollection.find{ it.namespace == namespace}
     	log.info("found structure {}", nsData)
-   	doTheSchemaParsing(nsData)
+   	if(!nsData?.xsdFiles?.isEmpty()) { 
+	  doTheSchemaParsing(nsData)
+	}
       }
     }
   }
 
   def doTheSchemaParsing(XsdNamespaces ns) { 
+    if(ns == null) return
     ant.taskdef (name : 'xjc', classname : 'com.sun.tools.xjc.XJCTask', classpath : project.configurations[JaxbNamespacePlugin.JAXB_CONFIGURATION_NAME].asPath)
-    log.info("classpath for xjc is {}", project.configurations[JaxbNamespacePlugin.JAXB_CONFIGURATION_NAME].asPath)
-    log.info("classpath for xjc is {}", project.configurations[JaxbNamespacePlugin.JAXB_CONFIGURATION_NAME])
     ant.xjc(destdir : project.jaxb.jaxbSchemaDestinationDirectory, extension : project.jaxb.extension, removeOldOutput : project.jaxb.removeOldOutput, header : project.jaxb.header, target : '2.1') {
       //      produces (dir : "src/main/java")
       schema (dir : project.jaxb.xsdDirectoryForGraph, includes : getIncludesList(ns) )
@@ -74,9 +76,16 @@ class JaxbXJCTask extends DefaultTask {
       log.info("file ns Import is {}, dependency List is {}", it, depList)
       depList = addToDependencyList(depList, it)
     }
-    xsdData.externalDependencies.each {
-      log.info("external dependency is {}, dependency List is {}", it, depList)
-      depList = addToDependencyList(depList, it)
+    xsdData.externalDependencies.each { map ->
+      map.value.each { file ->
+	log.info("external dependency is {}, dependency List is {}", map.key, depList)
+	if(this.dependencyGraph.externalDependencies?.containsKey(file.path)) { 
+	  log.info("{} is in {}", file, this.dependencyGraph.externalDependencies)
+	  this.dependencyGraph.externalDependencies[file.path].each { 
+	    depList = addToDependencyList(depList, it)
+	  }
+	}
+      }
     }
     log.info("current dependency List {}", depList)
     xsdData.fileImports.each { ns ->
@@ -95,18 +104,7 @@ class JaxbXJCTask extends DefaultTask {
     allDeps = findDependenciesUpGraph(ns, allDeps)
     log.info("all dependencies are {}", allDeps)
     allDeps = allDeps.collect{ ns.convertNamespaceToEpisodeName(it) }
-    allDeps = addExternalEpisodeFileBindings(allDeps)
     return allDeps
-  }
-
-  List addExternalEpisodeFileBindings(List dependencies) { 
-    project.jaxb.episodeBindings.each { binding ->
-      log.debug("trying to add {}, to {}", binding, dependencies)
-      if(!dependencies.contains(binding)) { 
-	dependencies << binding
-      }
-    }
-    return dependencies
   }
 
   def String getIncludesList(XsdNamespaces data) { 
@@ -114,7 +112,7 @@ class JaxbXJCTask extends DefaultTask {
     log.debug("xsdDir is {}", project.jaxb.xsdDirectoryForGraph)
     def absoluteDir = new File(project.jaxb.xsdDirectoryForGraph).path + File.separator
     log.debug("xsdDir is {}", absoluteDir)
-    data.xsdFiles.each { path ->
+    data?.xsdFiles?.each { path ->
       def relPath = path.path - absoluteDir
       relPath = relPath.replace("\\", "/")
       log.debug("the relative File Path is {}", relPath)
