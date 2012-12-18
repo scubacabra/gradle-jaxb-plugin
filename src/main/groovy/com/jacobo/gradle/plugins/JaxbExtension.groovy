@@ -24,7 +24,6 @@ class JaxbExtension {
   boolean header
 
   List bindingIncludes = []
-  List episodeBindings = []
 
   OrderGraph dependencyGraph
 

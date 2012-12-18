@@ -8,7 +8,7 @@ import org.gradle.api.DefaultTask
 import com.jacobo.gradle.plugins.structures.OrderGraph
 import com.jacobo.gradle.plugins.structures.XsdNamespaces
 import com.jacobo.gradle.plugins.structures.FindNamespaces
-import com.jacobo.gradle.plugins.JaxbNamespacePlugin
+import org.gradle.api.InvalidUserDataException
 
 /**
  * @author djmijares
@@ -25,7 +25,7 @@ class JaxbXJCTask extends DefaultTask {
   void start() { 
     log.info("getting the order graph from the jaxb Extension on the project")
     dependencyGraph = project.jaxb.dependencyGraph
-    dependencyGraph.orderGraph.each { order -> // fix this declaration, conflicting
+    dependencyGraph.orderGraph.each { order ->
       order.each { namespace ->
 	log.info("trying to find {} in nsCollection", namespace)
     	def nsData = dependencyGraph.nsCollection.find{ it.namespace == namespace}
@@ -38,22 +38,32 @@ class JaxbXJCTask extends DefaultTask {
   }
 
   def doTheSchemaParsing(XsdNamespaces ns) { 
-    if(ns == null) return
-    ant.taskdef (name : 'xjc', classname : 'com.sun.tools.xjc.XJCTask', classpath : project.configurations[JaxbNamespacePlugin.JAXB_CONFIGURATION_NAME].asPath)
-    ant.xjc(destdir : project.jaxb.jaxbSchemaDestinationDirectory, extension : project.jaxb.extension, removeOldOutput : project.jaxb.removeOldOutput, header : project.jaxb.header, target : '2.1') {
+    def schemaIncludes = getIncludesList(ns)
+    def episodeBindings = gatherAllDependencies(ns)
+    def episodeName = "${project.jaxb.jaxbEpisodeDirectory}/${ns.convertNamespaceToEpisodeName(ns.namespace)}.episode"
+    
+    sanityCheck(episodeBindings, schemaIncludes, ns)
+
+    ant.taskdef (name : 'xjc', 
+    classname : 'com.sun.tools.xjc.XJCTask',
+    classpath : project.configurations[JaxbNamespacePlugin.JAXB_CONFIGURATION_NAME].asPath)
+
+    ant.xjc(destdir : project.jaxb.jaxbSchemaDestinationDirectory,
+    extension : project.jaxb.extension,
+    removeOldOutput : project.jaxb.removeOldOutput,
+    header : project.jaxb.header, target : '2.1') {
       //      produces (dir : "src/main/java")
-      schema (dir : project.jaxb.xsdDirectoryForGraph, includes : getIncludesList(ns) )
+      schema (dir : project.jaxb.xsdDirectoryForGraph, includes : schemaIncludes )
       if (!project.jaxb.bindingIncludes.isEmpty() || project.jaxb.bindingIncludes != null) {
-	log.info("binding {}, in directory {}", getBindingIncludesList(project.jaxb.bindingIncludes), project.jaxb.jaxbBindingDirectory)
 	binding(dir : project.jaxb.jaxbBindingDirectory, includes : getBindingIncludesList(project.jaxb.bindingIncludes))
       }
-      gatherAllDependencies(ns).each { episode ->
+      episodeBindings.each { episode ->
 	log.info("binding with file {}.episode", episode)
 	binding (dir : project.jaxb.jaxbEpisodeDirectory, includes : "${episode}.episode")
       }
-      log.info("episode file is {}", "${project.jaxb.jaxbEpisodeDirectory}/${ns.convertNamespaceToEpisodeName(ns.namespace)}.episode")
+      log.info("episode file is {}", episodeName)
       arg(value : '-episode')
-      arg(value: "${project.jaxb.jaxbEpisodeDirectory}/${ns.convertNamespaceToEpisodeName(ns.namespace)}.episode")
+      arg(value: episodeName)
       arg(value : '-verbose')
       arg(value : '-npa')
     }
@@ -130,5 +140,26 @@ class JaxbXJCTask extends DefaultTask {
     }
     log.debug("binding list into xjc is {}", bindingIncludes)
     return bindingIncludes
+  }
+
+  def sanityChecks(episodeBindingsNames, schemaIncludes, ns) { 
+    // needs to have include files
+    (schemaIncludes == "") ? throw new RuntimeException("There are no files to include in the parsing in " + ns.xsdFiles + "for
+ namespace " + ns.namespace)
+    
+    // these Directories need to exist
+    [project.jaxb.jaxbSchemaDirectory, project.jaxb.jaxbEpisodeDirectory, project.jaxb.jaxbBindingDirectory, project.jaxb.jaxbSchemaDestinationDirectory].each { 
+      def dir = new File(it)
+      (!it.isDirectory() && !it.exists()) ? throw new InvalidUserDataException(it + " is not an existing directory, make this directory or adjust the extensions to point to a proper directory")
+    }
+    
+    // all episode file bindings MUST exist
+    episodeBindingsNames.each { 
+      def file = new File(project.jaxb.jaxbEpisodeDirectory, it)
+      (!it.exists()) ? throw new RuntimeException(file + "does not exist, there is most likely a null Namespace data somewhere")
+    }
+
+    // namespace data should have data
+    (ns == null) ? throw new RuntimeException("null namespace data trying to be parse, no xsdFiles or any data present")
   }
 }
