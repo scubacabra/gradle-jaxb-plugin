@@ -15,10 +15,10 @@ class FindNamespaces {
 	schemaList << file
       }
     }
-    schemaList.each nsClosure    
+    schemaList.each gatherXsdTargetNamespaces
   }
 
-  def nsClosure = { schemaDoc ->
+  def gatherXsdTargetNamespaces = { schemaDoc ->
     def records = new XmlSlurper().parse(schemaDoc)
     def target = records.@targetNamespace
     target = (!target.isEmpty()) ? target.text() : "null"

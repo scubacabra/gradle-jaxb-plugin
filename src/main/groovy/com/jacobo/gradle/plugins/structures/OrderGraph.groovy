@@ -2,24 +2,34 @@ package com.jacobo.gradle.plugins.structures
 
 import org.gradle.api.logging.Logging
 import org.gradle.api.logging.Logger
+import com.jacobo.gradle.plugins.util.ListUtil
 
 class OrderGraph { 
   static final Logger log = Logging.getLogger(OrderGraph.class)
-  
-  String startingDirectory
-  List orderGraph = []
-  List dependentNamespaces = []
-  List nsCollection = []
-  def externalDependencies
 
-  //  def isAlreadyInList = nsCollection[0].&isAlreadyInList
-  def boolean isAlreadyInList(List list, String namespace) { 
-    return list.contains(namespace)
-  }
+  /**
+   * the directory we are starting our analysis on
+   */
+  String startingDirectory
+
+  /**
+   *
+   */
+  List orderGraph = []
+
+  /**
+   * Namespace meta data list for use in the xjc task
+   */
+  List<NamespaceMetaData> namespaceData = []
+  
+  /**
+   *
+   */
+  def externalDependencies
 
   def addToDependencyLevel = { list, ns ->
     if(list) { 
-      if(!isAlreadyInList(list, ns)) { 
+      if(!ListUtil.isAlreadyInList(list, ns)) { 
 	list << ns
       } 
     } else { 
@@ -28,6 +38,11 @@ class OrderGraph {
     return list
   }
 
+  /**
+   * slurps the xsd files for import and include data
+   * @param doc  The File to be slurped
+   * @param namespace The #NamespaceMetaData object 
+   */
   def slurpXsdFiles = { doc, namespace ->
     def schema = new XmlSlurper().parse(doc)
     def imports = schema.import
@@ -36,6 +51,13 @@ class OrderGraph {
     slurpIncludes(includes, namespace, doc)
   }
 
+  /**
+   * parses the includes information for a schema file
+   *
+   * @param includes the xml slurper include data for this file
+   * @param ns the #NamespaceMetaData object for this includes data
+   * @param doc the File object representing the xsd file
+   */
   def slurpIncludes = { includes, ns, doc ->
     if(!includes.isEmpty()) { 
       includes.@schemaLocation.each {
@@ -48,6 +70,13 @@ class OrderGraph {
     }
   }
 
+  /**
+   * parses the imports information for a schema file
+   *
+   * @param imports the xml slurper include data for this file
+   * @param ns the #NamespaceMetaData object for this includes data
+   * @param doc the File object representing the xsd file
+   */
   def slurpImports = { imports, ns, doc ->
     if(!imports.isEmpty()) { 
       imports.each { imp ->
@@ -104,6 +133,10 @@ class OrderGraph {
     this.externalDependencies = importedNamespaces
   }
 
+  /**
+   * populates the includes and imports data
+   * if a namespace does nothing, it is flagged for being parsed first in the Namespace Graph Order
+   */
   def populateIncludesAndImportsData() { 
     this.nsCollection.each { namespace ->
       namespace.xsdFiles.each { slurpXsdFiles(it, namespace) } //TODO might be a good currying exercise
@@ -131,12 +164,13 @@ class OrderGraph {
     }
   }
 
+  /**
+   * gathers initial namespace graph ordering data objects that are flagged with a "none" for their #importedNamespaces field
+   */
   def gatherInitialNamespaceGraphOrdering() { 
       this.orderGraph[0] = this.nsCollection.findAll { it.fileImports == ["none"] }.namespace
       log.info("found the base namespace packages to be parsed first")
       log.debug("Base schema meta data information {}", this.nsCollection.findAll { it.fileImports == ["none"]})
-      this.dependentNamespaces = this.nsCollection.findAll { !this.orderGraph[0].contains(it.namespace) }
-      log.info("aquired the rest of the dependent namespaces to be graphed out")
   }
 
   def processFileNamespaceImports = { String namespace, fileCount ->
@@ -208,7 +242,9 @@ class OrderGraph {
 
   def parseEachDependentNamespace() { 
     def notMatchingMap = [:]
-    this.dependentNamespaces.each { ns ->
+    def dependentNamespaces = this.nsCollection.findAll { !this.orderGraph[0].contains(it.namespace) }
+    log.info("aquired the List of the dependent namespaces to be graphed out")
+    dependentNamespaces.each { ns ->
       log.debug("looking at namespace {}", ns.namespace)
       log.debug("namespace has files {}", ns.xsdFiles)
       log.debug("namespace has imports {}", ns.fileImports)
