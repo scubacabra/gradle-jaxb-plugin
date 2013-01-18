@@ -1,0 +1,75 @@
+
+Overall concept
+* Adds the capability of separate compilation for jaxb xsd generation
+** Grabs @targetnamespace strings and files that have the same declaration
+** Goes through files to see what namespaces it imports
+*** checks if those imports are in the current choices of target namespace availability or if they are external
+**** If they are external, uses @schemaLocation and parent file to parse external schema
+***** goes through all imports and includes in a loop finding any namespaces imported with @xsd:import@namespace
+      adds them to Map externalDependencies
+*** checks for @include statments, and gets the absolute file path from @schemaLocation and the parent file calling that @include
+**** goes through includes, and eliminates other namespace files that have the same includes, because they would be generated a few times
+** Generates a namespace graph, parsing all namespaces that don't import any other namespaces first, and resolving the dependencies
+
+* What kind of data do I have to deal with?*
+* NamespaceMetaData
+  holds the data for this particular namespace, including
+** files used as input to the xjc ant task
+*** List parseFiles :: type File
+** namespace imports used to gather dependencies up
+*** List importedNamespaces :: type String
+** include files used to eliminate regeneration of namespace files and episode data
+*** List includeFiles :: type File
+** a map of external namespaces dependent on and the schema location that namespace imported
+*** Map externalImportedNamespaces :: type <String, List<File>>
+* What methods act on this data model?
+** convert Namespace to Appropriate episode name
+*** convertNamespaceToEpisodeName(String namespace) :: return String episodeName
+** check to see if a list contains what you are trying to input into it
+*** isAlreadyInList(List list, String input) :: return boolean
+*** isAlreadyInList(List list, File input) :: return boolean
+**** TODO Could these be utility functions across the whole plugin? 
+** put an element in the appropriate list
+*** addExternalImportedNamespace(String externalNamespace, File externalFile)
+*** addIncludeFile(File input)
+*** addImportedNamespace(String input)
+*** addParseFiles(List input)
+*** isImportedNamespaceExternal(List<NamespaceMetaData> collection, String namespace) :: return boolean
+**** TODO Should this even be a method in NamespaceMetaData? I dont think so 
+
+* What does Find namespaces do?
+** it starts at a baseDirectory and find al files recursively with an extension of ~.xsd~
+** add these certain files to a file list that is then iterated over
+** the iteration runs a closure ~gatherXsdTargetNamespaces~ and populates a map of unique namespaces and a List of associated files that declare the same import
+*** input is schemaDoc
+*** if @targetNamespace is empty, will populate with a "null"
+**** TODO Then should throw a warning if encountering a null when running XJC
+*** TODO Instead of populating a map as an intermediary, populate the NamespaceMetaData appropriately
+*** if you do above, can move from out of it's own class and just use the methods and closures in another class
+* What does ExternalNamespaceResolver <-- good class name btw!
+* fields
+** externalImportStartLocation : type File
+*** starting abslute file location of the externally imported namespace
+** schemaLocationsToParse
+*** 
+** externallyImportedNamespaces
+** targetDir
+*** This is the parentFile of the current schema being slurped
+* runs a method ~resolveExternalImportedNamespaces~
+** this
+* What does OrderGraph do? <-- bad name by the way
+  OrderGraph is a class that contains data for the namespace Graph Order, contains a list of NamespaceMetaData
+  also contains a List of Lists called orderGraph that is a list of lists of String values that are namespaces
+  contains a 
+* fields
+** startingDirectory
+** orderGraph
+** nsCollection
+** externalDependencies
+* Methods
+** parseEachDependentNamespaces
+** populateIncludesAndImportsData
+** perfromIncludesProcessing
+** gatherInitialNameaspaceGraphOrdering
+** parseEachDependentNamespace
+** processExternalImports
