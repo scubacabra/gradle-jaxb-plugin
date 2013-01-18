@@ -20,7 +20,7 @@ class OrderGraph {
   /**
    * Namespace meta data list for use in the xjc task
    */
-  List<NamespaceMetaData> namespaceData = []
+  List<XsdNamespaces> namespaceData = []
   
   /**
    *
