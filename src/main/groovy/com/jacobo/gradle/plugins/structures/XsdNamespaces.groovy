@@ -7,7 +7,7 @@ import com.jacobo.gradle.plugins.util.ListUtil
  * @author Daniel Mijares
  * @date 12/19/12
  */
-class NamespaceMetaData { 
+class XsdNamespaces { 
 
   /**
    * string of this unique namespace
@@ -61,9 +61,9 @@ class NamespaceMetaData {
   /**
    * add an imported namespace to the @importedNamespaces list
    */
-  def addImportedNamespace(String import) { 
-    if( !ListUtil.isAlreadyInList(importedNamespaces, import) ) { 
-      importedNamespaces << import
+  def addImportedNamespace(String importNs) { 
+    if( !ListUtil.isAlreadyInList(importedNamespaces, importNs) ) { 
+      importedNamespaces << importNs
     }
   }
 
