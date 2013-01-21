@@ -70,7 +70,9 @@ This is what I tend to do for my multi project builds, I like filtering on the p
 
 # Tasks #
 There are only two tasks.
+
 1. `jaxb-generate-dependency-graph`
+
 2. `xjc`
 
 ## jaxb-generate-dependency-graph ##
