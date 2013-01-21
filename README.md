@@ -49,7 +49,7 @@ jaxb {
 ```
 
 # Configurations for the parsing #
-The task xjc needs the jaxb tools on its classpath, whichever version should work fine. 
+The task `xjc` needs the jaxb tools on its classpath, whichever version should work fine. 
 
 ```groovy
 subproject { project ->
@@ -58,7 +58,7 @@ subproject { project ->
     apply plugin: 'java'
 
     dependencies { 
-      jaxb 'com.sun.xml.bind:jaxb-xjc:2.2.7-b41' //jaxws 2.2.6 uses jaxb 2.2.5, but can't dL 2.2.5 from maven the pom is off TODO
+      jaxb 'com.sun.xml.bind:jaxb-xjc:2.2.7-b41'
       jaxb 'com.sun.xml.bind:jaxb-impl:2.2.7-b41'
       jaxb 'javax.xml.bind:jaxb-api:2.2.7'
     }
@@ -68,3 +68,28 @@ subproject { project ->
 
 This is what I tend to do for my multi project builds, I like filtering on the project name
 
+# Tasks #
+There are only two tasks.
+1. `jaxb-generate-dependency-graph`
+2. `xjc`
+
+## jaxb-generate-dependency-graph ##
+
+This task starts it's processing in the `jaxbSchemaDirectory` folder.  It finds all the xsd's in this folder and finds all the unique namespaces that are defined by the xsd `targetNamespace` attribute found at the root (`schema`) element. 
+
+It then generates a dependency graph starting with the base schemas that don't import any other schemas, and find the next group of namespaces that depend on the base but on no more than the base, and so on etc. until the graph is full.  
+
+Then the each namespace "level" is looped over and parsed with the `xjc` task.  Each namespace generates it's own episode file, and when a schema imports a certain namespace, it binds to the episode file.  
+
+Each episode is named based after it's namespace.  it is really just the full namespace minus some illegal characters. 
+
+This allows you to:
+* group schema documents based on what the schema is modeling, and you can have all the unique namespaces you want.  
+* Minimizes duplicate schema generation.
+  - i.e if folder `schema/Kitchen/` has imports from `schema/LivingRoom` you can parse `schema/LivingRoom` in a subproject, and then when you parse `schema/Kitchen` it will automatically resolve "external namespace" i.e. namespace not present in the folder `jaxbSchemaDirectory` and will parse for dependencies and bind with the appropriate episode files.  Not more regeneration, which always irked me a little bit too much.  
+
+## xjc ##
+This is just the ant xjc task.  
+
+It takes a group of xsd file paths, and parses them, binding as the code tells it to. 
+  
