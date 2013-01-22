@@ -3,7 +3,7 @@
   CLOSED: [2012-12-15 Sat 18:40]
 ** DONE Add ~xjc dependsOn(jaxb-generate-dependency-graph)~
    CLOSED: [2012-12-15 Sat 15:44]
-
+   
 * DONE add the extra external binding files until I figure out a way to share memory between tasks??
   CLOSED: [2012-12-16 Sun 10:06]
 ** if there could be some way to share memory between tasks, I could eliminate the need for this
@@ -54,4 +54,12 @@
   CLOSED: [2012-12-19 Wed 23:47]
 * TODO Instead of populating a map as an intermediary, populate the NamespaceMetaData appropriately
 * TODO if @targetNamespace is empty, will populate with a "null", then should throw a warning if encountering a null when running XJC
+* TODO apply plugin JavaPlugin
+  Lose one extra line of code in build.gradle or whatee
+* TODO The extra code that is in the XJCTask could be factored out and could have better tests written for it
+* TODO Make a better test suite covering
+** xsd imports
+** xsd includes
+** xsd external imported namespaces
+
 
