@@ -4,6 +4,8 @@ import org.gradle.api.logging.Logging
 import org.gradle.api.logging.Logger
 import com.jacobo.gradle.plugins.util.ListUtil
 
+import groovy.io.FileType
+
 class OrderGraph { 
   static final Logger log = Logging.getLogger(OrderGraph.class)
 
@@ -20,10 +22,10 @@ class OrderGraph {
   /**
    * Namespace meta data list for use in the xjc task
    */
-  List<XsdNamespaces> namespaceData = []
+  List<NamespaceMetaData> namespaceData = []
   
   /**
-   *
+   * ??
    */
   def externalDependencies
 
@@ -65,7 +67,7 @@ class OrderGraph {
 	log.debug("includes the path {}", includePath)
 	def includeFile = new File(includePath)
 	log.debug("include File is {}", includeFile)
-	ns.addIncludes(includeFile)
+	ns.addIncludeFile(includeFile)
       }
     }
   }
@@ -81,28 +83,28 @@ class OrderGraph {
     if(!imports.isEmpty()) { 
       imports.each { imp ->
 	def namespace = imp.@namespace.text()
-	if(!ns.isExternalDependency(this.nsCollection, namespace)) {
-	  ns.addImports(namespace)
+	if(!ns.isImportedNamespaceExternal(this.namespaceData, namespace)) {
+	  ns.addImportedNamespace(namespace)
 	} else { 
 	  def externalSchemaLocale = imp.@schemaLocation.text()
 	  def externalSchemaPath = new File(doc.parent, externalSchemaLocale).canonicalPath
 	  def externalSchemaFile = new File(externalSchemaPath)
-	  ns.addExternalDependency(namespace, externalSchemaFile)
+	  ns.addExternalImportedNamespaces(namespace, externalSchemaFile)
 	}
       }
     }
   }
 
   /**
-   * Gather all the nsCollection.externalDependencies maps, make them unique (could be dupes) and attach the starting files
+   * Gather all the namespaceData.externalImportedNamespaces maps, make them unique (could be dupes) and attach the starting files
    * to each namespace
    */
   def processExternalImports() { 
-    def containsExternals = this.nsCollection.findAll { !it.externalDependencies.isEmpty() } 
+    def containsExternals = this.namespaceData.findAll { !it.externalImportedNamespaces.isEmpty() } 
     log.debug("namespaces with external dependencies are {}", containsExternals)
     def uniqueExternalNamespaces = [:]
     containsExternals.each { ns ->
-      ns.externalDependencies.each { key, val ->
+      ns.externalImportedNamespaces.each { key, val ->
 	log.debug("trying to add external namespace {}", key)
 	log.debug("schema location is {}", val)
 	if (uniqueExternalNamespaces.containsKey(key)) {
@@ -138,29 +140,29 @@ class OrderGraph {
    * if a namespace does nothing, it is flagged for being parsed first in the Namespace Graph Order
    */
   def populateIncludesAndImportsData() { 
-    this.nsCollection.each { namespace ->
-      namespace.xsdFiles.each { slurpXsdFiles(it, namespace) } //TODO might be a good currying exercise
-      if(!namespace.fileImports) namespace.fileImports << "none" // if a namespace imports nothing, flag it for being parse first
+    this.namespaceData.each { namespace ->
+      namespace.parseFiles.each { slurpXsdFiles(it, namespace) } //TODO might be a good currying exercise
+      if(!namespace.importedNamespaces) namespace.importedNamespaces << "none" // if a namespace imports nothing, flag it for being parse first
     }
   }
 
   def performIncludesProcessing() { 
-    def withIncludes = this.nsCollection.findAll { !it.fileIncludes.isEmpty() }
+    def withIncludes = this.namespaceData.findAll { !it.includeFiles.isEmpty() }
     log.info("Total includes over the whole Directory")
     withIncludes.each { ns ->
-      log.info("namespace {}, includes {}", ns.namespace, ns.fileIncludes)
-      def hasIncludeFiles = this.nsCollection.findAll { !it.xsdFiles.disjoint(ns.fileIncludes)}
+      log.info("namespace {}, includes {}", ns.namespace, ns.includeFiles)
+      def hasIncludeFiles = this.namespaceData.findAll { !it.parseFiles.disjoint(ns.includeFiles)}
       hasIncludeFiles.each { nsHasIncludes ->
-	log.info("namespaces with these includes are {}, namespace xsd files are {}", nsHasIncludes.namespace, nsHasIncludes.xsdFiles)
-	nsHasIncludes.xsdFiles = nsHasIncludes.xsdFiles.minus(ns.fileIncludes)
-	log.info("New xsd Files for namespace {} is : {}", nsHasIncludes.namespace, nsHasIncludes.xsdFiles)
+	log.info("namespaces with these includes are {}, namespace xsd files are {}", nsHasIncludes.namespace, nsHasIncludes.parseFiles)
+	nsHasIncludes.parseFiles = nsHasIncludes.parseFiles.minus(ns.includeFiles)
+	log.info("New xsd Files for namespace {} is : {}", nsHasIncludes.namespace, nsHasIncludes.parseFiles)
       }
     }
-    //if any of the field xsdFiles are empty (couldn't be null), then get them off of the nsCollection
-    def emptyData = this.nsCollection.findAll { it.xsdFiles.isEmpty() }
+    //if any of the field parseFiles are empty (couldn't be null), then get them off of the namespaceData
+    def emptyData = this.namespaceData.findAll { it.parseFiles.isEmpty() }
     if(emptyData) {
       log.warn("There is empty Namespace xsd files in {}", emptyData)
-      this.nsCollection = this.nsCollection.findAll{ !it.xsdFiles.isEmpty() } 
+      this.namespaceData = this.namespaceData.findAll{ !it.parseFiles.isEmpty() } 
     }
   }
 
@@ -168,9 +170,9 @@ class OrderGraph {
    * gathers initial namespace graph ordering data objects that are flagged with a "none" for their #importedNamespaces field
    */
   def gatherInitialNamespaceGraphOrdering() { 
-      this.orderGraph[0] = this.nsCollection.findAll { it.fileImports == ["none"] }.namespace
+      this.orderGraph[0] = this.namespaceData.findAll { it.importedNamespaces == ["none"] }.namespace
       log.info("found the base namespace packages to be parsed first")
-      log.debug("Base schema meta data information {}", this.nsCollection.findAll { it.fileImports == ["none"]})
+      log.debug("Base schema meta data information {}", this.namespaceData.findAll { it.importedNamespaces == ["none"]})
   }
 
   def processFileNamespaceImports = { String namespace, fileCount ->
@@ -188,10 +190,10 @@ class OrderGraph {
       return importMatches
   }
 
-  Map addImportNamespacesToOrderGraph(XsdNamespaces namespace, List matchingNamespaceIndexes, List notMatchingNamespaces, Map notMatchingMap) { 
+  Map addImportNamespacesToOrderGraph(NamespaceMetaData namespace, List matchingNamespaceIndexes, List notMatchingNamespaces, Map notMatchingMap) { 
     def max = matchingNamespaceIndexes.max() //get the max dependency matching depth
     log.debug "max match depth is ${max}"
-    if(namespace.fileImports.size() != matchingNamespaceIndexes.size()) { // this namespace imports something not in our map yet :/ boo
+    if(namespace.importedNamespaces.size() != matchingNamespaceIndexes.size()) { // this namespace imports something not in our map yet :/ boo
       log.debug("some import namespace(s) {}  not yet in our order graph, {}", notMatchingNamespaces, this.orderGraph)
       def size = this.orderGraph.size()
       this.orderGraph[size+1] = this.addToDependencyLevel(this.orderGraph[size+1], namespace.namespace)
@@ -210,7 +212,7 @@ class OrderGraph {
     return notMatchingMap
   }
 
-  Map processParentNamespaceAlreadyInGraph(XsdNamespaces ns, Map notMatchingMap, int max) { 
+  Map processParentNamespaceAlreadyInGraph(NamespaceMetaData ns, Map notMatchingMap, int max) { 
     //find out if this namespace is already in the graph, just in case becuase it could be
     log.debug "OMG redone no matching, need to remove it from this.orderGraph and re insert somewhere"
     def depth = notMatchingMap[ns.namespace]
@@ -242,16 +244,16 @@ class OrderGraph {
 
   def parseEachDependentNamespace() { 
     def notMatchingMap = [:]
-    def dependentNamespaces = this.nsCollection.findAll { !this.orderGraph[0].contains(it.namespace) }
+    def dependentNamespaces = this.namespaceData.findAll { !this.orderGraph[0].contains(it.namespace) }
     log.info("aquired the List of the dependent namespaces to be graphed out")
     dependentNamespaces.each { ns ->
       log.debug("looking at namespace {}", ns.namespace)
-      log.debug("namespace has files {}", ns.xsdFiles)
-      log.debug("namespace has imports {}", ns.fileImports)
+      log.debug("namespace has files {}", ns.parseFiles)
+      log.debug("namespace has imports {}", ns.importedNamespaces)
       def matchingNamespaceIndexes = []
       def notMatching = []
       def fileCount = 0
-      ns.fileImports.each { 
+      ns.importedNamespaces.each { 
 	fileCount++
 	def importMatch = processFileNamespaceImports(it, fileCount)
 	matchingNamespaceIndexes.addAll(importMatch.matchesIndex)
@@ -260,7 +262,7 @@ class OrderGraph {
       notMatchingMap = addImportNamespacesToOrderGraph(ns, matchingNamespaceIndexes, notMatching, notMatchingMap)
     }
 
-    log.info("size is : ${nsCollection.size()}")
+    log.info("size is : ${namespaceData.size()}")
 
     def count = 0
     this.orderGraph.each { 
@@ -268,6 +270,41 @@ class OrderGraph {
     }
     log.info("matching count is ${count}") 
     log.debug(this.toString())
+  }
+
+  /**
+   * @param directory the directory to search for all *.xsd files
+   * Finds all the xsd files in #directory, populates the Namesapce Meta Data #namespaceData
+   */
+  def findAllXsdFiles(String directory) { 
+    def schemaList = []
+    def baseDirectory = new File(directory)
+    baseDirectory.eachFileRecurse(FileType.FILES) {  file -> 
+      if(file.name.split("\\.")[-1] == 'xsd') {
+	schemaList << file
+      }
+    }
+    schemaList.each populateNamespaceMetaData
+  }
+
+  /**
+   * @param schemaDoc the xsd file to parse and populate the Meta Data
+   * Takes each xsd file, parses, gathers target namespace, and populates an array of MetaData with unique namespaces and files that declare those namespaces
+   */
+  def populateNamespaceMetaData = { schemaDoc ->
+    def records = new XmlSlurper().parse(schemaDoc)
+    def target = records.@targetNamespace
+    target = (!target.isEmpty()) ? target.text() : "null"
+    def namespace = namespaceData?.find{ it.namespace == target }
+    if(namespace) {
+      namespace.parseFiles << schemaDoc
+    }
+    else { 
+      def newNamespace = new NamespaceMetaData()
+      newNamespace.namespace = target
+      newNamespace.parseFiles = [schemaDoc]
+      namespaceData << newNamespace
+    }
   }
 
   def String toString() { 

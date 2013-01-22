@@ -7,7 +7,7 @@ import com.jacobo.gradle.plugins.util.ListUtil
  * @author Daniel Mijares
  * @date 12/19/12
  */
-class XsdNamespaces { 
+class NamespaceMetaData { 
 
   /**
    * string of this unique namespace
@@ -46,9 +46,20 @@ class XsdNamespaces {
     def convert = namespace.replace("http://", "")
     convert = convert.replace(":", "-")
     convert = convert.replace("/", "-")
-    episodeName = convert
+    this.episodeName = convert
   }
 
+  /**
+   * @param targetNamespace string of a namespace that needs to be converted, but not for this object, just a helper method
+   * @return String the episode name converted
+   * Method that converts standard @targetNamespace values to an appropriate episode File name that the file system accepts
+   */
+  public static String convertNamespaceToEpisodeName(String targetNamespace) { 
+    def convert = targetNamespace.replace("http://", "")
+    convert = convert.replace(":", "-")
+    convert = convert.replace("/", "-")
+    return convert
+  }
   /**
    * add an include file to the @includeFiles list
    */
@@ -109,9 +120,9 @@ class XsdNamespaces {
 
   def String toString() { 
     def out = "Namespace: ${namespace} \n"
-    out += "files with this namespace:\n ${xsdFiles ?: "none" }\n"
-    out += "namespace imports over all the files:\n ${fileImports ?: "none" }\n"
-    out += "namespace includes over all the files:\n ${fileIncludes ?: "none" }\n"
+    out += "files with this namespace:\n ${parseFiles ?: "none" }\n"
+    out += "namespace imports over all the files:\n ${importedNamespaces ?: "none" }\n"
+    out += "namespace includes over all the files:\n ${includeFiles ?: "none" }\n"
     out += "namespace external dependencies over all the files:\n ${externalImportedNamespaces ?: "none" }\n"
     return out
   }

@@ -2,9 +2,14 @@ apply plugin: 'groovy'
 
 group = 'com.jacobo.gradle.plugins'
 
+repositories { 
+  mavenCentral()
+}
+
 dependencies {
    compile gradleApi()
    groovy localGroovy()
+   testCompile "org.spockframework:spock-core:0.6-groovy-1.8" 
 }
 
 task unversionedJar (type: Jar, dependsOn: 'jar') {

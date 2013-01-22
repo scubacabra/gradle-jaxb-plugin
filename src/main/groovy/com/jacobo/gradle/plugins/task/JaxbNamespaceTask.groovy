@@ -6,8 +6,7 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.DefaultTask
 import com.jacobo.gradle.plugins.structures.OrderGraph
-import com.jacobo.gradle.plugins.structures.XsdNamespaces
-import com.jacobo.gradle.plugins.structures.FindNamespaces
+import com.jacobo.gradle.plugins.structures.NamespaceMetaData
 import com.jacobo.gradle.plugins.JaxbNamespacePlugin
 
 /**
@@ -22,37 +21,40 @@ class JaxbNamespaceTask extends DefaultTask {
   String xsdDir
   OrderGraph order = new OrderGraph()
 
-  def grabUniqueNamespaces() { 
-    def findNs = new FindNamespaces(baseDir: project.jaxb.xsdDirectoryForGraph)
-    findNs.startFinding()
-    log.debug("unique namespace map is {}", findNs.nsMap)
-    log.info("found {} unique namespace in {}", findNs.nsMap.size(), findNs.baseDir)
-    findNs.nsMap.each { key, val -> 
-      order.nsCollection << new XsdNamespaces(namespace: key, xsdFiles: val)
-    }
-  }
-
   @TaskAction
   void start() { 
     log.info("starting jaxb namespace dependency task at: {}", project.jaxb.xsdDirectoryForGraph)
-    grabUniqueNamespaces()
+
+    order.findAllXsdFiles(project.jaxb.xsdDirectoryForGraph)
+
     log.info("unique namespaces aquired")
     log.info("getting all import and includes statments in namespace files to see what they depend on")
+
     order.populateIncludesAndImportsData()
     log.info("processing includes data and removing from files data accordingly")
+
     order.performIncludesProcessing()
     order.gatherInitialNamespaceGraphOrdering()
+
     log.info("found base namespace packages")
+
     order.parseEachDependentNamespace()
+
     log.info("parsed through dependent namespaces")
     log.info("processing external Dependencies")
-    order.processExternalImports()
-    log.info("namespace dependency graph is resolved")
 
+    order.processExternalImports()
+
+    log.info("namespace dependency graph is resolved")
     log.debug("order Graph is {}", order.orderGraph)
-    log.info("nsCollection size (unique namespace) is {}", order.nsCollection.size())
-    log.debug("nsCollection is {}", order.nsCollection)
+    log.info("namespaceData size (unique namespace) is {}", order.namespaceData.size())
+    log.debug("namespaceData is {}", order.namespaceData)
+
+    log.debug("converting all namespaces in order graph into their appropriate episode file names")
+    order.namespaceData.each { it.convertNamespaceToEpisodeName() }
+
     project.jaxb.dependencyGraph = order
+
     log.info("adding order graph to the jaxb extension")
   }
 

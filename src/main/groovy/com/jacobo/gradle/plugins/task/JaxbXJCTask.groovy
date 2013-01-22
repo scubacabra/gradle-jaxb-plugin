@@ -7,10 +7,8 @@ import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.DefaultTask
 import com.jacobo.gradle.plugins.JaxbNamespacePlugin
 import com.jacobo.gradle.plugins.structures.OrderGraph
-import com.jacobo.gradle.plugins.structures.XsdNamespaces
-import com.jacobo.gradle.plugins.structures.FindNamespaces
+import com.jacobo.gradle.plugins.structures.NamespaceMetaData
 import org.gradle.api.InvalidUserDataException
-
 /**
  * @author djmijares
  * Created: Tue Dec 04 09:01:34 EST 2012
@@ -28,23 +26,23 @@ class JaxbXJCTask extends DefaultTask {
     dependencyGraph = project.jaxb.dependencyGraph
     dependencyGraph.orderGraph.each { order ->
       order.each { namespace ->
-	log.info("trying to find {} in nsCollection", namespace)
-    	def nsData = dependencyGraph.nsCollection.find{ it.namespace == namespace}
+	log.info("trying to find {} in namespaceData", namespace)
+    	def nsData = dependencyGraph.namespaceData.find{ it.namespace == namespace}
     	log.info("found structure {}", nsData)
-   	if(!nsData?.xsdFiles?.isEmpty()) { 
+   	if(!nsData?.parseFiles?.isEmpty()) { 
 	  doTheSchemaParsing(nsData)
 	}
       }
     }
   }
 
-  def doTheSchemaParsing(XsdNamespaces ns) { 
+  def doTheSchemaParsing(NamespaceMetaData ns) { 
     // namespace data should have data
-    if(ns == null) throw new RuntimeException("null namespace data trying to be parsed, no xsdFiles or any data present")
+    if(ns == null) throw new RuntimeException("null namespace data trying to be parsed, no parseFiles or any data present")
 
     def schemaIncludes = getIncludesList(ns)
     def episodeBindings = gatherAllDependencies(ns)
-    def episodeName = "${project.jaxb.jaxbEpisodeDirectory}/${ns.convertNamespaceToEpisodeName(ns.namespace)}.episode"
+    def episodeName = "${project.jaxb.jaxbEpisodeDirectory}/${ns.episodeName}.episode"
     
     sanityChecks(episodeBindings, schemaIncludes, ns)
 
@@ -56,7 +54,7 @@ class JaxbXJCTask extends DefaultTask {
     extension : project.jaxb.extension,
     removeOldOutput : project.jaxb.removeOldOutput,
     header : project.jaxb.header) {
-      //      produces (dir : "src/main/java")
+      //      produces (dir : "src/main/java") //maybe should put the produces in there?
       schema (dir : project.jaxb.xsdDirectoryForGraph, includes : schemaIncludes )
       if (!project.jaxb.bindingIncludes.isEmpty() || project.jaxb.bindingIncludes != null) {
 	binding(dir : project.jaxb.jaxbBindingDirectory, includes : getBindingIncludesList(project.jaxb.bindingIncludes))
@@ -84,26 +82,26 @@ class JaxbXJCTask extends DefaultTask {
     return depList
   }
 
-  List findDependenciesUpGraph(XsdNamespaces xsdData, List depList) { 
+  List findDependenciesUpGraph(NamespaceMetaData xsdData, List depList) {
     log.info("dep list is {}, xsd data is {}", depList, xsdData)
-    xsdData.fileImports.each {
+    xsdData.importedNamespaces.each {
       log.info("file ns Import is {}, dependency List is {}", it, depList)
       depList = addToDependencyList(depList, it)
     }
-    xsdData.externalDependencies.each { map ->
+    xsdData.externalImportedNamespaces.each { map ->
       map.value.each { file ->
 	log.info("external dependency is {}, dependency List is {}", map.key, depList)
-	if(this.dependencyGraph.externalDependencies?.containsKey(file.path)) { 
-	  log.info("{} is in {}", file, this.dependencyGraph.externalDependencies)
-	  this.dependencyGraph.externalDependencies[file.path].each { 
+	if(this.dependencyGraph.externalImportedNamespaces?.containsKey(file.path)) { 
+	  log.info("{} is in {}", file, this.dependencyGraph.externalImportedNamespaces)
+	  this.dependencyGraph.externalImportedNamespaces[file.path].each { 
 	    depList = addToDependencyList(depList, it)
 	  }
 	}
       }
     }
     log.info("current dependency List {}", depList)
-    xsdData.fileImports.each { ns ->
-      def xsdDependency = dependencyGraph.nsCollection.find{ it.namespace == ns}
+    xsdData.importedNamespaces.each { ns ->
+      def xsdDependency = dependencyGraph.namespaceData.find{ it.namespace == ns}
       if(xsdDependency) { 
     	depList = findDependenciesUpGraph(xsdDependency, depList)
     	log.info("current dependency List {}", depList)
@@ -112,7 +110,7 @@ class JaxbXJCTask extends DefaultTask {
     return depList
   }
 
-  List gatherAllDependencies(XsdNamespaces ns) { 
+  List gatherAllDependencies(NamespaceMetaData ns) { 
     def allDeps = []
     log.info("Traversing the Graph up to the top for dependencies")
     allDeps = findDependenciesUpGraph(ns, allDeps)
@@ -121,12 +119,12 @@ class JaxbXJCTask extends DefaultTask {
     return allDeps
   }
 
-  def String getIncludesList(XsdNamespaces data) { 
+  def String getIncludesList(NamespaceMetaData data) { 
     def includes = ""
     log.debug("xsdDir is {}", project.jaxb.xsdDirectoryForGraph)
     def absoluteDir = new File(project.jaxb.xsdDirectoryForGraph).path + File.separator
     log.debug("xsdDir is {}", absoluteDir)
-    data?.xsdFiles?.each { path ->
+    data?.parseFiles?.each { path ->
       def relPath = path.path - absoluteDir
       relPath = relPath.replace("\\", "/")
       log.debug("the relative File Path is {}", relPath)
@@ -148,7 +146,7 @@ class JaxbXJCTask extends DefaultTask {
 
   def sanityChecks(episodeBindingsNames, schemaIncludes, ns) { 
     // needs to have include files
-    if(schemaIncludes == "" || schemaIncludes.isEmpty()) throw new RuntimeException("There are no files to include in the parsing in " + ns.xsdFiles + "for namespace " + ns.namespace)
+    if(schemaIncludes == "" || schemaIncludes.isEmpty()) throw new RuntimeException("There are no files to include in the parsing in " + ns.parseFiles + "for namespace " + ns.namespace)
     
     // these Directories need to exist
     [project.jaxb.jaxbSchemaDirectory, project.jaxb.jaxbEpisodeDirectory, project.jaxb.jaxbBindingDirectory, project.jaxb.jaxbSchemaDestinationDirectory].each { 
