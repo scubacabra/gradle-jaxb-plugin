@@ -5,10 +5,13 @@ import org.gradle.api.logging.Logger
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.DefaultTask
+import org.gradle.api.InvalidUserDataException
+
 import com.jacobo.gradle.plugins.JaxbNamespacePlugin
 import com.jacobo.gradle.plugins.structures.OrderGraph
 import com.jacobo.gradle.plugins.structures.NamespaceMetaData
-import org.gradle.api.InvalidUserDataException
+import com.jacobo.gradle.plugins.util.XJCInputResolver
+
 /**
  * @author djmijares
  * Created: Tue Dec 04 09:01:34 EST 2012
@@ -40,9 +43,10 @@ class JaxbXJCTask extends DefaultTask {
     // namespace data should have data
     if(ns == null) throw new RuntimeException("null namespace data trying to be parsed, no parseFiles or any data present")
 
-    def schemaIncludes = getIncludesList(ns)
+    def schemaIncludes = transformSchemaListToString(ns)
     def episodeBindings = gatherAllDependencies(ns)
     def episodeName = "${project.jaxb.jaxbEpisodeDirectory}/${ns.episodeName}.episode"
+    def bindings = XJCInputResolver.transformBindingListToString(project.jaxb.bindingIncludes)
     
     sanityChecks(episodeBindings, schemaIncludes, ns)
 
@@ -57,7 +61,7 @@ class JaxbXJCTask extends DefaultTask {
       //      produces (dir : "src/main/java") //maybe should put the produces in there?
       schema (dir : project.jaxb.xsdDirectoryForGraph, includes : schemaIncludes )
       if (!project.jaxb.bindingIncludes.isEmpty() || project.jaxb.bindingIncludes != null) {
-	binding(dir : project.jaxb.jaxbBindingDirectory, includes : getBindingIncludesList(project.jaxb.bindingIncludes))
+	binding(dir : project.jaxb.jaxbBindingDirectory, includes : bindings)
       }
       episodeBindings.each { episode ->
 	log.info("binding with file {}.episode", episode)
@@ -118,32 +122,7 @@ class JaxbXJCTask extends DefaultTask {
     allDeps = allDeps.collect{ ns.convertNamespaceToEpisodeName(it) }
     return allDeps
   }
-
-  def String getIncludesList(NamespaceMetaData data) { 
-    def includes = ""
-    log.debug("xsdDir is {}", project.jaxb.xsdDirectoryForGraph)
-    def absoluteDir = new File(project.jaxb.xsdDirectoryForGraph).path + File.separator
-    log.debug("xsdDir is {}", absoluteDir)
-    data?.parseFiles?.each { path ->
-      def relPath = path.path - absoluteDir
-      relPath = relPath.replace("\\", "/")
-      log.debug("the relative File Path is {}", relPath)
-      includes += relPath + " "
-    }
-    log.info("argument to inludes is {}", includes)
-    return includes
-  }
   
-  String getBindingIncludesList(List bindings) { 
-    def bindingIncludes = ""
-    log.debug("Binding list is {}", bindings)
-    bindings.each { 
-      bindingIncludes += it + " "
-    }
-    log.debug("binding list into xjc is {}", bindingIncludes)
-    return bindingIncludes
-  }
-
   def sanityChecks(episodeBindingsNames, schemaIncludes, ns) { 
     // needs to have include files
     if(schemaIncludes == "" || schemaIncludes.isEmpty()) throw new RuntimeException("There are no files to include in the parsing in " + ns.parseFiles + "for namespace " + ns.namespace)
