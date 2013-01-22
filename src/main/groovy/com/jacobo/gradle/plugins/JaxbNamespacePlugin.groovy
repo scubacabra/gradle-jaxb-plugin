@@ -2,8 +2,12 @@ package com.jacobo.gradle.plugins
 
 import org.gradle.api.Project
 import org.gradle.api.Plugin
+
+import org.gradle.api.plugins.JavaPlugin
+
 import org.gradle.api.logging.Logging
 import org.gradle.api.logging.Logger
+
 import com.jacobo.gradle.plugins.task.JaxbNamespaceTask
 import com.jacobo.gradle.plugins.task.JaxbXJCTask
 import com.jacobo.gradle.plugins.JaxbExtension
@@ -34,6 +38,7 @@ class JaxbNamespacePlugin implements Plugin<Project> {
   private JaxbExtension extension
 
   void apply (Project project) {
+    project.plugins.apply(JavaPlugin)
     configureJaxbExtension(project)
     configureJaxbNamespaceConfiguration(project)
     JaxbNamespaceTask jnt = configureJaxbNamespaceDependencyGraph(project, extension)
