@@ -295,6 +295,9 @@ class OrderGraph {
     def records = new XmlSlurper().parse(schemaDoc)
     def target = records.@targetNamespace
     target = (!target.isEmpty()) ? target.text() : "null"
+    if (target == "null") {
+      log.warning("There is no targetNamespace attribute for file {}, it is strongly advised best practice to ALWAYS include a targetNamespace attribute in your <xsd:schema> root element.  no targetNamespaces are referred to using the Chameleon design pattern, which is not advisable!", schemaDoc)
+    }
     def namespace = namespaceData?.find{ it.namespace == target }
     if(namespace) {
       namespace.parseFiles << schemaDoc

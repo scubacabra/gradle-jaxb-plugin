@@ -27,7 +27,8 @@
     CLOSED: [2012-12-17 Mon 08:22]
 * DONE add a configuration in the Plugin class for the *jaxb* configuration
   CLOSED: [2012-12-15 Sat 15:44]
-* TODO Add error checkers and throw specific errors if things aren't where they should be
+* DONE Add error checkers and throw specific errors if things aren't where they should be
+  CLOSED: [2013-01-22 Tue 14:24]
 * TODO add groovy docs to the methods and variables
 * TODO add inputs and outputs dependencies to maybe not run a task if you don't need to
 * DONE add the binding includes portion
@@ -54,7 +55,8 @@
   CLOSED: [2012-12-19 Wed 23:47]
 * DONE Instead of populating a map as an intermediary, populate the NamespaceMetaData appropriately
   CLOSED: [2013-01-22 Tue 14:20]
-* TODO if @targetNamespace is empty, will populate with a "null", then should throw a warning if encountering a null when running XJC
+* DONE if @targetNamespace is empty, will populate with a "null", then should throw a warning if encountering a null when running XJC
+  CLOSED: [2013-01-22 Tue 14:44]
 * DONE apply plugin JavaPlugin
   CLOSED: [2013-01-22 Tue 14:21]
   Lose one extra line of code in build.gradle or whatee
