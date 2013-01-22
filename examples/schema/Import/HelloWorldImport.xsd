@@ -1,0 +1,20 @@
+<xsd:schema targetNamespace="urn:helloWorld/sample/ibm/HelloWorldImport"
+            xmlns:tns="urn:helloWorld/sample/ibm/HelloWorldImport"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	    elementFormDefault="qualified">
+
+  <xsd:import namespace="urn:helloWorld/sample/ibm/TestImport" schemaLocation="./TestImport.xsd" />
+
+  <xsd:complexType name="helloType">
+    <xsd:sequence>
+      <xsd:element name="name" nillable="true" type="xsd:string" />
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="helloResponseType">
+    <xsd:sequence>
+      <xsd:element name="response" nillable="true" type="xsd:string" />
+    </xsd:sequence>
+  </xsd:complexType>
+
+</xsd:schema>
