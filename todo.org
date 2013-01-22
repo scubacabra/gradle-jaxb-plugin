@@ -46,11 +46,13 @@
 *** DONE Episodes directoty
     CLOSED: [2012-12-18 Tue 13:24]
 *** etc.
-* TODO jaxbSchemaDestinationDirectory is defaulted to
+* DONE jaxbSchemaDestinationDirectory is defaulted to
   jaxbSchemaDestinationDirectory = "src/main/java"
   in Plugin configruation. it should be something more like 
   "${project.dir}/src/main/java" 
   because currently you can only run it from it's subproject dir, not the top level. 
+** This is ok, the task knows that the relative path is project.projectDir, but the sanityChecks() didn't know that distincation until now
+  CLOSED: [2013-01-22 Tue 15:19]
 * DONE Make a utility class with methods like isAlreadyInList etc.
   CLOSED: [2012-12-19 Wed 23:47]
 * DONE Instead of populating a map as an intermediary, populate the NamespaceMetaData appropriately

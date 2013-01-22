@@ -148,10 +148,14 @@ class JaxbXJCTask extends DefaultTask {
     // needs to have include files
     if(schemaIncludes == "" || schemaIncludes.isEmpty()) throw new RuntimeException("There are no files to include in the parsing in " + ns.parseFiles + "for namespace " + ns.namespace)
     
+    // default directory schema destination dir is relative to the project.projectDir not the rootDir like the rest of these
+    def destDir = new File(project.projectDir, project.jaxb.jaxbSchemaDestinationDirectory)
+    if(!destDir.isDirectory() && !destDir.exists()) throw new InvalidUserDataException(" ${destDir} is not an existing directory, make this directory or adjust the extensions to point to a proper directory")
+
     // these Directories need to exist
-    [project.jaxb.jaxbSchemaDirectory, project.jaxb.jaxbEpisodeDirectory, project.jaxb.jaxbBindingDirectory, project.jaxb.jaxbSchemaDestinationDirectory].each { 
+    [project.jaxb.jaxbSchemaDirectory, project.jaxb.jaxbEpisodeDirectory, project.jaxb.jaxbBindingDirectory].each { 
       def dir = new File(it)
-      if(!dir.isDirectory() && !dir.exists()) throw new InvalidUserDataException(" ${dir }is not an existing directory, make this directory or adjust the extensions to point to a proper directory")
+      if(!dir.isDirectory() && !dir.exists()) throw new InvalidUserDataException(" ${dir} is not an existing directory, make this directory or adjust the extensions to point to a proper directory")
     }
     
     // all episode file bindings MUST exist
