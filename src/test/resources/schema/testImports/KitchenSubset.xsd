@@ -2,8 +2,6 @@
 <xsd:schema targetNamespace="http://www.example.org/Kitchen"
 	    xmlns:tns="http://www.example.org/Kitchen"
 	    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-
-  <xsd:import namespace="http://www.example.org/LivingRoom" schemaLocation="./LivingRoom.xsd" />
   <xsd:element name="home" type="home"/>
 
   <xsd:complexType name="home">
@@ -22,7 +20,7 @@
     <xsd:sequence/>
   </xsd:complexType>
 
-  <xsd:complexType name="GE">
+  <xsd:complexType name="BlackAndDecker">
     <xsd:complexContent>
       <xsd:extension base="stove">
   <xsd:sequence>
@@ -30,20 +28,6 @@
 	  <xsd:element name="clock" type="xsd:string"/>
 	  <xsd:element name="depth" type="xsd:decimal"/>
 	  <xsd:element name="height" type="xsd:decimal"/>
-	</xsd:sequence>
-      </xsd:extension>
-    </xsd:complexContent>
-  </xsd:complexType>
-
-  <xsd:complexType name="Kenmore">
-    <xsd:complexContent>
-      <xsd:extension base="stove">
-	<xsd:sequence>
-	  <xsd:element name="price" type="xsd:decimal"/>
-	  <xsd:element name="clock" type="xsd:string"/>
-	  <xsd:element name="depth" type="xsd:decimal"/>
-	  <xsd:element name="height" type="xsd:decimal"/>
-	  <xsd:element name="color" type="xsd:string"/>
 	</xsd:sequence>
       </xsd:extension>
     </xsd:complexContent>

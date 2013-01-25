@@ -14,37 +14,53 @@ class ExternalNamespaceResolver {
   private static final Logger log = Logging.getLogger(ExternalNamespaceResolver.class)
 
   /**
-   * Start File location (absolute Path) to parse external schemas and gether imported namespaces from this starting schema file
+   * external namespace Data to resolve
    */
-  File externalImportStartLocation
+  private ExternalNamespaceMetaData externalImport
 
   /**
-   * List of any schema locations left to parse and go through, when this is empty, the processing can return
+   * List of externally imported Namespace data that is returned from method resolve
    */
-  def schemaLocationsToParse = []
-  
+  List<ExternalNamespaceMetaData> externalImportedNamespaces = []
+
+
   /**
-   * List of externally imported Namespaces that is eventually returned to the called
+   * a list of schema locations left to parse
    */
-  def externalImportedNamespaces = []
-  
+  List<File> schemaLocationsToParse = []
+
   /**
    * This is the parent Directory of whatever schema is being slurped
    * I personally don't think this should be part of this class, but eh.
    */
   def parentDirectory
 
+
   /**
-   * @param it is the xml slurper object used to gather schema Locations from
-   * Can be import or include slurper objects
+   * construct this object with the External Namespace Meta Data emd
    */
-  def gatherSchemaLocations = { it ->
-    def location = it.@schemaLocation.text()
+  public ExternalNamespaceResolver(ExternalNamespaceMetaData emd) { 
+    externalImport = emd
+  }
+
+  /**
+   * @param xmlSlurpedNode is the xml slurper object used to gather schema Locations from
+   * Can be import or include slurper objects
+   * slurps up the schema location and get's its absolute file, create an #ExternalNamespaceMetaData object with this file and returns it
+   * @return #ExternalNamespaceMetaData could return null if this schema location to parse is already on the list
+   */
+  ExternalNamespaceMetaData gatherSchemaLocations (xmlSlurpedNode) {
+    def location = xmlSlurpedNode.@schemaLocation.text()
+    log.debug("location of this import is {}", location)
     def absoluteFile = getAbsoluteSchemaLocation(location, parentDirectory) 
-    if (ListUtil.isAlreadyInList( schemaLocationsToParse, absoluteFile)) { 
+    log.debug("absolute File of location {} is {}, schema Location to Parse is {}", location, absoluteFile, schemaLocationsToParse)
+    if (!ListUtil.isAlreadyInList( schemaLocationsToParse, absoluteFile)) { 
       log.debug(" schema location is {}, and the parentDirectoryectory (Parent Directory) is {}", absoluteFile, parentDirectory)
-      addSchemaLocationToParse(absoluteFile)
+      schemaLocationsToParse << absoluteFile
+      return new ExternalNamespaceMetaData(externalSchemaLocation: absoluteFile)
     } 
+    log.info("didn't find anything returning null")
+    return null
   }
 
   /**
@@ -54,8 +70,11 @@ class ExternalNamespaceResolver {
    */
   def getImportedNamespaces = { it ->
     def namespace = it.@namespace.text()
-    addToImportedNamespaces(namespace)
-    locationClosure(it)
+    def externalMetaData = gatherSchemaLocations(it)
+    if(externalMetaData) { 
+      externalMetaData.namespace = namespace
+      addExternalImportedNamespace(externalMetaData)    
+    }
   }
 
   /**
@@ -64,9 +83,7 @@ class ExternalNamespaceResolver {
    */
   def gatherSchemaData (xmlDoc) { 
     log.debug("resolving imports")
-    xmlDoc?.import?.each getImportedNamespaces
-    log.debug("resolving includes of")
-    xmlDoc?.include?.each locationClosure
+    xmlDoc?.import?.each getImportedNamespaces    
   }
 
   /**
@@ -75,19 +92,23 @@ class ExternalNamespaceResolver {
    * While there are files in
    * @see #schemaLocationsToParse
    * keep slurping documents and gather schema locations
+   * @return a list of #ExternalNamespaceMetaData to add to the external namespace that is being resolved
    */
-  def resolveExternalImportedNamespaces() {
-    parentDirectory = externalImportStartLocation.parentFile
-    log.info("resolving external dependencies starting at {}", externalImportStartLocation)
-    def xmlDoc = new XmlSlurper().parse(externalImportStartLocation)
+  List<ExternalNamespaceMetaData> resolveExternalImportedNamespaces() {
+    parentDirectory = externalImport.externalSchemaLocation.parentFile
+    log.info("resolving external dependencies starting at {}", externalImport.externalSchemaLocation)
+    def xmlDoc = new XmlSlurper().parse(externalImport.externalSchemaLocation)
     gatherSchemaData(xmlDoc)
     while(schemaLocationsToParse) { 
-      def document = schemaLocationsToParse.pop()
+      def schemaLocale = schemaLocationsToParse.pop()
+      def document = externalImportedNamespaces.find { it.externalSchemaLocation.absolutePath == schemaLocale.absolutePath }.externalSchemaLocation
       log.debug("popping {} from schemaLocationsToParse list", document)
       xmlDoc = new XmlSlurper().parse(document)
       parentDirectory = document.parentFile
       gatherSchemaData(xmlDoc)
     }
+    log.debug("returning the imported namespaces {}", externalImportedNamespaces)
+    return externalImportedNamespaces
   }
   
   /**
@@ -103,20 +124,11 @@ class ExternalNamespaceResolver {
   /**
    * @param namespace   namespace string that is externally imported to add to externalImportedNamespaces List
    */
-  def addExternalImportedNamespace(String namespace) { 
+  def addExternalImportedNamespace(ExternalNamespaceMetaData namespace) { 
     if(!ListUtil.isAlreadyInList(externalImportedNamespaces, namespace)) { 
       log.debug("adding {} to imported namespace List {}", namespace, externalImportedNamespaces )
       externalImportedNamespaces << namespace
     }
   }
 
-  /**
-   * @param file is the absolute file path to add to the @scheaLocationsToParse list
-   */
-  def addSchemaLocationToParse(File file) { 
-    if(!ListUtil.isAlreadyInList(schemaLocationsToParse, file)) { 
-      log.debug("added {} to dive Deeper List", file)
-      schemaLocationsToParse << file
-    }
-  }
 }

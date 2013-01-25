@@ -33,12 +33,12 @@ class JaxbNamespaceTask extends DefaultTask {
     order.populateIncludesAndImportsData()
     log.info("processing includes data and removing from files data accordingly")
 
-    order.performIncludesProcessing()
+    order.processIncludes()
     order.gatherInitialNamespaceGraphOrdering()
 
     log.info("found base namespace packages")
 
-    order.parseEachDependentNamespace()
+    order.graphOutDependentNamespaces()
 
     log.info("parsed through dependent namespaces")
     log.info("processing external Dependencies")
@@ -49,9 +49,6 @@ class JaxbNamespaceTask extends DefaultTask {
     log.debug("order Graph is {}", order.orderGraph)
     log.info("namespaceData size (unique namespace) is {}", order.namespaceData.size())
     log.debug("namespaceData is {}", order.namespaceData)
-
-    log.debug("converting all namespaces in order graph into their appropriate episode file names")
-    order.namespaceData.each { it.convertNamespaceToEpisodeName() }
 
     project.jaxb.dependencyGraph = order
 

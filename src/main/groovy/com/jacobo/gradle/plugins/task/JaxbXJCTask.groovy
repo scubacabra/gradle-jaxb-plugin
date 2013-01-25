@@ -11,6 +11,7 @@ import com.jacobo.gradle.plugins.JaxbNamespacePlugin
 import com.jacobo.gradle.plugins.structures.OrderGraph
 import com.jacobo.gradle.plugins.structures.NamespaceMetaData
 import com.jacobo.gradle.plugins.util.XJCInputResolver
+import com.jacobo.gradle.plugins.util.ListUtil
 
 /**
  * @author djmijares
@@ -30,7 +31,7 @@ class JaxbXJCTask extends DefaultTask {
     dependencyGraph.orderGraph.each { order ->
       order.each { namespace ->
 	log.info("trying to find {} in namespaceData", namespace)
-    	def nsData = dependencyGraph.namespaceData.find{ it.namespace == namespace}
+    	def nsData = dependencyGraph.namespaceData.find{ it == namespace}
     	log.info("found structure {}", nsData)
    	if(!nsData?.parseFiles?.isEmpty()) { 
 	  doTheSchemaParsing(nsData)
@@ -43,8 +44,8 @@ class JaxbXJCTask extends DefaultTask {
     // namespace data should have data
     if(ns == null) throw new RuntimeException("null namespace data trying to be parsed, no parseFiles or any data present")
 
-    def schemaIncludes = transformSchemaListToString(ns)
-    def episodeBindings = gatherAllDependencies(ns)
+    def schemaIncludes = XJCInputResolver.transformSchemaListToString(ns)
+    def episodeBindings = XJCInputResolver.gatherAllDependencies(ns)
     def episodeName = "${project.jaxb.jaxbEpisodeDirectory}/${ns.episodeName}.episode"
     def bindings = XJCInputResolver.transformBindingListToString(project.jaxb.bindingIncludes)
     
@@ -58,7 +59,7 @@ class JaxbXJCTask extends DefaultTask {
     extension : project.jaxb.extension,
     removeOldOutput : project.jaxb.removeOldOutput,
     header : project.jaxb.header) {
-      //      produces (dir : "src/main/java") //maybe should put the produces in there?
+      //      produces (dir : project.jaxb.jaxbSchemaDestinationDirectory) //maybe should put the produces in there?
       schema (dir : project.jaxb.xsdDirectoryForGraph, includes : schemaIncludes )
       if (!project.jaxb.bindingIncludes.isEmpty() || project.jaxb.bindingIncludes != null) {
 	binding(dir : project.jaxb.jaxbBindingDirectory, includes : bindings)
@@ -75,54 +76,6 @@ class JaxbXJCTask extends DefaultTask {
     }
   }
 
-  def addToDependencyList = { List depList, String ns ->
-    log.info("trying to add  {} to dependency List {}", ns, depList)
-    if(ns != "none" && !depList.contains(ns)) { 
-      log.info("equals none ? : {}", ns == "none")
-      log.info("adding {} to dep List {}", ns, depList)
-      depList << ns
-    }
-    log.info("return dependency list is {}", depList)
-    return depList
-  }
-
-  List findDependenciesUpGraph(NamespaceMetaData xsdData, List depList) {
-    log.info("dep list is {}, xsd data is {}", depList, xsdData)
-    xsdData.importedNamespaces.each {
-      log.info("file ns Import is {}, dependency List is {}", it, depList)
-      depList = addToDependencyList(depList, it)
-    }
-    xsdData.externalImportedNamespaces.each { map ->
-      map.value.each { file ->
-	log.info("external dependency is {}, dependency List is {}", map.key, depList)
-	if(this.dependencyGraph.externalImportedNamespaces?.containsKey(file.path)) { 
-	  log.info("{} is in {}", file, this.dependencyGraph.externalImportedNamespaces)
-	  this.dependencyGraph.externalImportedNamespaces[file.path].each { 
-	    depList = addToDependencyList(depList, it)
-	  }
-	}
-      }
-    }
-    log.info("current dependency List {}", depList)
-    xsdData.importedNamespaces.each { ns ->
-      def xsdDependency = dependencyGraph.namespaceData.find{ it.namespace == ns}
-      if(xsdDependency) { 
-    	depList = findDependenciesUpGraph(xsdDependency, depList)
-    	log.info("current dependency List {}", depList)
-      }
-    }
-    return depList
-  }
-
-  List gatherAllDependencies(NamespaceMetaData ns) { 
-    def allDeps = []
-    log.info("Traversing the Graph up to the top for dependencies")
-    allDeps = findDependenciesUpGraph(ns, allDeps)
-    log.info("all dependencies are {}", allDeps)
-    allDeps = allDeps.collect{ ns.convertNamespaceToEpisodeName(it) }
-    return allDeps
-  }
-  
   def sanityChecks(episodeBindingsNames, schemaIncludes, ns) { 
     // needs to have include files
     if(schemaIncludes == "" || schemaIncludes.isEmpty()) throw new RuntimeException("There are no files to include in the parsing in " + ns.parseFiles + "for namespace " + ns.namespace)

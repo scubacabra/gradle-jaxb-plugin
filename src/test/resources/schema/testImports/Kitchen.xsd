@@ -1,0 +1,19 @@
+<xsd:schema targetNamespace="http://www.example.org/Kitchen"
+	    xmlns:tns="http://www.example.org/Kitchen"
+	    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+  <xsd:import namespace="http://www.example.org/LivingRoom" schemaLocation="./LivingRoom.xsd" />
+
+  <xsd:complexType name="helloType">
+    <xsd:sequence>
+      <xsd:element name="name" nillable="true" type="xsd:string" />
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="helloResponseType">
+    <xsd:sequence>
+      <xsd:element name="response" nillable="true" type="xsd:string" />
+    </xsd:sequence>
+  </xsd:complexType>
+
+</xsd:schema>

@@ -2,6 +2,12 @@ package com.jacobo.gradle.plugins.structures
 
 import com.jacobo.gradle.plugins.util.ListUtil
 
+import com.jacobo.gradle.plugins.structures.NamespaceMetaData
+import com.jacobo.gradle.plugins.structures.ExternalNamespaceMetaData
+
+import org.gradle.api.logging.Logging
+import org.gradle.api.logging.Logger
+
 /**
  * Model that contains a particular set of unique data for a Namespace for jaxb generation
  * @author Daniel Mijares
@@ -9,6 +15,7 @@ import com.jacobo.gradle.plugins.util.ListUtil
  */
 class NamespaceMetaData { 
 
+  static final Logger log = Logging.getLogger(NamespaceMetaData.class)
   /**
    * string of this unique namespace
    */
@@ -27,7 +34,7 @@ class NamespaceMetaData {
   /**
    * a list of strings that are the imported namespaces that all @parseFiles files have imported
    */
-  List<String> importedNamespaces = []
+  List<NamespaceMetaData> importedNamespaces = []
 
   /**
    *a list of files that are included by all the @parseFiles
@@ -37,7 +44,7 @@ class NamespaceMetaData {
   /**
    * a map of String, File pairs that contain unique externally imported namespaces and the @schemaLocation file turned into an absolute File that they import.  only unique external imported namespace and unique absolute file paths are in this Map
    */
-  Map<String, List<File>> externalImportedNamespaces = [:]
+  List<ExternalNamespaceMetaData> externalImportedNamespaces = []
 
   /**
    * Method that converts standard @targetNamespace values to an appropriate episode File name that the file system accepts
@@ -47,6 +54,15 @@ class NamespaceMetaData {
     convert = convert.replace(":", "-")
     convert = convert.replace("/", "-")
     this.episodeName = convert
+  }
+
+  /**
+   * @param namespace
+   * Sets this namespace and additionally converts namespace to episode name
+   */
+  public void setNamespace(String namespace) { 
+    this.namespace = namespace
+    convertNamespaceToEpisodeName()
   }
 
   /**
@@ -72,9 +88,9 @@ class NamespaceMetaData {
   /**
    * add an imported namespace to the @importedNamespaces list
    */
-  def addImportedNamespace(String importNs) { 
-    if( !ListUtil.isAlreadyInList(importedNamespaces, importNs) ) { 
-      importedNamespaces << importNs
+  def addImportedNamespace(NamespaceMetaData importedNamespaceData) { 
+    if( !ListUtil.isAlreadyInList(importedNamespaces, importedNamespaceData) ) { 
+      importedNamespaces << importedNamespaceData
     }
   }
 
@@ -97,33 +113,100 @@ class NamespaceMetaData {
   /**
    * add an externally imported namespace and associated externally imported File to the externalImportedNamespaces map
    */
-  def addExternalImportedNamespaces(String externalNamespcae, File externalFile) { 
-    if(externalImportedNamespaces.containsKey(externalNamespcae)) { 
-      if( !ListUtil.isAlreadyInList(externalImportedNamespaces[externalNamespcae], externalFile) ) { 
-	externalImportedNamespaces[externalNamespcae] << externalFile
+  def addExternalImportedNamespaces(String externalNamespace, File externalFile) { 
+    def extNamespace = externalImportedNamespaces.find{ it.namespace == externalNamespace }
+    if (extNamespace) { //already in this external imported namespaces list
+      if (!ListUtil.isAlreadyInList(extNamespace.externalSchemaLocation, externalFile )) { //TODO I think every external namespace should only have one entry point, but I guess I could be wrong, planning for multiple as a worst case
+	extNamespace.externalSchemaLocation << externalFile
       }
-    } else { 
-      externalImportedNamespaces[externalNamespcae] = [externalFile]
+    } else { //first external in the externalImportedNamespaces list, create object, populate fields, add to external Import Namespace List
+      def extNs = new ExternalNamespaceMetaData()
+      extNs.namespace = externalNamespace
+      extNs.externalSchemaLocation = externalFile
+      externalImportedNamespaces << extNs
     }
   }
 
   /**
-   * checks to see if this namespace is part of the unique namespaces being processed right now, if it isn't it is externally imported
+   * slurps the xsd files for import and include data
    */
-  def isImportedNamespaceExternal = { collection, ns ->
-    if(!collection.find { it.namespace == ns } ) { //this namespace not in the collection of namespaces available, is external
-      return true
+  def slurpXsdFiles(List namespacesData) {
+    parseFiles.each { doc ->
+      def schema = new XmlSlurper().parse(doc)
+      def imports = schema.import
+      def includes = schema.include
+      slurpImports(imports, namespacesData, doc)
+      slurpIncludes(includes, doc)
     }
-    return false
-    //    return (collection.find{it.namespace == namespace}) ? false : true
+    if(!importedNamespaces) importedNamespaces << "none" // if a namespace imports nothing, flag it for being parse first
+  }
+
+  /**
+   * parses the includes information for a schema file
+   *
+   * @param includes the xml slurper include data for this file
+   * @param doc the File object representing the xsd file
+   */
+  def slurpIncludes = { includes, doc ->
+    if(!includes.isEmpty()) { 
+      includes.@schemaLocation.each {
+	def includePath = new File(doc.parent, it.text()).canonicalPath
+	log.debug("includes the path {}", includePath)
+	def includeFile = new File(includePath)
+	log.debug("include File is {}", includeFile)
+	addIncludeFile(includeFile)
+      }
+    }
+  }
+
+  /**
+   * parses the imports information for a schema file
+   *
+   * @param imports the xml slurper include data for this file
+   * @param namespaceData the List of  #NamespaceMetaData object for the whole OrderGraph object
+   * @param doc the File object representing the xsd file
+   */
+  def slurpImports = { imports, List namespaceData, doc ->
+    log.debug("Starting to slurp the import statements for {}", doc)
+    if(!imports.isEmpty()) { 
+      imports.each { imp ->
+	def namespace = imp.@namespace.text()
+	if(!ListUtil.isImportedNamespaceExternal(namespaceData, namespace)) {
+	  def nsData = namespaceData.find { it.namespace == namespace }
+	  addImportedNamespace(nsData)
+	} else { 
+	  def externalSchemaLocale = imp.@schemaLocation.text()
+	  def externalSchemaPath = new File(doc.parent, externalSchemaLocale).canonicalPath
+	  def externalSchemaFile = new File(externalSchemaPath)
+	  addExternalImportedNamespaces(namespace, externalSchemaFile)
+	}
+      }
+    }
+  }
+
+  /**
+   * takes the include Files and if there are any, subtracts the parseFiles list from the include Files because the xjc task will take these into account
+   *
+   */
+  public processIncludeFiles() { 
+    if (includeFiles.isEmpty()) {
+      log.info("this namespace {} does not include any files")
+      return
+    }
+    log.info("namespace {} includes {}", namespace, includeFiles)
+    log.info("parseFiles has some files that should already be included : {}", parseFiles.intersect(includeFiles))
+    parseFiles = parseFiles.minus(includeFiles)
+    if(parseFiles.isEmpty()) { 
+      log.warn("namespace {} has empty an empty parse files list, most likely there is a circular dependency for includes files", namespace)
+    }
   }
 
   def String toString() { 
-    def out = "Namespace: ${namespace} \n"
-    out += "files with this namespace:\n ${parseFiles ?: "none" }\n"
-    out += "namespace imports over all the files:\n ${importedNamespaces ?: "none" }\n"
-    out += "namespace includes over all the files:\n ${includeFiles ?: "none" }\n"
-    out += "namespace external dependencies over all the files:\n ${externalImportedNamespaces ?: "none" }\n"
+    def out = "${namespace}"
+    // out += "files with this namespace:\n ${parseFiles ?: "none" }\n"
+    // out += "namespace imports over all the files:\n ${importedNamespaces ?: "none" }\n"
+    // out += "namespace includes over all the files:\n ${includeFiles ?: "none" }\n"
+    // out += "namespace external dependencies over all the files:\n ${externalImportedNamespaces ?: "none" }\n"
     return out
   }
 }

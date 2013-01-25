@@ -5,7 +5,7 @@ buildscript {
   }
 
   dependencies {
-    classpath ':gradle-jaxb'
+    classpath ':gradle-jaxb:0.1'
   }
 }
 

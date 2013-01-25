@@ -1,30 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<xsd:schema targetNamespace="http://www.example.org/Kitchen"
-	    xmlns:tns="http://www.example.org/Kitchen"
+<xsd:schema targetNamespace="http://www.example.org/Den"
+	    xmlns:tns="http://www.example.org/Den"
 	    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
 
-  <xsd:import namespace="http://www.example.org/LivingRoom" schemaLocation="./LivingRoom.xsd" />
   <xsd:element name="home" type="home"/>
 
   <xsd:complexType name="home">
     <xsd:sequence>
-      <xsd:element name="kitchen" type="kitchen"/>
+      <xsd:element name="livingRoom" type="livingRoom"/>
     </xsd:sequence>
   </xsd:complexType>
 
-  <xsd:complexType name="kitchen">
+  <xsd:complexType name="livingRoom">
     <xsd:sequence>
-      <xsd:element name="stove" type="stove"/>
+      <xsd:element name="sofa" type="sofa"/>
     </xsd:sequence>
   </xsd:complexType>
 
-  <xsd:complexType name="stove" abstract="true">
+  <xsd:complexType name="sofa" abstract="true">
     <xsd:sequence/>
   </xsd:complexType>
 
-  <xsd:complexType name="GE">
+  <xsd:complexType name="Lane">
     <xsd:complexContent>
-      <xsd:extension base="stove">
+      <xsd:extension base="sofa">
   <xsd:sequence>
 	  <xsd:element name="price" type="xsd:decimal"/>
 	  <xsd:element name="clock" type="xsd:string"/>
@@ -35,9 +34,9 @@
     </xsd:complexContent>
   </xsd:complexType>
 
-  <xsd:complexType name="Kenmore">
+  <xsd:complexType name="Berkline">
     <xsd:complexContent>
-      <xsd:extension base="stove">
+      <xsd:extension base="sofa">
 	<xsd:sequence>
 	  <xsd:element name="price" type="xsd:decimal"/>
 	  <xsd:element name="clock" type="xsd:string"/>
