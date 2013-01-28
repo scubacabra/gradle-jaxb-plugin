@@ -166,7 +166,7 @@ class OrderGraphSpec extends Specification {
     ns4.importedNamespaces = [ns1, ns3]
     og.orderGraph[0] = [ns1, ns2]
 
-  when: "ns3 depends on ns1 and ns2, so it has matches at both first levels, all matching, add ns3 to level 2, index 1"
+  when: "ns4 depends on ns3, so add ns3 to level 2 and ns4 to level 3"
     og.addNamespaceToOrderGraph(ns4, [0], [ns3])
 
   then: "because of missing import, levels are 3, one element in each level"
@@ -187,13 +187,12 @@ class OrderGraphSpec extends Specification {
     og.namespaceData = [ns1, ns2, ns3, ns4, ns5]
     [ns1, ns2].each { it.importedNamespaces << "none" }
     ns3.importedNamespaces = [ns2]
-    ns4.importedNamespaces = [ns5]
     ns5.importedNamespaces = [ns1]
     og.orderGraph = [[ns1, ns2],
-		     [ns3], 
-		     [ns5],
+		     [ns5], 
+		     [ns3],
 		     [ns4]]
-    og.notMatchingMap = ["ns5" : 2]
+    og.notMatchingMap = ["ns5" : 1]
 
   when: "adding namespace that is in notMatching map, process parent namespace already in graph"
     og.processParentNamespaceAlreadyInGraph(ns5, 0)
@@ -238,13 +237,13 @@ class OrderGraphSpec extends Specification {
     og.namespaceData = [ns1, ns2, ns3, ns4, ns5]
     [ns1, ns2].each { it.importedNamespaces << "none" }
     ns3.importedNamespaces = [ns2]
-    ns4.importedNamespaces = [ns5]
+    ns4.importedNamespaces = [ns3]
     ns5.importedNamespaces = [ns1]
     og.orderGraph = [[ns1, ns2],
-		     [ns3], 
-		     [ns5],
+		     [ns5], 
+		     [ns3],
 		     [ns4]]
-    og.notMatchingMap = ["ns5" : 2]
+    og.notMatchingMap = ["ns5" : 1]
 
   when: "adding namespace that is in notMatching map, process parent namespace already in graph"
     og.addNamespaceToOrderGraph(ns5, [0], [])
