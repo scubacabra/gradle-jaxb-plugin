@@ -30,7 +30,7 @@ extension = 'true'
 removeOldOutput = 'yes'
 ```
 
-If you stick with the default, the only thing you have to configure is the `jaxbSchemaDirectory` for every sub project
+If you stick with the default settings, the only thing you have to configure is the `jaxbSchemaDirectory` for every sub project
 
 ```groovy
 jaxb {
@@ -75,6 +75,9 @@ There are only two tasks.
 
 2. `xjc`
 
+
+`xjc` depends on `jaxb-generate-dependency-graph` so you don't need to run it at all. 
+
 ## jaxb-generate-dependency-graph ##
 
 This task starts it's processing in the `jaxbSchemaDirectory` folder.  It finds all the xsd's in this folder and finds all the unique namespaces that are defined by the xsd `targetNamespace` attribute found at the root (`schema`) element. 
@@ -93,5 +96,5 @@ This allows you to:
 ## xjc ##
 This is just the ant xjc task.  
 
-It takes a group of xsd file paths, and parses them, binding as the code tells it to. 
+The `dependency` task gives it a list of namespaces to parse and it goes through one by one until it has parsed all the namespaces and all the files in those namespaces
   
