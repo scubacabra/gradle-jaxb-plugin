@@ -34,3 +34,19 @@ task uninstallPlugin (type: Delete) {
 	description = 'Removes the plugin from your gradle distribution.'
 	delete("/${gradleInstallDir}/lib/plugins/${unversionedJar.archiveName}")
 }
+
+uploadArchives {
+  repositories {
+    ivy {
+      url = bintray_api_base_url + '/content/' + bintray_username + '/' + bintray_repo + '/' + bintray_package + '/' + version
+      credentials {
+	username bintray_username
+	password bintray_api_key
+      }
+    }
+  }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.4'
+}
