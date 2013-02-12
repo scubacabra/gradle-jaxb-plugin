@@ -3,7 +3,7 @@ package com.jacobo.gradle.plugins.task
 import org.gradle.api.logging.Logging
 import org.gradle.api.logging.Logger
 import org.gradle.api.tasks.TaskAction
-import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.Input
 import org.gradle.api.DefaultTask
 import com.jacobo.gradle.plugins.structures.OrderGraph
 import com.jacobo.gradle.plugins.structures.NamespaceMetaData
@@ -18,14 +18,16 @@ class JaxbNamespaceTask extends DefaultTask {
   
   static final Logger log = Logging.getLogger(JaxbNamespaceTask.class)
   
+  @Input
   String xsdDir
+
   OrderGraph order = new OrderGraph()
 
   @TaskAction
   void start() { 
-    log.info("starting jaxb namespace dependency task at: {}", project.jaxb.xsdDirectoryForGraph)
+    log.info("starting jaxb namespace dependency task at: {}", getXsdDir())
 
-    order.findAllXsdFiles(project.jaxb.xsdDirectoryForGraph)
+    order.findAllXsdFiles(getXsdDir())
 
     log.info("unique namespaces aquired")
     log.info("getting all import and includes statments in namespace files to see what they depend on")
