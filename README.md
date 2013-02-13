@@ -1,8 +1,25 @@
-gradle-jaxb-namespace-dependency
+gradle-jaxb-plugin
 ================================
 
-gradle-jaxb-namespace-dependency is a plugin for aiding with separate compilation of all xsd's in a particular folder. Then to generate a namespace dependency graph to parse those namespace files first, generate episode files and use them in binding so everything is done clean and fast for you without all the fuss
+gradle-jaxb-plugin is a plugin for aiding with separate compilation of all xsd's in a particular folder. Then to generate a namespace dependency graph to parse those namespace files first, generate episode files and use them in binding so everything is done clean and fast for you without all the fuss
 
+using the plugin
+----------
+```groovy
+buildscript {
+  repositories { 
+    ivy { 
+      url 'http://dl.bintray.com/content/djmijares/gradle-plugins' 
+    }
+  }
+
+  dependencies {
+    classpath 'com.jacobo.gradle.plugins:gradle-jaxb-plugin:1.0'
+  }
+}
+
+apply plugin: 'jaxb'
+```
 # Possible configurable Properties #
 ```groovy
 String jaxbSchemaDirectory
