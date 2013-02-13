@@ -27,13 +27,13 @@ import com.jacobo.gradle.plugins.JaxbExtension
  * Created: Tue Dec 04 09:01:34 EST 2012
  * @see JaxbExtension
  */
-class JaxbNamespacePlugin implements Plugin<Project> {
+class JaxbPlugin implements Plugin<Project> {
   static final String JAXB_NAMESPACE_TASK_GROUP = 'parse'
   static final String JAXB_NAMESPACE_GRAPH_TASK = 'jaxb-generate-dependency-graph'
   static final String JAXB_NAMESPACE_GENERATE_TASK = 'xjc'
   static final String JAXB_CONFIGURATION_NAME = 'jaxb'
 
-  static final Logger log = Logging.getLogger(JaxbNamespacePlugin.class)
+  static final Logger log = Logging.getLogger(JaxbPlugin.class)
 
   private JaxbExtension extension
 
