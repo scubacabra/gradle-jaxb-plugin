@@ -61,7 +61,7 @@ class JaxbXJCTask extends DefaultTask {
     header : project.jaxb.header) {
       //      produces (dir : project.jaxb.jaxbSchemaDestinationDirectory) //maybe should put the produces in there?
       schema (dir : project.jaxb.xsdDirectoryForGraph, includes : schemaIncludes )
-      if (!project.jaxb.bindingIncludes.isEmpty() || project.jaxb.bindingIncludes != null) {
+      if (!project.jaxb.bindingIncludes.isEmpty() && project.jaxb.bindingIncludes != null) {
 	binding(dir : project.jaxb.jaxbBindingDirectory, includes : bindings)
       }
       episodeBindings.each { episode ->
@@ -81,13 +81,14 @@ class JaxbXJCTask extends DefaultTask {
     if(schemaIncludes == "" || schemaIncludes.isEmpty()) throw new RuntimeException("There are no files to include in the parsing in " + ns.parseFiles + "for namespace " + ns.namespace)
     
     // default directory schema destination dir is relative to the project.projectDir not the rootDir like the rest of these
-    def destDir = new File(project.projectDir, project.jaxb.jaxbSchemaDestinationDirectory)
-    if(!destDir.isDirectory() && !destDir.exists()) throw new InvalidUserDataException(" ${destDir} is not an existing directory, make this directory or adjust the extensions to point to a proper directory")
+    directoryExists(project.projectDir.path + File.separator + project.jaxb.jaxbSchemaDestinationDirectory)
 
     // these Directories need to exist
-    [project.jaxb.jaxbSchemaDirectory, project.jaxb.jaxbEpisodeDirectory, project.jaxb.jaxbBindingDirectory].each { 
-      def dir = new File(it)
-      if(!dir.isDirectory() && !dir.exists()) throw new InvalidUserDataException(" ${dir} is not an existing directory, make this directory or adjust the extensions to point to a proper directory")
+    [project.jaxb.jaxbSchemaDirectory, project.jaxb.jaxbEpisodeDirectory].each directoryExists
+
+    // if we have includes, then check for this binding directory existing.  if not don't check
+    if (!project.jaxb.bindingIncludes.isEmpty() && project.jaxb.bindingIncludes != null) {
+      directoryExists(project.jaxb.jaxbBindingDirectory)
     }
     
     // all episode file bindings MUST exist
@@ -96,5 +97,10 @@ class JaxbXJCTask extends DefaultTask {
       def file = new File(project.jaxb.jaxbEpisodeDirectory, episode)
       if(!file.exists()) throw new RuntimeException("${file} does not exist, there is most likely a null Namespace data somewhere")
     }
+  }
+
+  def directoryExists = { dir ->
+    def directory = new File(dir)
+    if(!directory.isDirectory() && !directory.exists()) throw new InvalidUserDataException(" ${directory} is not an existing directory, make this directory or adjust the extensions to point to a proper directory")
   }
 }
