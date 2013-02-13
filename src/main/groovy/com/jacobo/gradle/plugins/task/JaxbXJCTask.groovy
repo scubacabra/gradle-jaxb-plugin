@@ -7,7 +7,7 @@ import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.DefaultTask
 import org.gradle.api.InvalidUserDataException
 
-import com.jacobo.gradle.plugins.JaxbNamespacePlugin
+import com.jacobo.gradle.plugins.JaxbPlugin
 import com.jacobo.gradle.plugins.structures.OrderGraph
 import com.jacobo.gradle.plugins.structures.NamespaceMetaData
 import com.jacobo.gradle.plugins.util.XJCInputResolver
@@ -53,7 +53,7 @@ class JaxbXJCTask extends DefaultTask {
 
     ant.taskdef (name : 'xjc', 
     classname : 'com.sun.tools.xjc.XJCTask',
-    classpath : project.configurations[JaxbNamespacePlugin.JAXB_CONFIGURATION_NAME].asPath)
+    classpath : project.configurations[JaxbPlugin.JAXB_CONFIGURATION_NAME].asPath)
 
     ant.xjc(destdir : project.jaxb.jaxbSchemaDestinationDirectory,
     extension : project.jaxb.extension,

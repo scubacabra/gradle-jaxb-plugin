@@ -7,7 +7,7 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.DefaultTask
 import com.jacobo.gradle.plugins.structures.OrderGraph
 import com.jacobo.gradle.plugins.structures.NamespaceMetaData
-import com.jacobo.gradle.plugins.JaxbNamespacePlugin
+import com.jacobo.gradle.plugins.JaxbPlugin
 
 /**
  * @author djmijares
