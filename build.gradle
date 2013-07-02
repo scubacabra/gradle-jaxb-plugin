@@ -37,12 +37,41 @@ task uninstallPlugin (type: Delete) {
 
 uploadArchives {
   repositories {
-    ivy {
-      url = bintray_api_base_url + '/content/' + bintray_username + '/' + bintray_repo + '/' + bintray_package + '/' + version
-      credentials {
-	username bintray_username
-	password bintray_api_key
+    mavenDeployer {
+      repository(url : bintray_api_base_url + '/maven/' + bintray_username + '/' + bintray_repo + '/' + bintray_package + '/') {
+	try {
+	  authentication(userName: bintray_username, password: bintray_api_key)
+	} catch (MissingPropertyException pne) {
+	  // ignore, don't authenticate
+	}
       }
+      pom {
+	project {
+	  name 'gradle-jaxb-plugin'
+	  description 'A Gradle plugin for parsing a diretory of XSDs, graphing them out based on namespace dependencies, and generating binding files for other folders to bind off of and not have to regenerate the same schema objects again'
+	  url 'https://github.com/djmijaes/gradle-jaxb-plugin'
+	  licenses {
+	    license {
+	      name 'Apache License, Version 2.0'
+	      url 'http://www.apache.org/licenses/LICENSE-2.0'
+	      distribution 'repo'
+	    }
+	  }
+	  developers {
+	    developer {
+	      id 'djmijares'
+	      name 'Daniel Mijares'
+	      email 'daniel.j.mijares@gmail.com'
+	    }
+	  }
+	}
+      }   
+      // // Dirty hack for GRADLE-1285
+      // pom.withXml { root ->
+      //     def children = root.asNode().children()
+      //     def versionIndex = children.indexOf(children.find {it.name().localPart == 'version'})
+      //     children.add(versionIndex + 1, new Node(null, 'packaging', 'jar'))
+      // }
     }
   }
 }
