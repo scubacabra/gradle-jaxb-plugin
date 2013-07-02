@@ -158,6 +158,26 @@ class OrderGraphSpec extends Specification {
 
   }
 
+  def "graph out two namespaces to the graph, check to see that they map out correctly" () {
+  setup: "ns1 and ns2 are base namespaces and are in the order Graph at level 0 (first level)"
+    namespaceData = [ns1, ns2, ns3, ns4]
+    [ns1, ns2].each { it.importedNamespaces << "none" }
+    ns3.importedNamespaces = [ns1, ns2]
+    ns4.importedNamespaces = [ns3]
+    og.namespaceData = namespaceData
+    og.orderGraph[0] = [ns1, ns2]
+
+  when: "ns3 depends on ns1 and ns2, so it has matches at both first levels, all matching, add ns3 to level 2, index 1"
+    og.graphOutDependentNamespaces()
+
+  then: "two levels in graph one object in each level"
+    og.orderGraph.size == 3
+    og.orderGraph[1].size == 1
+    og.orderGraph[1] == [ns3]
+    og.orderGraph[2].size == 1
+    og.orderGraph[2] == [ns4]
+
+  }
   def "add Namespace to the graph with an import that isn't found in the graph" () { 
 
   setup: "ns1 and ns2 are base namespaces and are in the order Graph at level 0 (first level)"

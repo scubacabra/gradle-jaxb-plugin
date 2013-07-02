@@ -329,7 +329,7 @@ class OrderGraph {
 	  indexesOfMatchesInDependencyGraph << matchedInGraph[1]
 	}
       }
-      notMatchingMap = addNamespaceToOrderGraph(ns, indexesOfMatchesInDependencyGraph, importsNotFoundInGraph)
+      addNamespaceToOrderGraph(ns, indexesOfMatchesInDependencyGraph, importsNotFoundInGraph)
     }
 
     //TODO make this happen only if namespaceData.size != orderGraph entries over all
