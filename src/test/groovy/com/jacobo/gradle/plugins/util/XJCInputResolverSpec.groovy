@@ -59,4 +59,20 @@ class XJCInputResolverSpec extends Specification {
     episodeNames == ["ns4", "ns3", "ns2", "ns1"]
   }
   
+  def "base namespace has no imports but has external imports" () { 
+  setup: "populate all the namespaces and their dependencies"
+	  ns1.importedNamespaces << "none" //base
+	  ns2.importedNamespaces << "none" //external base
+	  ns3.importedNamespaces = [ns2]
+	  ns4.externalImportedNamespaces = [ns3, ns2]
+	  ns1.externalImportedNamespaces = [ns4]
+
+  when: "we try to get dependencies up the graph, need to do external and not bail"
+	  def dependencies = XJCInputResolver.findDependenciesUpGraph(ns1, [])
+          def episodeNames = dependencies*.episodeName
+
+  then: "we can expect this dependency and episode binding list for ns1"
+	  dependencies == [ns4, ns3, ns2]
+	  episodeNames == ["ns4", "ns3", "ns2"]
+  }
 }
