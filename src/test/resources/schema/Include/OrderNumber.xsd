@@ -1,0 +1,17 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://example.org/include"
+            xmlns="http://example.org/include"
+            xmlns:prod="http://example.org/prod">
+  <xs:include schemaLocation="include.xsd"/>
+  <xs:include schemaLocation="include2.xsd"/>
+  <xs:import namespace="http://example.org/prod"
+                 schemaLocation="Product.xsd"/>
+  <xs:element name="order" type="OrderType"/>
+  <xs:complexType name="OrderType">
+    <xs:sequence>
+      <xs:element name="number" type="OrderNumType"/>
+      <xs:element name="customer" type="CustomerType"/>
+      <xs:element name="items" type="prod:ItemsType"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
