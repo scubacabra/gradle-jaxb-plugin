@@ -71,24 +71,6 @@ class OrderGraphSpec extends Specification {
 
   }
 
-  def "populate namespace meta Data starting from find all xsd files"() { 
-  when:
-  og.findAllXsdFiles(directory)
-
-  then:
-  og.namespaceData.size == 2
-  og.namespaceData.namespace == targetNamespace
-  og.namespaceData.find{ it.namespace == targetNamespace.get(0)}.parseFiles.size == 2
-  og.namespaceData.find{ it.namespace == targetNamespace.get(1)}.parseFiles.size == 1
-  og.namespaceData.parseFiles == xsdFiles*.absoluteFile
-  
-  
-  where:
-  directory = new File("build/resources/test/schema/House").absolutePath
-  targetNamespace = ["http://www.example.org/Kitchen", "http://www.example.org/LivingRoom"]
-  xsdFiles = [[new File("build/resources/test/schema/House/Kitchen.xsd"), new File("build/resources/test/schema/House/KitchenSubset.xsd")], [new File("build/resources/test/schema/House/LivingRoom.xsd")]]
-  }
-
   def "Grab the base target namespace data and make sure it is of type NamespaceMetaData"() { 
   setup: 
   namespaceData = [ns1, ns2, ns3, ns4]

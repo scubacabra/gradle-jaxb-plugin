@@ -3,6 +3,7 @@ package com.jacobo.gradle.plugins.structures
 import org.gradle.api.logging.Logging
 import org.gradle.api.logging.Logger
 import com.jacobo.gradle.plugins.util.ListUtil
+import com.jacobo.gradle.plugins.util.FileHelper
 
 /**
  * This class resolves all external namespaces, traversing all schemaLocations and gethering all the imported namespaces
@@ -52,7 +53,7 @@ class ExternalNamespaceResolver {
   ExternalNamespaceMetaData gatherSchemaLocations (xmlSlurpedNode) {
     def location = xmlSlurpedNode.@schemaLocation.text()
     log.debug("location of this import is {}", location)
-    def absoluteFile = getAbsoluteSchemaLocation(location, parentDirectory) 
+    def absoluteFile = FileHelper.getAbsoluteSchemaLocation(location, parentDirectory) 
     log.debug("absolute File of location {} is {}, schema Location to Parse is {}", location, absoluteFile, schemaLocationsToParse)
     if (!ListUtil.isAlreadyInList( schemaLocationsToParse, absoluteFile)) { 
       log.debug(" schema location is {}, and the parentDirectoryectory (Parent Directory) is {}", absoluteFile, parentDirectory)
@@ -111,16 +112,6 @@ class ExternalNamespaceResolver {
     return externalImportedNamespaces
   }
   
-  /**
-   * @param schemaLocation is the relative path of the schema location being called in eith the xsd:import or xsd:includes call
-   * @param parentDir is the parent directory of the schema file that is currently being Xml Slurped
-   * @return File absolute File path to schema Location
-   */
-  File getAbsoluteSchemaLocation(String schemaLocation, File parentDir) { 
-    def relPath = new File(parentDir, schemaLocation)
-    return new File(relPath.canonicalPath)
-  }
-
   /**
    * @param namespace   namespace string that is externally imported to add to externalImportedNamespaces List
    */

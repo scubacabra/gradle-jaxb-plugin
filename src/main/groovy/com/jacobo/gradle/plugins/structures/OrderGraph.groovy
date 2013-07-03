@@ -4,8 +4,6 @@ import org.gradle.api.logging.Logging
 import org.gradle.api.logging.Logger
 import com.jacobo.gradle.plugins.util.ListUtil
 
-import groovy.io.FileType
-
 class OrderGraph { 
   static final Logger log = Logging.getLogger(OrderGraph.class)
 
@@ -341,21 +339,6 @@ class OrderGraph {
     }
     log.info("matching count is ${count}") 
     log.debug(this.toString())
-  }
-
-  /**
-   * @param directory the directory to search for all *.xsd files
-   * Finds all the xsd files in #directory, populates the Namesapce Meta Data #namespaceData
-   */
-  def findAllXsdFiles(String directory) { 
-    def schemaList = []
-    def baseDirectory = new File(directory)
-    baseDirectory.eachFileRecurse(FileType.FILES) {  file -> 
-      if(file.name.split("\\.")[-1] == 'xsd') {
-	schemaList << file
-      }
-    }
-    schemaList.each populateNamespaceMetaData
   }
 
   /**

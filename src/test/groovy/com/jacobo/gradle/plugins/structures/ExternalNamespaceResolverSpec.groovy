@@ -6,17 +6,6 @@ class ExternalNamespaceResolverSpec extends Specification {
   
   def enr = new ExternalNamespaceResolver()
   
-  def "make sure grab absolute file is working properly" () {
-
-  expect: "have a parent Directory, and a relative schema location to that parent directory, get correct absolute path"
-    fileReturn.path == enr.getAbsoluteSchemaLocation(schemaLocation, parentDir).path
-
-  where: "inputs and outputs are according to:"
-    schemaLocation               | parentDir                                                                   | fileReturn
-    "../testImports/Kitchen.xsd" | new File(this.getClass().getResource("/schema/House").toURI()).absoluteFile | new File("build/resources/test/schema/testImports/Kitchen.xsd").absoluteFile
-    "../testIncludes/KitchenSubset.xsd" | new File(this.getClass().getResource("/schema/House").toURI()).absoluteFile | new File("build/resources/test/schema/testIncludes/KitchenSubset.xsd").absoluteFile
-  }
-
   def "make sure that the right type of object is populated correctly coming out of the schema location gatherer"() { 
   setup: "slurp schema, grab import node to pass into gatherSchemaLocations, set up the Parent Directory for the function properly"
     def xmlDoc = new XmlSlurper().parse(schemaToSlurp)
