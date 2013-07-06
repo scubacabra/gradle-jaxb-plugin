@@ -1,5 +1,7 @@
 package com.jacobo.gradle.plugins.structures
 
+import com.jacobo.gradle.plugins.model.XsdSlurper
+
 import spock.lang.Specification
 
 import org.gradle.api.logging.Logging
@@ -11,8 +13,11 @@ class NamespaceMetaDataSpec extends Specification {
   def nmd = new NamespaceMetaData()
   
   def "test targetNamespace to episode file name" () {
-  when:
+  setup:
   nmd.namespace = ns
+
+  when:
+  nmd.convertNamespaceToEpisodeName()
   
   then:
   nmd.episodeName == episode

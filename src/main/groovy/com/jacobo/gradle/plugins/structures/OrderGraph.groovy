@@ -346,20 +346,16 @@ class OrderGraph {
    * Takes each xsd file, parses, gathers target namespace, and populates an array of MetaData with unique namespaces and files that declare those namespaces
    */
   def populateNamespaceMetaData = { schemaDoc ->
-    def records = new XmlSlurper().parse(schemaDoc)
-    def target = records.@targetNamespace
-    target = (!target.isEmpty()) ? target.text() : "null"
-    if (target == "null") {
-      log.warning("There is no targetNamespace attribute for file {}, it is strongly advised best practice to ALWAYS include a targetNamespace attribute in your <xsd:schema> root element.  no targetNamespaces are referred to using the Chameleon design pattern, which is not advisable!", schemaDoc)
-    }
-    def namespace = namespaceData?.find{ it.namespace == target }
-    if(namespace) {
-      namespace.parseFiles << schemaDoc
+    def xsd = DocumentReader.slurpDocument(schemaDoc)
+    xsd.grabXsdNamespace()
+    def matchingNamespace =  namespaceData?.find{ it.namespace == target }
+    if(matchingNamespace) {
+      matchingNamespace.slurpers << xsd
     }
     else { 
       def newNamespace = new NamespaceMetaData()
-      newNamespace.namespace = target
-      newNamespace.parseFiles = [schemaDoc]
+      newNamespace.namespace = xsd.xsdNamespace
+      newNamespace.slurpers = [xsd]
       namespaceData << newNamespace
     }
   }

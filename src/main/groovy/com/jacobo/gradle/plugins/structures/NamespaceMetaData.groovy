@@ -5,6 +5,8 @@ import com.jacobo.gradle.plugins.util.ListUtil
 import com.jacobo.gradle.plugins.structures.NamespaceMetaData
 import com.jacobo.gradle.plugins.structures.ExternalNamespaceMetaData
 
+import com.jacobo.gradle.plugins.model.XsdSlurper
+
 import org.gradle.api.logging.Logging
 import org.gradle.api.logging.Logger
 
@@ -16,8 +18,9 @@ import org.gradle.api.logging.Logger
 class NamespaceMetaData { 
 
   static final Logger log = Logging.getLogger(NamespaceMetaData.class)
+
   /**
-   * string of this unique namespace
+   * the namespace for this group of file(s)
    */
   String namespace
 
@@ -29,7 +32,7 @@ class NamespaceMetaData {
   /**
    * A list of files that are passed in as an input to the xjc task
    */
-  List<File> parseFiles = []
+  List<XsdSlurper> slurpers = []
 
   /**
    * a list of strings that are the imported namespaces that all @parseFiles files have imported
@@ -37,17 +40,13 @@ class NamespaceMetaData {
   List<NamespaceMetaData> importedNamespaces = []
 
   /**
-   *a list of files that are included by all the @parseFiles
-   */
-  List<File> includeFiles = []
-
-  /**
    * a map of String, File pairs that contain unique externally imported namespaces and the @schemaLocation file turned into an absolute File that they import.  only unique external imported namespace and unique absolute file paths are in this Map
    */
   List<ExternalNamespaceMetaData> externalImportedNamespaces = []
 
   /**
-   * Method that converts standard @targetNamespace values to an appropriate episode File name that the file system accepts
+   * Method that converts the namespace into an appropriate episode File name that the file system accepts
+   * TODO: conventions could be better
    */
   public convertNamespaceToEpisodeName() { 
     def convert = namespace.replace("http://", "")
@@ -56,34 +55,6 @@ class NamespaceMetaData {
     this.episodeName = convert
   }
 
-  /**
-   * @param namespace
-   * Sets this namespace and additionally converts namespace to episode name
-   */
-  public void setNamespace(String namespace) { 
-    this.namespace = namespace
-    convertNamespaceToEpisodeName()
-  }
-
-  /**
-   * @param targetNamespace string of a namespace that needs to be converted, but not for this object, just a helper method
-   * @return String the episode name converted
-   * Method that converts standard @targetNamespace values to an appropriate episode File name that the file system accepts
-   */
-  public static String convertNamespaceToEpisodeName(String targetNamespace) { 
-    def convert = targetNamespace.replace("http://", "")
-    convert = convert.replace(":", "-")
-    convert = convert.replace("/", "-")
-    return convert
-  }
-  /**
-   * add an include file to the @includeFiles list
-   */
-  def addIncludeFile(File include) { 
-    if( !ListUtil.isAlreadyInList(includeFiles, include) ) { 
-      includeFiles << include
-    }
-  }
 
   /**
    * add an imported namespace to the @importedNamespaces list
@@ -91,22 +62,6 @@ class NamespaceMetaData {
   def addImportedNamespace(NamespaceMetaData importedNamespaceData) { 
     if( !ListUtil.isAlreadyInList(importedNamespaces, importedNamespaceData) ) { 
       importedNamespaces << importedNamespaceData
-    }
-  }
-
-  /**
-   * add a list of File to the parseFiles list
-   */
-  def addParseFiles(List<File> files) { 
-    parseFiles.addAll(files)
-  }
-
-  /**
-   * add a single File to the parseFiles list
-   */
-  def addParseFile(File file) { 
-    if( !ListUtil.isAlreadyInList(parseFiles, file) ) { 
-      parseFiles << file
     }
   }
   
@@ -131,32 +86,7 @@ class NamespaceMetaData {
    * slurps the xsd files for import and include data
    */
   def slurpXsdFiles(List namespacesData) {
-    parseFiles.each { doc ->
-      def schema = new XmlSlurper().parse(doc)
-      def imports = schema.import
-      def includes = schema.include
-      slurpImports(imports, namespacesData, doc)
-      slurpIncludes(includes, doc)
-    }
     if(!importedNamespaces) importedNamespaces << "none" // if a namespace imports nothing, flag it for being parse first
-  }
-
-  /**
-   * parses the includes information for a schema file
-   *
-   * @param includes the xml slurper include data for this file
-   * @param doc the File object representing the xsd file
-   */
-  def slurpIncludes = { includes, doc ->
-    if(!includes.isEmpty()) { 
-      includes.@schemaLocation.each {
-	def includePath = new File(doc.parent, it.text()).canonicalPath
-	log.debug("includes the path {}", includePath)
-	def includeFile = new File(includePath)
-	log.debug("include File is {}", includeFile)
-	addIncludeFile(includeFile)
-      }
-    }
   }
 
   /**
