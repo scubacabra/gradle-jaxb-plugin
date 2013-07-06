@@ -110,31 +110,6 @@ class NamespaceMetaDataSpec extends Specification {
   
   }
 
-  def "slurped up includes, make sure to subtract from parseFiles" () { 
-  when: "already gathered xsd for this folder, slurping the file includes (that's all it has)"
-  def schema = new XmlSlurper().parse(doc)
-  def includes = schema.include
-  nmd.parseFiles << doc
-  nmd.parseFiles << includeFile
-  nmd.namespace = "http://www.example.org/Kitchen"
-  nmd.slurpIncludes(includes, doc)
-
-  then: "include files should be 1"
-  nmd.includeFiles.size == 1
-  nmd.includeFiles[0] == includeFile
-
-  when: "we process include files, the parse Files should be without the included file"
-  nmd.processIncludeFiles()
-
-  then: "parse Files should only be of length 1"
-  nmd.parseFiles.size == 1
-  nmd.parseFiles[0] == doc
-  
-  where:
-  doc = new File(this.getClass().getResource("/schema/testIncludes/Kitchen.xsd").toURI()).absoluteFile
-  includeFile = new File(this.getClass().getResource("/schema/testIncludes/KitchenSubset.xsd").toURI()).absoluteFile
-  }
-
   def "slurped up includes, circular dependency (error in writing your schema) now parseFiles is null" () { 
   when:
   nmd.parseFiles << doc
