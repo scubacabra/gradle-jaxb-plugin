@@ -13,14 +13,19 @@ class XsdSlurper {
     private static final Logger log = Logging.getLogger(XsdSlurper.class)
 
     /**
-     * name of the slurped document (file)
+     * slurped contents from this xsd from XmlSlurper
      */
-    def documentName
+    def content
 
     /**
-     * The current dir the slurped document is in
+     * name of the xsd file, absolute
      */
-    File currentDir
+    File document
+
+    /**
+     * xsd namespace for this document (targetNamespace value)
+     */
+    def xsdNamespace
 
     /**
      * xsd import locations (relative to @see #currentDir)
@@ -36,31 +41,44 @@ class XsdSlurper {
      * grabs the dependencies of this xsd document being slurped, slurps import statements and include statements
      * @param xsd the xml slurped document to grab data from
      */
-    def grabXsdDependencies(xsd) {
-        log.debug("starting to grab XSD dependencies for {}", xsd)
-        grabXsdIncludedDependencies(xsd)
-        grabXsdImportedDependencies(xsd)
-        log.debug("grabbed all XSD dependencies for {}", xsd)
+    def grabXsdNamespace() {
+        log.debug("starting to grab XSD namespace for {}", content)
+	xsdNamespace = content.@targetNamespace?.text()
+	if (xsdNamespace) {
+	  log.warning("There is no targetNamespace attribute for file {} (assigning 'null' to it), it is strongly advised best practice to ALWAYS include a targetNamespace attribute in your <xsd:schema> root element.  no targetNamespaces are referred to using the Chameleon design pattern, which is not advisable!", schemaDoc)
+	}
+        log.debug("grabbed XSD namespace for {}", content)
+    }
+
+    /**
+     * grabs the dependencies of this xsd document being slurped, slurps import statements and include statements
+     * @param xsd the xml slurped document to grab data from
+     */
+    def grabXsdDependencies() {
+        log.debug("starting to grab XSD dependencies for {}", content)
+        grabXsdIncludedDependencies(content)
+        grabXsdImportedDependencies(content)
+        log.debug("grabbed all XSD dependencies for {}", content)
     }
 
     /**
      * Slurp xsd import statements
      * @param xsd the xml slurped document to grab data from
      */
-    def grabXsdImportedDependencies(xsd) {
-        log.debug("resolving xsd 'imported' dependencies for {}", xsd)
-        processXsdDependencyLocations(xsd?.import)
-        log.debug("resolved all xsd 'imported' dependencies for {}", xsd)
+    def grabXsdImportedDependencies() {
+        log.debug("resolving xsd 'imported' dependencies for {}", content)
+        processXsdDependencyLocations(content?.import)
+        log.debug("resolved all xsd 'imported' dependencies for {}", content)
     }
 
     /**
      * slurp xsd includes statements
      * @param xsd the xml slurped document to grab data from
      */
-    def grabXsdIncludedDependencies(xsd) {
-        log.debug("resolving xsd 'include' dependencies for {}", xsd)
-        processXsdDependencyLocations(xsd?.include)
-        log.debug("resolved all xsd 'include' dependencies for {}", xsd)
+    def grabXsdIncludedDependencies() {
+        log.debug("resolving xsd 'include' dependencies for {}", content)
+        processXsdDependencyLocations(content?.include)
+        log.debug("resolved all xsd 'include' dependencies for {}", content)
     }
 
     /**
@@ -82,6 +100,7 @@ class XsdSlurper {
         }
     }
 
+    
     /**
      * Gathers all relative locations belonging to this instance and packages up into one list
      * @return List of all locations from fields #xsdImports and #xsdIncludes
