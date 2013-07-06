@@ -22,9 +22,8 @@ class DocumentReader {
     log.debug("current Dir is {}", document.parentFile)
     def slurped = new XmlSlurper().parse(document)
     def slurper = new XsdSlurper()
-    slurper.grabXsdDependencies(slurped)	
-    slurper.currentDir = document.parentFile
-    slurper.documentName = document.name
+    slurper.document = document
+    slurper.content = slurped
     return slurper
   }
 }
