@@ -185,20 +185,23 @@ class NamespaceMetaData {
   }
 
   /**
-   * takes the include Files and if there are any, subtracts the parseFiles list from the include Files because the xjc task will take these into account
+   * @return List<File> a list of files to parse for this namespace (include files are taken out of this list)
    *
    */
-  public processIncludeFiles() { 
-    if (includeFiles.isEmpty()) {
-      log.info("this namespace {} does not include any files")
+  public List<File> filesToParse() { 
+    def slurperFiles = slurpers.document
+    def includes = []
+    slurpers.xsdIncludes.findAll { !it.isEmpty() }.each { includes.addAll(it) }
+    if (includes.isEmpty()) {
+      log.info("this namespace {} does not include any slurperFiles")
       return
     }
-    log.info("namespace {} includes {}", namespace, includeFiles)
-    log.info("parseFiles has some files that should already be included : {}", parseFiles.intersect(includeFiles))
-    parseFiles = parseFiles.minus(includeFiles)
-    if(parseFiles.isEmpty()) { 
+    log.info("This namespace {} intends to parse {} but includes {}", namespace, slurperFiles, includes)
+    def filesToParse = slurperFiles.minus(includes)
+    if(filesToParse.isEmpty()) { 
       log.warn("namespace {} has empty an empty parse files list, most likely there is a circular dependency for includes files", namespace)
     }
+    return filesToParse
   }
 
   def String toString() { 

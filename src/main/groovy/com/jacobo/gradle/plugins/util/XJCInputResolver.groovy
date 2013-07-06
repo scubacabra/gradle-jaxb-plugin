@@ -31,7 +31,7 @@ class XJCInputResolver {
    */
   public static String transformSchemaListToString(NamespaceMetaData namespaceMetaData) { 
     def includes = ""
-    namespaceMetaData?.parseFiles?.each { path ->
+    namespaceMetaData?.filesToParse().each { path ->
       includes += path.name + " "
     }
     log.info("argument to inludes is {}", includes)
