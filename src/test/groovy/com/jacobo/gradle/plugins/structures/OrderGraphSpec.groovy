@@ -23,8 +23,8 @@ class OrderGraphSpec extends Specification {
   then:
   og.namespaceData.size == 1
   og.namespaceData.get(0).namespace == targetNamespace
-  og.namespaceData.get(0).parseFiles.size == 1
-  og.namespaceData.get(0).parseFiles == xsdFiles*.absoluteFile
+  og.namespaceData.get(0).slurpers.size == 1
+  og.namespaceData.get(0).slurpers.document == xsdFiles*.absoluteFile
 
   where:
   xsd = new File(this.getClass().getResource("/schema/House/Kitchen.xsd").toURI())
@@ -41,8 +41,8 @@ class OrderGraphSpec extends Specification {
   then:
   og.namespaceData.size == 1
   og.namespaceData.get(0).namespace == targetNamespace
-  og.namespaceData.get(0).parseFiles.size == 2
-  og.namespaceData.get(0).parseFiles == xsdFiles*.absoluteFile
+  og.namespaceData.get(0).slurpers.size == 2
+  og.namespaceData.get(0).slurpers.document == xsdFiles*.absoluteFile
 
   where:
   xsd = new File(this.getClass().getResource("/schema/House/Kitchen.xsd").toURI())
@@ -60,8 +60,8 @@ class OrderGraphSpec extends Specification {
   then:
   og.namespaceData.size == 2
   og.namespaceData.namespace == targetNamespace
-  og.namespaceData.parseFiles.size == 2
-  og.namespaceData.parseFiles == xsdFiles*.absoluteFile
+  og.namespaceData.slurpers.size == 2
+  og.namespaceData.slurpers.document == xsdFiles*.absoluteFile
 
   where:
   xsd = new File(this.getClass().getResource("/schema/House/Kitchen.xsd").toURI())

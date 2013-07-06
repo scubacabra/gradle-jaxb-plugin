@@ -3,6 +3,7 @@ package com.jacobo.gradle.plugins.structures
 import org.gradle.api.logging.Logging
 import org.gradle.api.logging.Logger
 import com.jacobo.gradle.plugins.util.ListUtil
+import com.jacobo.gradle.plugins.reader.DocumentReader
 
 class OrderGraph { 
   static final Logger log = Logging.getLogger(OrderGraph.class)
@@ -348,7 +349,7 @@ class OrderGraph {
   def populateNamespaceMetaData = { schemaDoc ->
     def xsd = DocumentReader.slurpDocument(schemaDoc)
     xsd.grabXsdNamespace()
-    def matchingNamespace =  namespaceData?.find{ it.namespace == target }
+    def matchingNamespace =  namespaceData?.find{ it.namespace == xsd.xsdNamespace }
     if(matchingNamespace) {
       matchingNamespace.slurpers << xsd
     }
