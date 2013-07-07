@@ -63,7 +63,7 @@ class OrderGraph {
       anythingDependsOnMe.each { nsKey, levelDepth ->
 	log.debug("namespace key is {} and the level depth where it currently lies is {}", nsKey, levelDepth)
 	def dependentNamespace = namespaceData.find { it.namespace == nsKey }
-	log.debug("dependent namespace is {}, it has files {}", dependentNamespace, dependentNamespace.parseFiles )
+	log.debug("dependent namespace is {}, it has files {}", dependentNamespace, dependentNamespace.slurpers.document )
 	removeNamespaceFromOrderGraph(dependentNamespace, levelDepth)
 	log.debug("trying to insert {} at level {}", dependentNamespace, level+1)
 	reinsertNamespaceIntoLevel(dependentNamespace, level+1)
