@@ -57,7 +57,8 @@ class XJCInputResolverSpec extends Specification {
 
   when: "we find dependencies up the graph"
     def dependencies = XJCInputResolver.findDependenciesUpGraph(ns5, [])
-    def episodeNames = dependencies*.episodeName
+    dependencies*.convertNamespaceToEpisodeName()
+    def episodeNames = dependencies.episodeName
 
   then: "we can expect this episode list"
     ns4.episodeName == "ns4"
@@ -75,7 +76,8 @@ class XJCInputResolverSpec extends Specification {
 
   when: "we try to get dependencies up the graph, need to do external and not bail"
 	  def dependencies = XJCInputResolver.findDependenciesUpGraph(ns1, [])
-          def episodeNames = dependencies*.episodeName
+	  dependencies*.convertNamespaceToEpisodeName()
+          def episodeNames = dependencies.episodeName
 
   then: "we can expect this dependency and episode binding list for ns1"
 	  dependencies == [ns4, ns3, ns2]
