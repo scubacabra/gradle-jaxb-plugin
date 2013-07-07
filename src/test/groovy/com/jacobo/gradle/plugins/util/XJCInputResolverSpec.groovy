@@ -3,6 +3,7 @@ package com.jacobo.gradle.plugins.util
 import spock.lang.Specification
 
 import com.jacobo.gradle.plugins.structures.NamespaceMetaData
+import com.jacobo.gradle.plugins.model.XsdSlurper
 
 class XJCInputResolverSpec extends Specification {
   
@@ -28,9 +29,14 @@ class XJCInputResolverSpec extends Specification {
   }
 
   def "transform xjc parse File to relative path compared to xsd Dir" () { 
-  when:
+  setup:
   def nsData = new NamespaceMetaData()
-  nsData.parseFiles = xsdFiles
+  xsdFiles.each { 
+    def slurper = new XsdSlurper()
+    slurper.document = it
+    nsData.slurpers << slurper
+  }
+  when:
   def relativeIncludes = XJCInputResolver.transformSchemaListToString(nsData)
 
   then:

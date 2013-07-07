@@ -124,7 +124,7 @@ class NamespaceMetaData {
     slurpers.xsdIncludes.findAll { !it.isEmpty() }.each { includes.addAll(it) }
     if (includes.isEmpty()) {
       log.info("this namespace {} does not include any slurperFiles")
-      return
+      return slurperFiles
     }
     log.info("This namespace {} intends to parse {} but includes {}", namespace, slurperFiles, includes)
     def filesToParse = slurperFiles.minus(includes)
