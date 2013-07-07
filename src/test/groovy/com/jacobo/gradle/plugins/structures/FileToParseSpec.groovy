@@ -96,4 +96,32 @@ class FileToParseSpec extends Specification {
   includeFile = new File(this.getClass().getResource("/schema/testIncludes/KitchenSubset.xsd").toURI()).absoluteFile
   secondInclude = new File(this.getClass().getResource("/schema/testIncludes/KitchenSubset2.xsd").toURI()).absoluteFile
   }
+
+  def "slurped up includes, circular dependency (error in writing your schema) now, doc includes include1 and include1 includes doc, parseFiles is null : error writing schema should be fixed." () {
+  setup:
+  def result
+  def slurped1 = new XsdSlurper()
+  slurped1.document = doc
+  slurped1.xsdNamespace = "http://www.example.org/Kitchen"
+  slurped1.xsdIncludes = [includeFile]
+  def slurped2 = new XsdSlurper()
+  slurped2.document = includeFile
+  slurped2.xsdNamespace = "http://www.example.org/Kitchen"
+  slurped2.xsdIncludes = [doc]
+
+  when:
+  nmd.slurpers << slurped1
+  nmd.slurpers << slurped2
+  nmd.namespace = "http://www.example.org/Kitchen"
+  result = nmd.filesToParse()
+
+  then: "include files should be 2 and parse files should be 0" //TODO an error should really be thrown IMO
+  result.size == 0
+  result.find { it == includeFile } == null
+  result.find { it == doc } == null
+  
+  where:
+  doc = new File(this.getClass().getResource("/schema/testIncludes/Kitchen.xsd").toURI()).absoluteFile
+  includeFile = new File(this.getClass().getResource("/schema/testIncludes/KitchenSubset.xsd").toURI()).absoluteFile
+  }
 }

@@ -114,25 +114,4 @@ class NamespaceMetaDataSpec extends Specification {
   doc = new File(this.getClass().getResource("/schema/testImports/Kitchen.xsd").toURI()).absoluteFile
   
   }
-
-  def "slurped up includes, circular dependency (error in writing your schema) now parseFiles is null" () { 
-  when:
-  nmd.parseFiles << doc
-  nmd.parseFiles << includeFile
-  nmd.includeFiles << doc
-  nmd.includeFiles << includeFile
-  nmd.namespace = "http://www.example.org/Kitchen"
-  nmd.processIncludeFiles()
-
-  then: "include files should be 2 and parse files should be 0" //TODO an error should really be thrown IMO
-  nmd.includeFiles.size == 2
-  nmd.includeFiles.find { it == includeFile } == includeFile
-  nmd.includeFiles.find { it == doc } == doc
-  nmd.parseFiles.size == 0
-  nmd.parseFiles == []
-  
-  where:
-  doc = new File(this.getClass().getResource("/schema/testIncludes/Kitchen.xsd").toURI()).absoluteFile
-  includeFile = new File(this.getClass().getResource("/schema/testIncludes/KitchenSubset.xsd").toURI()).absoluteFile
-  }
 }
