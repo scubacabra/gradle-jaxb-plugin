@@ -18,7 +18,7 @@ class DocumentReader {
    * @return @see XsdSlurper
    */
   static slurpDocument(File document) { 
-    log.debug("file is {}", document)
+    log.debug("slurping file {}", document)
     log.debug("current Dir is {}", document.parentFile)
     def slurped = new XmlSlurper().parse(document)
     def slurper = new XsdSlurper()
