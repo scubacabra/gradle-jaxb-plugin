@@ -32,32 +32,28 @@ class NamespaceMetaDataSpec extends Specification {
   def "add external imported namespace with no prior external namespace" () { 
   when:
   nmd.externalImportedNamespaces = []
-  nmd.addExternalImportedNamespaces(extNamespace, externalFile)
+  nmd.addExternalImportedNamespaces(externalFile)
 
   then:
   nmd.externalImportedNamespaces.size == 1
-  nmd.externalImportedNamespaces.namespace == [extNamespace]
   nmd.externalImportedNamespaces.externalSchemaLocation == [externalFile]
   
   where:
-  extNamespace                     | externalFile
-  "http://www.example.org/Kitchen" | new File(this.getClass().getResource("/schema/House/Kitchen.xsd").toURI())
+  externalFile =  new File(this.getClass().getResource("/schema/House/Kitchen.xsd").toURI())
   }
 
   def "add external imported namespace with one prior external namespace" () { 
   when:
   def externalNamespace = new ExternalNamespaceMetaData(namespace: "http://www.example.org/Kitchen", externalSchemaLocation: new File(this.getClass().getResource("/schema/House/Kitchen.xsd").toURI()).absoluteFile)
   nmd.externalImportedNamespaces << externalNamespace
-  nmd.addExternalImportedNamespaces(extNamespace, externalFile)
+  nmd.addExternalImportedNamespaces(externalFile)
 
   then:
   nmd.externalImportedNamespaces.size == 2
-  nmd.externalImportedNamespaces.namespace == ["http://www.example.org/Kitchen", extNamespace]
   nmd.externalImportedNamespaces.externalSchemaLocation == [new File(this.getClass().getResource("/schema/House/Kitchen.xsd").toURI()), externalFile]
 
   where:
-  extNamespace                        | externalFile
-  "http://www.example.org/LivingRoom" | new File(this.getClass().getResource("/schema/House/LivingRoom.xsd").toURI())
+  externalFile = new File(this.getClass().getResource("/schema/House/LivingRoom.xsd").toURI())
   }
 
   //TODO should remove this
@@ -77,38 +73,49 @@ class NamespaceMetaDataSpec extends Specification {
   "http://www.example.org/Kitchen" | new File(this.getClass().getResource("/schema/House/KitchenSubset.xsd").toURI())
   } */
 
-  def "slurped up imports for this namespace data, not external namespace" () { 
+  def "obtain imported namespaces for this namespace data, is not an external namespace, Kitchen imports LivingRoom namespace" () { 
   setup:
-  def livingRoomMetaData = new NamespaceMetaData(namespace: "http://www.example.org/LivingRoom")
-
+  def slurped = new XsdSlurper()
+  slurped.xsdNamespace = "http://www.example.org/LivingRoom"
+  slurped.document = livingRoomXsd
+  def livingRoomMetaData = new NamespaceMetaData(namespace: "http://www.example.org/LivingRoom", slurpers: [slurped])
+  slurped.xsdImports = [livingRoomXsd]
+  slurped.xsdNamespace = "http://www.example.org/Kitchen"
+  nmd.slurpers << slurped
+  nmd.namespace = slurped.xsdNamespace
 
   when:
-  def schema = new XmlSlurper().parse(doc)
-  def imports = schema.import
   def namespaceMetaData = [livingRoomMetaData]
-  nmd.slurpImports(imports, namespaceMetaData, doc)
+  nmd.obtainImportedNamespaces(namespaceMetaData)
 
   then:
   nmd.importedNamespaces.size == 1
   nmd.importedNamespaces[0].namespace == "http://www.example.org/LivingRoom"
+  nmd.externalImportedNamespaces == []
+  
   
   where:
   doc = new File(this.getClass().getResource("/schema/testImports/Kitchen.xsd").toURI()).absoluteFile
-  
+  livingRoomXsd = new File(this.getClass().getResource("/schema/testImports/LivingRoom.xsd").toURI()).absoluteFile
   }
 
-  def "slurped up imports for this namespace data, is an external namespace" () { 
+  def "obtain imported namespaces for this namespace data, is an external namespace" () { 
+  setup:
+  def slurped = new XsdSlurper()
+  slurped.xsdImports = [doc]
+  slurped.xsdNamespace = "http://www.example.org/LivingRoom"
+  nmd.namespace = slurped.xsdNamespace
+  nmd.slurpers << slurped
+
   when:
   def namespaceMetaData = []
-  def schema = new XmlSlurper().parse(doc)
-  def imports = schema.import
-  nmd.slurpImports(imports, namespaceMetaData, doc)
+  nmd.obtainImportedNamespaces(namespaceMetaData)
 
   then:
   nmd.importedNamespaces.size == 0
   nmd.externalImportedNamespaces.size == 1
   nmd.importedNamespaces == []
-  nmd.externalImportedNamespaces[0].namespace == "http://www.example.org/LivingRoom"
+  nmd.externalImportedNamespaces[0].externalSchemaLocation == doc
   
   where:
   doc = new File(this.getClass().getResource("/schema/testImports/Kitchen.xsd").toURI()).absoluteFile

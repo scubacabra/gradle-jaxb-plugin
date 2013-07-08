@@ -25,6 +25,11 @@ class NamespaceMetaData {
   String namespace
 
   /**
+   * does this namespace depend on another? (internal OR external)
+   */
+  boolean dependsOnAnotherNamespace = false
+
+  /**
    * the episode name that will be generated when parsing
    */
   String episodeName
@@ -54,39 +59,19 @@ class NamespaceMetaData {
     convert = convert.replace("/", "-")
     this.episodeName = convert
   }
-
-
-  /**
-   * add an imported namespace to the @importedNamespaces list
-   */
-  def addImportedNamespace(NamespaceMetaData importedNamespaceData) { 
-    if( !ListUtil.isAlreadyInList(importedNamespaces, importedNamespaceData) ) { 
-      importedNamespaces << importedNamespaceData
-    }
-  }
   
   /**
-   * add an externally imported namespace and associated externally imported File to the externalImportedNamespaces map
+   * add an externally imported xsd File (external File) to the externalImportedNamespaces map
+   * no duplicate Files, only need one.  If new create the object, if already there, do nothing
    */
-  def addExternalImportedNamespaces(String externalNamespace, File externalFile) { 
-    def extNamespace = externalImportedNamespaces.find{ it.namespace == externalNamespace }
-    if (extNamespace) { //already in this external imported namespaces list
-      if (!ListUtil.isAlreadyInList(extNamespace.externalSchemaLocation, externalFile )) { //TODO I think every external namespace should only have one entry point, but I guess I could be wrong, planning for multiple as a worst case
-	extNamespace.externalSchemaLocation << externalFile
-      }
-    } else { //first external in the externalImportedNamespaces list, create object, populate fields, add to external Import Namespace List
+  def addExternalImportedNamespaces(File externalFile) { 
+    def extNamespace = externalImportedNamespaces.find{ it.externalSchemaLocation == externalFile }
+    log.debug("{} external File {} in external Imported Namespaces List {}", (extNamespace ? "Found, don't duplicate" : "No"), externalFile, externalImportedNamespaces)
+    if (!extNamespace) { //first external in the externalImportedNamespaces list
       def extNs = new ExternalNamespaceMetaData()
-      extNs.namespace = externalNamespace
       extNs.externalSchemaLocation = externalFile
       externalImportedNamespaces << extNs
     }
-  }
-
-  /**
-   * slurps the xsd files for import and include data
-   */
-  def slurpXsdFiles(List namespacesData) {
-    if(!importedNamespaces) importedNamespaces << "none" // if a namespace imports nothing, flag it for being parse first
   }
 
   /**
@@ -96,22 +81,24 @@ class NamespaceMetaData {
    * @param namespaceData the List of  #NamespaceMetaData object for the whole OrderGraph object
    * @param doc the File object representing the xsd file
    */
-  def slurpImports = { imports, List namespaceData, doc ->
-    log.debug("Starting to slurp the import statements for {}", doc)
-    if(!imports.isEmpty()) { 
-      imports.each { imp ->
-	def namespace = imp.@namespace.text()
-	if(!ListUtil.isImportedNamespaceExternal(namespaceData, namespace)) {
-	  def nsData = namespaceData.find { it.namespace == namespace }
-	  addImportedNamespace(nsData)
-	} else { 
-	  def externalSchemaLocale = imp.@schemaLocation.text()
-	  def externalSchemaPath = new File(doc.parent, externalSchemaLocale).canonicalPath
-	  def externalSchemaFile = new File(externalSchemaPath)
-	  addExternalImportedNamespaces(namespace, externalSchemaFile)
-	}
+  def obtainImportedNamespaces(List currentNamespaces) {
+    def totalImports = []
+    log.debug("gathering all the imported Files for this namespace : {}", namespace)
+    slurpers.xsdImports.findAll { !it.isEmpty() }.each {
+      totalImports.addAll(it)
+      totalImports?.unique()
+    }
+    totalImports.each { importedFile ->
+      log.debug("checking to see if file : {} is found in any of the namespace slurped documents : {} ", importedFile, currentNamespaces.slurpers.document)
+      def matchingImport = currentNamespaces.find { it.slurpers.document.contains(importedFile) }
+      if(matchingImport) {
+        ListUtil.addElementToList(importedNamespaces, matchingImport)
+      } else { //is external to this namespace group, treat differently
+        addExternalImportedNamespaces(importedFile)
       }
     }
+    if(importedNamespaces || externalImportedNamespaces) 
+      dependsOnAnotherNamespace = true // if a namespace imports something from either internal or external dependency , flag it so it is not grabbed to be the first namespace parsed
   }
 
   /**
