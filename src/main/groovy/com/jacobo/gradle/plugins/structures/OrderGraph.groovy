@@ -132,10 +132,11 @@ class OrderGraph {
   }
 
   /**
+   * Obtains the actual dependency information for all externally imported namespaces.
    * Gather all the namespaceData.externalImportedNamespaces maps, make them unique (could be dupes) and attach the starting files
    * to each namespace
    */
-  def processExternalImports() { 
+  def obtainExternalImportsDependencies() { 
     def containsExternals = this.namespaceData.findAll { !it.externalImportedNamespaces.isEmpty() } 
     log.debug("namespaces with external dependencies are {}", containsExternals)
 
@@ -179,34 +180,13 @@ class OrderGraph {
   }
 
   /**
-   * populates the includes and imports data
-   * if a namespace does nothing, it is flagged for being parsed first in the Namespace Graph Order
-   */
-  def populateIncludesAndImportsData() { 
-    this.namespaceData.each { namespace ->
-      namespace.slurpXsdFiles(namespaceData)
-    }
-  }
-
-  /**
-   * finds all nameaspace meta data with includes files, and calls that objects method to process those files
-   */
-  def processIncludes() { 
-    def withIncludes = this.namespaceData.findAll { !it.includeFiles.isEmpty() }
-    log.info("processing Total includes over the whole Directory")
-    withIncludes.each { ns ->
-      ns.processIncludeFiles()
-    }
-  }
-
-  /**
    * gathers initial namespace graph ordering data objects that are flagged with a "none" for their #importedNamespaces field
    * populates with a reference from namespaceData
    */
-  def gatherInitialNamespaceGraphOrdering() { 
+  def gatherIndependentNamespaces() { 
     log.info("finding the base namespace packages to be parsed first, i.e. those namespace that do not import any other namespaces")
-    orderGraph[0] = this.namespaceData.findAll { it.importedNamespaces == ["none"] }
-    log.debug("Base schema meta data information {}", orderGraph[0])
+    orderGraph[0] = this.namespaceData.findAll { it.dependsOnAnotherNamespace == true }
+    log.debug("Independent Namespaces are: {}", orderGraph[0])
   }
 
 
@@ -314,7 +294,7 @@ class OrderGraph {
    * graphs out each dependent namespace on the #orderGraph
    * 
    */
-  def graphOutDependentNamespaces() { 
+  def arrangeDependentNamespacesInOrder() { 
     getDependentNamespaces().each { ns ->
       log.debug("looking at namespace {}", ns.namespace)
       log.debug("this namespace imports {} namespaces: {}", ns.importedNamespaces.size, ns.importedNamespaces.namespace)
@@ -346,7 +326,7 @@ class OrderGraph {
    * @param schemaDoc the xsd file to parse and populate the Meta Data
    * Takes each xsd file, parses, gathers target namespace, and populates an array of MetaData with unique namespaces and files that declare those namespaces
    */
-  def populateNamespaceMetaData = { schemaDoc ->
+  def obtainUniqueNamespaces = { schemaDoc ->
     def xsd = DocumentReader.slurpDocument(schemaDoc)
     xsd.grabXsdNamespace()
     def matchingNamespace =  namespaceData?.find{ it.namespace == xsd.xsdNamespace }
@@ -358,6 +338,22 @@ class OrderGraph {
       newNamespace.namespace = xsd.xsdNamespace
       newNamespace.slurpers = [xsd]
       namespaceData << newNamespace
+    }
+  }
+
+  /**
+   * obtains the includes and imports data for each namespace in namespaceData
+   * Obtains imported namespace, that being internal (to namespaceData) or external (to namespaceData)
+   * if a namespace does import another namespace, it is flagged for importing and will not be grabbed first
+   */
+  def obtainNamespacesMetaData() { 
+    this.namespaceData.each { namespace ->
+      namespace.slurpers.each { slurped ->
+        slurped.grabXsdDependencies()
+      }
+    }
+    this.namespaceData.each { namespace ->
+     namespace.obtainImportedNamespaces(namespaceData)
     }
   }
 

@@ -18,7 +18,7 @@ class OrderGraphSpec extends Specification {
 
   def "populate namespace data initially when everything is still null" () {
   when:
-  og.populateNamespaceMetaData(xsd)
+  og.obtainUniqueNamespaces(xsd)
 
   then:
   og.namespaceData.size == 1
@@ -35,8 +35,8 @@ class OrderGraphSpec extends Specification {
   
   def "try populating namespace data with the same namespace you previously populated" () { 
   when:
-  og.populateNamespaceMetaData(xsd)
-  og.populateNamespaceMetaData(sameNamespace)
+  og.obtainUniqueNamespaces(xsd)
+  og.obtainUniqueNamespaces(sameNamespace)
 
   then:
   og.namespaceData.size == 1
@@ -54,8 +54,8 @@ class OrderGraphSpec extends Specification {
 
   def "Populate namespace data with two different namespaces" () { 
   when:
-  og.populateNamespaceMetaData(xsd)
-  og.populateNamespaceMetaData(newNamespace)
+  og.obtainUniqueNamespaces(xsd)
+  og.obtainUniqueNamespaces(newNamespace)
 
   then:
   og.namespaceData.size == 2
@@ -74,11 +74,11 @@ class OrderGraphSpec extends Specification {
   def "Grab the base target namespace data and make sure it is of type NamespaceMetaData"() { 
   setup: 
   namespaceData = [ns1, ns2, ns3, ns4]
-  namespaceData.each { it.importedNamespaces << "none" }
+  namespaceData.each { it.dependsOnAnotherNamespace = true }
     
   when:
   og.namespaceData = namespaceData
-  og.gatherInitialNamespaceGraphOrdering()
+  og.gatherIndependentNamespaces()
 
   then: "order size is 1, but the inner list has 4 elements, all should be of type NamespaceData"
   og.namespaceData.size == 4
@@ -150,7 +150,7 @@ class OrderGraphSpec extends Specification {
     og.orderGraph[0] = [ns1, ns2]
 
   when: "ns3 depends on ns1 and ns2, so it has matches at both first levels, all matching, add ns3 to level 2, index 1"
-    og.graphOutDependentNamespaces()
+    og.arrangeDependentNamespacesInOrder()
 
   then: "two levels in graph one object in each level"
     og.orderGraph.size == 3
@@ -321,7 +321,7 @@ class OrderGraphSpec extends Specification {
     og.namespaceData = [ns1, ns2, ns3, ns4, ns5]
 
   when: "process the external imports"
-    og.processExternalImports()
+    og.obtainExternalImportsDependencies()
 
   then: "order graph external dependencies should be of length one, and the ns ext imports should be populated"
     og.externalDependencies.size == 1
