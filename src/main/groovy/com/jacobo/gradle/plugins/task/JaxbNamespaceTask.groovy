@@ -6,6 +6,7 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.Input
 import org.gradle.api.DefaultTask
 import com.jacobo.gradle.plugins.structures.OrderGraph
+import com.jacobo.gradle.plugins.util.FileHelper
 import com.jacobo.gradle.plugins.structures.NamespaceMetaData
 import com.jacobo.gradle.plugins.JaxbPlugin
 
@@ -25,36 +26,28 @@ class JaxbNamespaceTask extends DefaultTask {
 
   @TaskAction
   void start() { 
-    log.info("starting jaxb namespace dependency task at: {}", getXsdDir())
+    log.info("finding all xsd files in: {}", getXsdDir())
+    def files = FileHelper.findAllXsdFiles(getXsdDir())
 
-    order.findAllXsdFiles(getXsdDir())
+    log.info("aquiring unique namespaces from xsd files")
+    files.each { file ->
+      order.obtainUniqueNamespaces(file)
+    }
 
-    log.info("unique namespaces aquired")
-    log.info("getting all import and includes statments in namespace files to see what they depend on")
+    log.info("getting all import and includes statments in namespace files to see what they depend on and resolving internal/external namespace dependencies")
+    order.obtainNamespacesMetaData()
 
-    order.populateIncludesAndImportsData()
-    log.info("processing includes data and removing from files data accordingly")
+    order.gatherIndependentNamespaces()
+    log.info("found namespaces that need to be parsed first")
 
-    order.processIncludes()
-    order.gatherInitialNamespaceGraphOrdering()
+    order.arrangeDependentNamespacesInOrder()
+    log.info("namespaces with dependencies have been arranged on the order graph")
 
-    log.info("found base namespace packages")
-
-    order.graphOutDependentNamespaces()
-
-    log.info("parsed through dependent namespaces")
     log.info("processing external Dependencies")
-
-    order.processExternalImports()
-
-    log.info("namespace dependency graph is resolved")
-    log.debug("order Graph is {}", order.orderGraph)
-    log.info("namespaceData size (unique namespace) is {}", order.namespaceData.size())
-    log.debug("namespaceData is {}", order.namespaceData)
+    order.obtainExternalImportsDependencies()
 
     project.jaxb.dependencyGraph = order
-
-    log.info("adding order graph to the jaxb extension")
+    log.info("all {} (unique) namespaces have been ordered and saved for parsing. Their order is : {}", order.namespaceData.size(), order.orderGraph)
   }
 
 }
