@@ -185,7 +185,7 @@ class OrderGraph {
    */
   def gatherIndependentNamespaces() { 
     log.info("finding the base namespace packages to be parsed first, i.e. those namespace that do not import any other namespaces")
-    orderGraph[0] = this.namespaceData.findAll { it.dependsOnAnotherNamespace == true }
+    orderGraph[0] = this.namespaceData.findAll { it.dependsOnAnotherNamespace == false }
     log.debug("Independent Namespaces are: {}", orderGraph[0])
   }
 
