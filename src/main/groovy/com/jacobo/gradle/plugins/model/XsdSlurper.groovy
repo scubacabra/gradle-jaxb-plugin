@@ -54,10 +54,10 @@ class XsdSlurper {
      * @param xsd the xml slurped document to grab data from
      */
     def grabXsdDependencies() {
-        log.debug("starting to grab XSD dependencies for {}", content)
-        grabXsdIncludedDependencies(content)
-        grabXsdImportedDependencies(content)
-        log.debug("grabbed all XSD dependencies for {}", content)
+        log.debug("starting to grab XSD dependencies for {}", xsdNamespace)
+        grabXsdIncludedDependencies()
+        grabXsdImportedDependencies()
+        log.debug("grabbed all XSD dependencies for {}", xsdNamespace)
     }
 
     /**
@@ -65,9 +65,9 @@ class XsdSlurper {
      * @param xsd the xml slurped document to grab data from
      */
     def grabXsdImportedDependencies() {
-        log.debug("resolving xsd 'imported' dependencies for {}", content)
+        log.debug("resolving xsd 'imported' dependencies for {}", xsdNamespace)
         processXsdDependencyLocations(content?.import)
-        log.debug("resolved all xsd 'imported' dependencies for {}", content)
+        log.debug("resolved all xsd 'imported' dependencies for {}", xsdNamespace)
     }
 
     /**
@@ -75,9 +75,9 @@ class XsdSlurper {
      * @param xsd the xml slurped document to grab data from
      */
     def grabXsdIncludedDependencies() {
-        log.debug("resolving xsd 'include' dependencies for {}", content)
+        log.debug("resolving xsd 'include' dependencies for {}", xsdNamespace)
         processXsdDependencyLocations(content?.include)
-        log.debug("resolved all xsd 'include' dependencies for {}", content)
+        log.debug("resolved all xsd 'include' dependencies for {}", xsdNamespace)
     }
 
     /**
