@@ -1,5 +1,7 @@
 package com.jacobo.gradle.plugins.structures
 
+import com.jacobo.gradle.plugins.model.XsdSlurper
+
 class ExternalNamespaceMetaData extends NamespaceMetaData {
   
   /**
@@ -8,6 +10,9 @@ class ExternalNamespaceMetaData extends NamespaceMetaData {
    */
   File externalSchemaLocation
 
-  
+  /**
+   * Slurper object for an externally Imported File
+   **/
+  XsdSlurper externalSlurper
 
 }
