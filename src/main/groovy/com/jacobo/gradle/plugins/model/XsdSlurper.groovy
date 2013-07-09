@@ -42,12 +42,11 @@ class XsdSlurper {
      * @param xsd the xml slurped document to grab data from
      */
     def grabXsdNamespace() {
-        log.debug("starting to grab XSD namespace for {}", content)
-	xsdNamespace = content.@targetNamespace?.text()
-	if (xsdNamespace) {
+	xsdNamespace = content?.@targetNamespace.text()
+	if (!xsdNamespace) {
 	  log.warn("There is no targetNamespace attribute for file {} (assigning --null-- to it), it is strongly advised best practice to ALWAYS include a targetNamespace attribute in your <xsd:schema> root element.  no targetNamespaces are referred to using the Chameleon design pattern, which is not advisable!", document)
 	}
-        log.debug("grabbed XSD namespace for {}", content)
+        log.debug("grabbed XSD namespace : {}", xsdNamespace)
     }
 
     /**
