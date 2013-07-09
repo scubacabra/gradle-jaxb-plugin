@@ -338,6 +338,7 @@ class OrderGraph {
       newNamespace.namespace = xsd.xsdNamespace
       newNamespace.slurpers = [xsd]
       namespaceData << newNamespace
+      newNamespace.convertNamespaceToEpisodeName()
     }
   }
 
