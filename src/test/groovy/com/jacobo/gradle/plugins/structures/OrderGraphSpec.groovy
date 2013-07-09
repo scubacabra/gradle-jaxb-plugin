@@ -74,7 +74,7 @@ class OrderGraphSpec extends Specification {
   def "Grab the base target namespace data and make sure it is of type NamespaceMetaData"() { 
   setup: 
   namespaceData = [ns1, ns2, ns3, ns4]
-  namespaceData.each { it.dependsOnAnotherNamespace = true }
+  namespaceData.each { it.dependsOnAnotherNamespace = false }
     
   when:
   og.namespaceData = namespaceData
