@@ -73,18 +73,10 @@ class XJCInputResolver {
   private static List findDependenciesUpGraph(NamespaceMetaData xsdData, List depList) {
     log.info("dep list is {}, xsd namespace is {}", depList, xsdData.namespace)
 
-    if (xsdData.importedNamespaces == ["none"]) {
+    if (!xsdData.dependsOnAnotherNamespace) {
       log.info("target Namespace {} doesn't import any other namespace, no episode binding necessary, need to check external dependencies", xsdData.namespace)
       if (xsdData.externalImportedNamespaces) {
-        log.info("going through namespace {} possible external imports {}", xsdData.namespace, xsdData.externalImportedNamespaces)
-	xsdData.externalImportedNamespaces.each { external ->
-	  log.info("external import {} is trying to be added to the list {}", external.namespace, depList)
-	  depList = addToDependencyList(depList, external)
-	  external.externalImportedNamespaces.each { externalImports ->
-            log.info("external import {} externally imports {} -- trying to add this import to the list {}", external.namespace, externalImports.namespace, depList)
-	    depList = addToDependencyList(depList, externalImports)
-	  }
-	}
+        depList = findExternalDependencies(xsdData, depList)
       }
       return depList
     }
