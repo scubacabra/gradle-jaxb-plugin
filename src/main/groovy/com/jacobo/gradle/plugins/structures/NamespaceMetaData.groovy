@@ -97,7 +97,7 @@ class NamespaceMetaData {
         addExternalImportedNamespaces(importedFile)
       }
     }
-    if(importedNamespaces || externalImportedNamespaces) 
+    if(importedNamespaces) 
       dependsOnAnotherNamespace = true // if a namespace imports something from either internal or external dependency , flag it so it is not grabbed to be the first namespace parsed
   }
 
