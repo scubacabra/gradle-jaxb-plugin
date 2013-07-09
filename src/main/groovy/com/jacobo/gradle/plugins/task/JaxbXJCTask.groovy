@@ -33,7 +33,7 @@ class JaxbXJCTask extends DefaultTask {
 	log.info("trying to find {} in namespaceData", namespace)
     	def nsData = dependencyGraph.namespaceData.find{ it == namespace}
     	log.info("found structure {}", nsData)
-   	if(!nsData?.parseFiles?.isEmpty()) { 
+   	if(!nsData?.slurpers.isEmpty()) { 
 	  doTheSchemaParsing(nsData)
 	}
       }
