@@ -1,5 +1,7 @@
 package com.jacobo.gradle.plugins.structures
 
+import com.jacobo.gradle.plugins.model.XsdSlurper
+
 import spock.lang.Specification
 
 class OrderGraphSpec extends Specification {
@@ -317,6 +319,9 @@ class OrderGraphSpec extends Specification {
     def emd = new ExternalNamespaceMetaData()
     emd.namespace = "http://www.example.org/Kitchen"
     emd.externalSchemaLocation = new File(this.getClass().getResource("/schema/testImports/Kitchen.xsd").toURI()).absoluteFile
+    def slurper = new XsdSlurper()
+    slurper.document = emd.externalSchemaLocation
+    emd.externalSlurper = slurper
     [ns1, ns2, ns3].each { it.externalImportedNamespaces << emd }
     og.namespaceData = [ns1, ns2, ns3, ns4, ns5]
 

@@ -70,6 +70,9 @@ class NamespaceMetaData {
     if (!extNamespace) { //first external in the externalImportedNamespaces list
       def extNs = new ExternalNamespaceMetaData()
       extNs.externalSchemaLocation = externalFile
+      def slurper = new XsdSlurper()
+      slurper.document = externalFile
+      extNs.externalSlurper = slurper
       externalImportedNamespaces << extNs
     }
   }
