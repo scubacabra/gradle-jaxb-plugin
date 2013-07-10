@@ -54,6 +54,7 @@ class XJCInputResolverSpec extends Specification {
     ns3.importedNamespaces = [ns2]
     ns4.importedNamespaces = [ns3]
     ns5.importedNamespaces = [ns4]
+    [ns2, ns3, ns4, ns5]*.dependsOnAnotherNamespace = true
 
   when: "we find dependencies up the graph"
     def dependencies = XJCInputResolver.findDependenciesUpGraph(ns5, [])
@@ -68,11 +69,12 @@ class XJCInputResolverSpec extends Specification {
   
   def "base namespace has no imports but has external imports" () { 
   setup: "populate all the namespaces and their dependencies"
-	  ns1.importedNamespaces << "none" //base
+	  ns1.dependsOnAnotherNamespace = false //base
 	  ns2.importedNamespaces << "none" //external base
 	  ns3.importedNamespaces = [ns2]
-	  ns4.externalImportedNamespaces = [ns3, ns2]
+	  ns4.importedNamespaces = [ns3, ns2]
 	  ns1.externalImportedNamespaces = [ns4]
+	  [ns3, ns4]*.dependsOnAnotherNamespace = true
 
   when: "we try to get dependencies up the graph, need to do external and not bail"
 	  def dependencies = XJCInputResolver.findDependenciesUpGraph(ns1, [])
