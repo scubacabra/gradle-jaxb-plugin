@@ -143,16 +143,17 @@ class OrderGraph {
     //populate this top level external dependencies, so you avoid ton's of processing if many target Namespace Data objects, import the same external namespace
     containsExternals.each { ns ->
       ns.externalImportedNamespaces.each { ext ->
-	def extNamespace = externalDependencies.findAll { it.namespace == ext.namespace}
-	if (extNamespace) { // has this namespace already
-	  log.info("target Namespace {} has an external dependency on {} at file {} and this is already on the resolve list {}", ns.namespace, ext.namespace, ext.externalSchemaLocation, externalDependencies)
+	def extNamespace = externalDependencies.findAll { it.externalSchemaLocation == ext.externalSchemaLocation }
+	if (extNamespace) { // has this file already
+	  log.debug("target Namespace {} has an external dependency at file {} and this is already on the current external dependency list list {}", ns.namespace, ext.externalSchemaLocation, externalDependencies)
 	} else { // new addition
+	  log.debug("target Namespace {} has an external dependency at file {}, adding to this external dependency list", ns.namespace, ext.externalSchemaLocation)
 	  externalDependencies << ext
 	}
       }
     }
 
-    log.debug("external dependencies is {} it has resolved imports at externalImportedNamespaces {}", externalDependencies, externalDependencies*.externalImportedNamespaces)
+    log.debug("unique external dependencies locations for all namespaces {} is {}", namespaceData, externalDependencies*.externalSchemaLocation)
 
     // resolve these external namespaces, that is, go through and slurp their files with the External Namespace Resolver
     externalDependencies.each { external ->
