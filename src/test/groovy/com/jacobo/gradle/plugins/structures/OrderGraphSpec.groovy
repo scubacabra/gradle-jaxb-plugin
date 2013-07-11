@@ -94,7 +94,7 @@ class OrderGraphSpec extends Specification {
   def "two elements are the base namespace elements, two others are dependent. grab the 2 dependent elements"() { 
   setup:
   namespaceData = [ns1, ns2, ns3, ns4]
-  [ns1, ns2].each { it.importedNamespaces << "none" }
+  [ns3, ns4].each { it.dependsOnAnotherNamespace = true }
 
   when:
   og.namespaceData = namespaceData
@@ -119,21 +119,21 @@ class OrderGraphSpec extends Specification {
   og.orderGraph[0] = [ns1, ns2]
 
   expect: "finding an imported ns1 is found, ns4 is not there, so flag it"
-  og.findImportedNamespacesInOrderGraph(ns1) == [false, 0]
-  og.findImportedNamespacesInOrderGraph(ns4) == [true]
+  og.findNamespacePlaceInOrderGraph([ns1]) == 1
+  og.findNamespacePlaceInOrderGraph([ns4]) == null
   
   }
 
   def "add Namespace to the graph with all imports matching what is currently in the graph" () { 
   setup: "ns1 and ns2 are base namespaces and are in the order Graph at level 0 (first level)"
     namespaceData = [ns1, ns2, ns3, ns4]
-    [ns1, ns2].each { it.importedNamespaces << "none" }
+    [ns3].each { it.dependsOnAnotherNamespace = true }
     ns3.importedNamespaces = [ns1, ns2]
     og.namespaceData = namespaceData
     og.orderGraph[0] = [ns1, ns2]
 
   when: "ns3 depends on ns1 and ns2, so it has matches at both first levels, all matching, add ns3 to level 2, index 1"
-    og.addNamespaceToOrderGraph(ns3, [0,0], [])
+    og.addNamespaceToLevel(ns3, 1)
 
   then: "two levels in graph one object in each level"
     og.orderGraph.size == 2
@@ -142,176 +142,19 @@ class OrderGraphSpec extends Specification {
 
   }
 
-  def "graph out two namespaces to the graph, check to see that they map out correctly" () {
-  setup: "ns1 and ns2 are base namespaces and are in the order Graph at level 0 (first level)"
-    namespaceData = [ns1, ns2, ns3, ns4]
-    [ns1, ns2].each { it.importedNamespaces << "none" }
-    ns3.importedNamespaces = [ns1, ns2]
-    ns4.importedNamespaces = [ns3]
-    og.namespaceData = namespaceData
-    og.orderGraph[0] = [ns1, ns2]
-
-  when: "ns3 depends on ns1 and ns2, so it has matches at both first levels, all matching, add ns3 to level 2, index 1"
-    og.arrangeDependentNamespacesInOrder()
-
-  then: "two levels in graph one object in each level"
-    og.orderGraph.size == 3
-    og.orderGraph[1].size == 1
-    og.orderGraph[1] == [ns3]
-    og.orderGraph[2].size == 1
-    og.orderGraph[2] == [ns4]
-
-  }
   def "add Namespace to the graph with an import that isn't found in the graph" () { 
 
   setup: "ns1 and ns2 are base namespaces and are in the order Graph at level 0 (first level)"
     og.namespaceData = [ns1, ns2, ns3, ns4]
-    [ns1, ns2].each { it.importedNamespaces << "none" }
+    [ns3, ns4].each { it.dependsOnAnotherNamespace = true }
     ns4.importedNamespaces = [ns1, ns3]
     og.orderGraph[0] = [ns1, ns2]
 
   when: "ns4 depends on ns3, so add ns3 to level 2 and ns4 to level 3"
-    og.addNamespaceToOrderGraph(ns4, [0], [ns3])
+    og.findNamespacePlaceInOrderGraph([ns4])
 
   then: "because of missing import, levels are 3, one element in each level"
-    og.orderGraph.size == 3
-    og.orderGraph[1].size == 1
-    og.orderGraph[1] == [ns3]
-    og.orderGraph[2].size == 1
-    og.orderGraph[2] == [ns4]
-    og.notMatchingMap.isEmpty() == false
-    og.notMatchingMap.size() == 1
-    og.notMatchingMap*.key == ["ns3"]
-    og.notMatchingMap*.value == [1]
-
-  }
-
-  def "add Namespace to the graph that was already added as an unmatching import, must remove the whole row, only entry" () { 
-  setup: "four level order graph"
-    og.namespaceData = [ns1, ns2, ns3, ns4, ns5]
-    [ns1, ns2].each { it.importedNamespaces << "none" }
-    ns3.importedNamespaces = [ns2]
-    ns5.importedNamespaces = [ns1]
-    og.orderGraph = [[ns1, ns2],
-		     [ns5], 
-		     [ns3],
-		     [ns4]]
-    og.notMatchingMap = ["ns5" : 1]
-
-  when: "adding namespace that is in notMatching map, process parent namespace already in graph"
-    og.processParentNamespaceAlreadyInGraph(ns5, 0)
-   
-
-  then: "since you removed a level, now only three levels, two elements in 1 and and one element in levels 2 and 3, ns5 is removed"
-    og.orderGraph.size == 3
-    og.orderGraph[1].size == 1
-    og.orderGraph[1] == [ns3]
-    og.orderGraph[2].size == 1
-    og.orderGraph[2] == [ns4]
-    og.notMatchingMap.isEmpty() == true
-  }
-
-  def "add Namespaces that was added before without a match, process the namespace and remove it from the graph, but make sure it only removes that element, and you still have 3 levels of dependency ordering" () { 
-  setup: "three level order graph"
-    og.namespaceData = [ns1, ns2, ns3, ns4, ns5]
-    [ns1, ns2].each { it.importedNamespaces << "none" }
-    ns3.importedNamespaces = [ns5]
-    ns4.importedNamespaces = [ns2]
-    ns5.importedNamespaces = [ns4]
-    og.orderGraph = [[ns1, ns2],
-		     [ns4, ns5], 
-		     [ns3]]
-    og.notMatchingMap = ["ns5" : 1]
-
-  when: "adding namespace that is in notMatching map, process parent namespace already in graph"
-    og.processParentNamespaceAlreadyInGraph(ns5, 1)
-   
-
-  then: "since you only removed an element at that level, still three levels, two elements in 1 and and one element in levels 2 and 3, ns5 is removed from level 1"
-    og.orderGraph.size == 3
-    og.orderGraph[1].size == 1
-    og.orderGraph[1] == [ns4]
-    og.orderGraph[2].size == 1
-    og.orderGraph[2] == [ns3]
-    og.notMatchingMap.isEmpty() == true
-  }
-
-  def "add Namespace to the graph that was already added as an unmatching import, must remove the whole row, only entry, add to the max plus one level" () { 
-  setup: "four level order graph"
-    og.namespaceData = [ns1, ns2, ns3, ns4, ns5]
-    [ns1, ns2].each { it.importedNamespaces << "none" }
-    ns3.importedNamespaces = [ns2]
-    ns4.importedNamespaces = [ns3]
-    ns5.importedNamespaces = [ns1]
-    og.orderGraph = [[ns1, ns2],
-		     [ns5], 
-		     [ns3],
-		     [ns4]]
-    og.notMatchingMap = ["ns5" : 1]
-
-  when: "adding namespace that is in notMatching map, process parent namespace already in graph"
-    og.addNamespaceToOrderGraph(ns5, [0], [])
-   
-
-  then: "since you removed a level, now only three levels, two elements in 1 and and one element in levels 2 and 3, ns5 is removed"
-    og.orderGraph.size == 3
-    og.orderGraph[1].size == 2
-    og.orderGraph[1] == [ns3, ns5]
-    og.orderGraph[2].size == 1
-    og.orderGraph[2] == [ns4]
-    og.notMatchingMap.isEmpty() == true
-  }
-
-  def "add Namespace to the graph that was already added as an unmatching import, unmatching import is imported by namespace 3 so if ns5 shifts anywhere, ns3 should be followed right behind it" () { 
-  setup: "three level order graph"
-    og.namespaceData = [ns1, ns2, ns3, ns4, ns5]
-    [ns1, ns2].each { it.importedNamespaces << "none" }
-    ns3.importedNamespaces = [ns5]
-    ns4.importedNamespaces = [ns2]
-    ns5.importedNamespaces = [ns4]
-    og.orderGraph = [[ns1, ns2],
-		     [ns4, ns5], 
-		     [ns3]]
-    og.notMatchingMap = ["ns5" : 1]
-
-  when: "adding namespace that is in notMatching map, process parent namespace already in graph"
-    og.addNamespaceToOrderGraph(ns5, [1], [])
-   
-
-  then: "since you removed a level, now only three levels, two elements in 1 and and one element in levels 2 and 3, ns5 is removed"
-    og.orderGraph.size == 4
-    og.orderGraph[1].size == 1
-    og.orderGraph[1] == [ns4]
-    og.orderGraph[2].size == 1
-    og.orderGraph[2] == [ns5]
-    og.orderGraph[3].size == 1
-    og.orderGraph[3] == [ns3]
-    og.notMatchingMap.isEmpty() == true
-  }
-
-  def "add Namespace to the graph that was already added as an unmatching import, ns3 and ns5 import ns4, so move ns5 to the 3rd level with ns3" () { 
-  setup: "three level order graph"
-    og.namespaceData = [ns1, ns2, ns3, ns4, ns5]
-    [ns1, ns2].each { it.importedNamespaces << "none" }
-    ns3.importedNamespaces = [ns4]
-    ns4.importedNamespaces = [ns2]
-    ns5.importedNamespaces = [ns4]
-    og.orderGraph = [[ns1, ns2],
-		     [ns4, ns5], 
-		     [ns3]]
-    og.notMatchingMap = ["ns5" : 1]
-
-  when: "adding namespace that is in notMatching map, process parent namespace already in graph"
-    og.addNamespaceToOrderGraph(ns5, [1], [])
-   
-
-  then: "since you removed a level, now only three levels, two elements in 1 and and one element in levels 2 and 3, ns5 is removed"
-    og.orderGraph.size == 3
-    og.orderGraph[1].size == 1
-    og.orderGraph[1] == [ns4]
-    og.orderGraph[2].size == 2
-    og.orderGraph[2] == [ns3, ns5]
-    og.notMatchingMap.isEmpty() == true
+    og.orderGraph.size == 1
   }
 
   def "process external imports, each of the three NamespaceMetaData has the same external import" () { 
@@ -346,6 +189,52 @@ class OrderGraphSpec extends Specification {
     ns3.externalImportedNamespaces[0].externalImportedNamespaces*.namespace == ["http://www.example.org/LivingRoom", "http://www.example.org/Den"]
     ns3.externalImportedNamespaces[0] == emd
     
+  }
+
+  def "graph out two namespaces to the graph, check to see that they map out correctly" () {
+  setup: "ns1 and ns2 are base namespaces and are in the order Graph at level 0 (first level)"
+    namespaceData = [ns1, ns2, ns3, ns4]
+    [ns3, ns4].each { it.dependsOnAnotherNamespace = true }
+    ns3.importedNamespaces = [ns1, ns2]
+    ns4.importedNamespaces = [ns3]
+    og.namespaceData = namespaceData
+    og.orderGraph[0] = [ns1, ns2]
+
+  when: "ns3 depends on ns1 and ns2, so it has matches at both first levels, all matching, add ns3 to level 2, index 1"
+    def result = og.arrangeDependentNamespacesInOrder()
+
+  then: "two levels in graph one object in each level"
+    og.orderGraph.size == 3
+    og.orderGraph[1].size == 1
+    og.orderGraph[1] == [ns3]
+    og.orderGraph[2].size == 1
+    og.orderGraph[2] == [ns4]
+  }
+
+  def "a little more complex graphing" () {
+  setup: "ns1 and ns2 are base namespaces and are in the order Graph at level 0 (first level)"
+    namespaceData = [ns1, ns2, ns3, ns4, ns5]
+    [ns2, ns3, ns4, ns5].each { it.dependsOnAnotherNamespace = true }
+    ns2.importedNamespaces = [ns1]
+    ns3.importedNamespaces = [ns5]
+    ns4.importedNamespaces = [ns2]
+    ns5.importedNamespaces = [ns4, ns2]
+    og.namespaceData = namespaceData
+    og.orderGraph[0] = [ns1]
+
+  when: "ns3 depends on ns1 and ns2, so it has matches at both first levels, all matching, add ns3 to level 2, index 1"
+    def result = og.arrangeDependentNamespacesInOrder()
+
+  then: "two levels in graph one object in each level"
+    og.orderGraph.size == 5
+    og.orderGraph[1].size == 1
+    og.orderGraph[2].size == 1
+    og.orderGraph[3].size == 1
+    og.orderGraph[4].size == 1
+    og.orderGraph[1] == [ns2]
+    og.orderGraph[2] == [ns4]
+    og.orderGraph[3] == [ns5]
+    og.orderGraph[4] == [ns3]
   }
 
 

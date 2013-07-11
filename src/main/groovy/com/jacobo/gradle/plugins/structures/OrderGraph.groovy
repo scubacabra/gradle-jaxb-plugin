@@ -9,11 +9,6 @@ class OrderGraph {
   static final Logger log = Logging.getLogger(OrderGraph.class)
 
   /**
-   * the directory we are starting our analysis on
-   */
-  String startingDirectory
-
-  /**
    * a list of lists that hold references to #NamespaceMetaData objects
    */
   List orderGraph = []
@@ -29,12 +24,6 @@ class OrderGraph {
   def private externalDependencies = []
 
   /**
-   * this is a private map that contains a namespace string for a key and the value is the max depth level in the order graph it was originally placed in because it was listed as a dependency but it was nowhere to be found in the dependency graph so these need special processing when you finally get to them
-   */
-  def private notMatchingMap = [:]
-
-
-  /**
    * @param namesapce the namespace to be added to the order graph
    * @param level the level in the order graph to add this namespace
    * Adds a namespace to the level specified in the order graph
@@ -47,87 +36,6 @@ class OrderGraph {
       } 
     } else { // level doesn't exist yet, make it
       orderGraph[level] = [namespace]
-    }
-  }
-
-  /**
-   * @param namesapce the namespace to be added to the order graph
-   * @param level the level in the order graph to add this namespace
-   * reinsert a namespace to the specifiec level only when it has first been reomved
-   */
-  def reinsertNamespaceIntoLevel(NamespaceMetaData namespace, int level) {
-    addNamespaceToLevel(namespace, level)
-    def anythingDependsOnMe = findNamespacesThatDependOnMe(namespace)
-    log.info("what depends on namespace {} : {}", namespace.namespace, anythingDependsOnMe)
-    if(anythingDependsOnMe) { //something depends on me
-      anythingDependsOnMe.each { nsKey, levelDepth ->
-	log.debug("namespace key is {} and the level depth where it currently lies is {}", nsKey, levelDepth)
-	def dependentNamespace = namespaceData.find { it.namespace == nsKey }
-	log.debug("dependent namespace is {}, it has files {}", dependentNamespace, dependentNamespace.slurpers.document )
-	removeNamespaceFromOrderGraph(dependentNamespace, levelDepth)
-	log.debug("trying to insert {} at level {}", dependentNamespace, level+1)
-	reinsertNamespaceIntoLevel(dependentNamespace, level+1)
-      }
-    }
-  }
-
-  /**
-   * @param namesapce the namespace to be checked if others depend on 
-   * @return dependsOnMe is a map with namespaces as string for the key and values that is the level they are currently at or null if nothing is found
-   * finds all namespace objects that depend on namespace
-   */
-  def findNamespacesThatDependOnMe(NamespaceMetaData namespace) {
-    log.info("looking for namespaces that import {}", namespace.namespace)
-    def dependsOnMe = [:]
-    orderGraph.eachWithIndex { listAtLevel, level ->
-      log.debug("list {} at level {}", listAtLevel, level)
-      def dependents = listAtLevel.find { it.importedNamespaces.contains(namespace)}
-      log.debug("dependent namespaces found is {}", dependents)
-      if(dependents) { //if you find something you can then populate the map and return it
-	dependents.each { 
-	  dependsOnMe[dependents.namespace] = level
-	}
-	log.debug("depends Map is {}", dependsOnMe)
-      } else {
-	log.debug("no namespace in the graph depend on {}", namespace.namespace)
-      }
-    }
-    log.debug("returning map {}", dependsOnMe)
-    return (dependsOnMe.isEmpty()) ? null : dependsOnMe
-    
-  }
-  
-  /**
-   * @param namespace the namespace string to be removed from the map
-   * @param depth the depth level this namespace didn't match at, all other values in this map greater then depth should be decremented because of the removal
-   * Removes the not Matching entry namespace and decrements all other values by one if they have a value greater then provided
-   **/
-  def removeNotMatchingEntry(String namespace, int depth) { 
-    log.debug("going to remove this namespace {} from the not matching map", namespace)
-    notMatchingMap = notMatchingMap.findAll { it.key != namespace} // get rid of the namespace
-
-    log.debug("taking the indexes of notMatching Map greater than depth {}  and decrementing them because of this removal", depth)
-    notMatchingMap.each { key, val ->
-      if(val > depth) { 
-	notMatchingMap[key] -= 1
-      }
-    }
-
-    log.debug("new notMatching map is {}", notMatchingMap)
-
-  }
-  
-  /**
-   * @param namespace the namespace to be removed
-   * @param depth the depth level in the order graph list to remove the namespace
-   * Removes a namespace from the order graph at a certain level
-   **/
-  def removeNamespaceFromOrderGraph(NamespaceMetaData namespace, int depth) { 
-    orderGraph[depth] -= namespace
-    log.debug("modified  order Graph minus {}  at {} is {}", namespace, depth, orderGraph[depth])
-    if (orderGraph[depth].isEmpty()) {
-      log.debug("order Graph at level {} is empty: see?? {}, removing it", depth, orderGraph[depth])
-      orderGraph.remove(depth) // could probably use a find closure to be nicer TODO
     }
   }
 
@@ -190,105 +98,44 @@ class OrderGraph {
     log.debug("Independent Namespaces are: {}", orderGraph[0])
   }
 
-
-  /**
-   * @param namespace the namespace to add in to the #OrderGraph
-   * @param matchingImportLevelsIndexes the indexes into the orderGraph 'level' that match to this #namespace.importedNamespaces
-   * @param importedNamespaceNotMatching List of #NamespaceMetaData objects that weren't found in the current order Graph that need to be specially added to the graph
-   *
-   */
-  def addNamespaceToOrderGraph(NamespaceMetaData namespace, List matchingImportLevelsIndexes, List importedNamespaceNotMatching) { 
-    int max = matchingImportLevelsIndexes.max() //max depth of the `level` the import matched
-    def howManyImportsMatched = matchingImportLevelsIndexes.size()
-    def numberOfImports = namespace.importedNamespaces.size
-    log.debug("max level depth on the current Order Graph of size {} is {} -- {} out of {} imports found in current Order Graph", orderGraph.size, max, howManyImportsMatched, numberOfImports)
-
-    if(numberOfImports != howManyImportsMatched) { // this namespace imports something not in our map yet :/ boo
-      log.debug("some import namespace(s) {}  not yet in our order graph, {}", importedNamespaceNotMatching, orderGraph)
-
-      //add two levels, put this namespace at the 2nd addition, put the not mathching imports at the first addition
-      def size = orderGraph.size()
-      addNamespaceToLevel(namespace, size+1)
-      importedNamespaceNotMatching.each { 
-	addNamespaceToLevel(it, size) 
-	notMatchingMap[it.namespace] = size
-      }
-    } else { // every import has a match and works nicely! :)
-      log.debug("every imported namespace {} for namespace {} has a match", namespace.importedNamespaces.namespace, namespace.namespace)
-      if(notMatchingMap.containsKey(namespace.namespace)) { 
-	log.debug ("{} is in the not matching map : {}", namespace.namespace, notMatchingMap)
-	if(processParentNamespaceAlreadyInGraph(namespace, max)) { 
-	  log.debug("parent namespace process, it removed the parent need to re insert at {}, max match depth was {}", max+1, max)
-	  reinsertNamespaceIntoLevel(namespace, max+1)
-	}
-	log.debug("!!!! this iteration of the order graph is {}", orderGraph)
-	return
-      }
-      addNamespaceToLevel(namespace, max+1)
-    }
-
-    log.debug("!!!! this iteration of the order graph is {}", orderGraph)
-  }
-
-  /**
-   * @param ns
-   * @param max
-   *
-   * This function finds a previously added namespace to the #orderGraph, deletes its entry and reinsert at the correct place
-   */
-  boolean processParentNamespaceAlreadyInGraph(NamespaceMetaData ns, int max) { 
-    def depth = notMatchingMap[ns.namespace]
-
-    log.debug("this namespace was previously added to the order graph with no matches, so it was placed at the end of the order Graph plus two which at the time was {}, this has undoubtedly changed by now as the order Graph size is {}.  Need to remove from it's original position and re insert somewhere.  The max depth of matches is {}", depth, orderGraph.size, max)
-    log.debug("order @ level depth {} is {}", depth, orderGraph[depth])
-    log.debug("range of orders from {} to {} is {}", depth, orderGraph.size(), orderGraph[depth..-1])
-    log.debug("order @ max depth {} is {}", max, orderGraph[max])
-
-    if(max <= depth) { // if this is true, then delete the depth portion
-      log.debug("max + 1 is {} and depth is {}", max+1, depth)
-      removeNamespaceFromOrderGraph(ns, depth)
-      removeNotMatchingEntry(ns.namespace, depth)
-      return true
-    }
-    return false
-  }
-
   /**
    * get's all the dependent NamespaceMetaData references that don't match those in orderGraph[0] i.e. the base namespaces without imports
    */
-  def getDependentNamespaces() { 
+  def List<NamespaceMetaData> getDependentNamespaces() { 
     log.info("aquiring the List of the dependent namespaces to be graphed out")
-    if (!namespaceData.disjoint(orderGraph[0])) {
-      log.debug("namespaceData {} and base namespaces {} are not disjoint", namespaceData, orderGraph[0])
-      return namespaceData - orderGraph[0]
-    } else {
-      log.debug("namespaceData is {}, orderGraph at first element is {}, the lists are disjoint", namespaceData, orderGraph[0])
-      return []
-    }
+    def dependentNamespaces = namespaceData.findAll { it.dependsOnAnotherNamespace == true }
+    log.debug("namespaceData {} has these namespaces that depend on Another Namespace {}", namespaceData, dependentNamespaces)
+    return dependentNamespaces
   }
 
   /**
-   * @param namespace #NamespaceMetaData
-   * @return a list, the list can either contain one value, a boolean, flagged as true, or two values, first value is a boolean false,followed by an integer that is index into the dependency graph where this import currently matches to.
+   * Finds the level to place the namespace that has these imports, if ALL imports are NOT found in the order graph can't place, must put at back of queue and reprocess later.
+   * @param List<NamespaceMetaData> #NamespaceMetaData
+   * @return an integer of what level the namespace should be placed (takes the largest matching import index and places it immediately aftre that)
    */
-  def List findImportedNamespacesInOrderGraph(NamespaceMetaData namespace) {
-    int graphLevelMatchingIndex = null
-    boolean noMatchInDependencyTree
-
-    log.debug("looking at import namespace {}", namespace)
-    // find this import in the list 'level' in order graph.
-    orderGraph.eachWithIndex { list, idx ->
-      if(list.contains(namespace)) { 
-	log.debug("Graph level {} with List {} contains import {}", idx, list, namespace)
-	graphLevelMatchingIndex = idx
+  def findNamespacePlaceInOrderGraph(List<NamespaceMetaData> imports) {
+    def importsMatchingAtLevels = []
+    for (namespace in imports) {
+      def matchingIndex
+      log.debug("looking at import namespace {}, trying to find in order graph", namespace)
+      int index = 0
+      for(list in orderGraph) { 
+	      log.debug("order graph is {}, we are looking at it's {} level {}", orderGraph, index, list)
+        if(list.contains(namespace)) { 
+	  log.debug("Order Graph level {} with List {} contains import {}", index, list, namespace)
+	  matchingIndex = index
+	  break
+	}
+	index++
+      }
+      if(matchingIndex >= 0) { 
+        importsMatchingAtLevels << matchingIndex
+      } else {
+        log.debug("imported Namespace {} is NOT found in Order Graph {}, cannot continue processing must re-try later", namespace, orderGraph)
+	return null
       }
     }
-    if(graphLevelMatchingIndex == null) { 
-      log.info("index is {}", graphLevelMatchingIndex)
-      noMatchInDependencyTree = true
-      return [noMatchInDependencyTree]
-    }
-    return [false, graphLevelMatchingIndex]
+    return importsMatchingAtLevels.max() + 1
   }
 
   /**
@@ -296,20 +143,20 @@ class OrderGraph {
    * 
    */
   def arrangeDependentNamespacesInOrder() { 
-    getDependentNamespaces().each { ns ->
+    def namespacesToArrange = []
+    namespacesToArrange = getDependentNamespaces()
+    while(namespacesToArrange) { 
+      def ns = namespacesToArrange.pop()
       log.debug("looking at namespace {}", ns.namespace)
       log.debug("this namespace imports {} namespaces: {}", ns.importedNamespaces.size, ns.importedNamespaces.namespace)
-      def indexesOfMatchesInDependencyGraph = []
-      def importsNotFoundInGraph = []
-      ns.importedNamespaces.each { ins ->
-	def matchedInGraph = findImportedNamespacesInOrderGraph(ins)
-	if(matchedInGraph.size == 1) { 
-	  importsNotFoundInGraph << ins
-	} else { // has two elements, throw the first one away
-	  indexesOfMatchesInDependencyGraph << matchedInGraph[1]
-	}
+      def allMatching = findNamespacePlaceInOrderGraph(ns.importedNamespaces)
+      if(allMatching) { 
+        log.debug("All {} imported namespaces were found in the current Order Graph {}, putting the namespace into the {} level of Order Graph", ns.importedNamespaces.size, orderGraph, allMatching)
+	addNamespaceToLevel(ns, allMatching)
+      } else {
+      	log.debug("All {} imported namespaces were NOT found in the current Order Graph {} -- will reprocess after all other namespaces {} have been processed, adding to beginning (index 0) of toArrange list", ns.importedNamespaces.size, orderGraph, namespacesToArrange)
+      	namespacesToArrange.add(0, ns)
       }
-      addNamespaceToOrderGraph(ns, indexesOfMatchesInDependencyGraph, importsNotFoundInGraph)
     }
 
     //TODO make this happen only if namespaceData.size != orderGraph entries over all
