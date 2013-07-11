@@ -94,20 +94,23 @@ class XJCInputResolver {
       log.info("current dependency List {}", depList)
     }
 
+    depList = findExternalDependencies(xsdData, depList)
+
+    return depList
+  }
+
+   private static List findExternalDependencies(NamespaceMetaData xsdData, List depList) { 
     log.info("going through namespace {} possible external imports {}", xsdData.namespace, xsdData.externalImportedNamespaces)
     xsdData.externalImportedNamespaces.each { external ->
       log.info("external import {} is trying to be added to the list {}", external.namespace, depList)
       depList = addToDependencyList(depList, external)
-      external.externalImportedNamespaces.each { externalImports ->
+      external.importedNamespaces.each { externalImports ->
 	log.info("external import {} externally imports {} -- trying to add this import to the list {}", external.namespace, externalImports.namespace, depList)
 	depList = addToDependencyList(depList, externalImports)
       }
     }
 
     log.info("current dependency List {}", depList)
-
     return depList
-  }
-
-  
+   }
 }
