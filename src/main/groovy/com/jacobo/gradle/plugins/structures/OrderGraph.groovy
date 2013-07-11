@@ -170,9 +170,9 @@ class OrderGraph {
     // I think that here, we should re populate the objects in containsExternals with their full resolved Meta Data from externalDependencies
     containsExternals.each { ns ->
       ns.externalImportedNamespaces.each { ext ->
-    	def resolvedExternal = externalDependencies.find { it.namespace == ext.namespace }
+    	def resolvedExternal = externalDependencies.find { it.externalSchemaLocation == ext.externalSchemaLocation }
     	if(resolvedExternal) { 
-    	  log.info("namespace {} with external namespace {} is being replaced with the same object, just populated instead of sparse", ns.namespace, ext.namespace)
+    	  log.info("namespace {} with external dependency file {} is being replaced with the same object, just populated data instead of being sparse", ns.namespace, ext.externalSchemaLocation)
     	  ext = resolvedExternal //make it the resolved
     	}
       }
