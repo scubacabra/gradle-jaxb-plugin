@@ -90,7 +90,8 @@ class JaxbXJCTask extends DefaultTask {
     if (!project.jaxb.bindingIncludes.isEmpty() && project.jaxb.bindingIncludes != null) {
       directoryExists(project.jaxb.jaxbBindingDirectory)
     }
-    
+ 
+    log.debug("episode bindings are: {}", episodeBindingsNames)   
     // all episode file bindings MUST exist
     episodeBindingsNames.each { 
       def episode = it + ".episode"
