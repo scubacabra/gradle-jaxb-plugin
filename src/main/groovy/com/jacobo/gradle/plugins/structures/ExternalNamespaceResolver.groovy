@@ -45,20 +45,25 @@ class ExternalNamespaceResolver {
    * keep slurping documents and gather schema locations
    * @return a list of #ExternalNamespaceMetaData to add to the external namespace that is being resolved
    */
-  List<ExternalNamespaceMetaData> resolveExternalImportedNamespaces() {
+  ExternalNamespaceMetaData resolveExternalImportedNamespaces() {
     log.info("resolving external dependencies starting at {}", externalImport.externalSchemaLocation)
+    externalImport.externalSlurper = DocumentReader.slurpDocument(externalImport.externalSlurper.document)
+    externalImport.externalSlurper.grabXsdNamespace()
+    externalImport.namespace = externalImport.externalSlurper.xsdNamespace
+    externalImport.convertNamespaceToEpisodeName()
     namespacesToParse << externalImport
     while(namespacesToParse) {
       def namespace = namespacesToParse.pop()
       log.debug("popping {} from namespacesToParse list", namespace)
       namespace.externalSlurper = DocumentReader.slurpDocument(namespace.externalSlurper.document)
       def externalDependencies = namespace.externalSlurper.obtainExternalDependencies()
-      externalImport.importedNamespaces.addAll(externalDependencies)
       externalDependencies.each {
+	it.convertNamespaceToEpisodeName()
         ListUtil.addElementToList(namespacesToParse, it)
+        ListUtil.addElementToList(externalImport.importedNamespaces, it)
       }
     }
     log.debug("returning the imported namespaces {}", externalImportedNamespaces)
-    return externalImport.importedNamespaces
+    return externalImport
   }
 }
