@@ -66,13 +66,9 @@ class OrderGraph {
     // resolve these external namespaces, that is, go through and slurp their files with the External Namespace Resolver
     externalDependencies.each { external ->
       def resolver = new ExternalNamespaceResolver(external)
-      def importedExternals = resolver.resolveExternalImportedNamespaces()
-      log.info("resolved the external namespace {} and got it's list of namespace it imports {}", external.namespace, external.externalImportedNamespaces)
-      log.debug("resolver external imported namespaces is {}", resolver.externalImportedNamespaces)
-      log.debug("this external dependy list for ORder Graph is {}", importedExternals)
-      external.externalImportedNamespaces = importedExternals
-      external.importedNamespaces = importedExternals
-      log.debug("external namespace {} external imports {} and importedNs {} and externalDependencies has external imports {}", external.namespace, external.externalImportedNamespaces, external.importedNamespaces, externalDependencies.externalImportedNamespaces)
+      external = resolver.resolveExternalImportedNamespaces()
+      log.info("resolved the external namespace {} and got it's list of namespace it imports {}", external.namespace, external.importedNamespaces)
+      log.debug("external namespace {} importedNs {} and externalDependencies has external imports {}", external.namespace, external.importedNamespaces, externalDependencies.importedNamespaces)
     }
 
     // I think that here, we should re populate the objects in containsExternals with their full resolved Meta Data from externalDependencies
