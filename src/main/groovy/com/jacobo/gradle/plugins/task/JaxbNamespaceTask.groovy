@@ -6,7 +6,7 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.Input
 import org.gradle.api.DefaultTask
 import com.jacobo.gradle.plugins.structures.OrderGraph
-import com.jacobo.gradle.plugins.util.FileHelper
+import com.jacobo.gradle.plugins.util.FileUtil
 import com.jacobo.gradle.plugins.structures.NamespaceMetaData
 import com.jacobo.gradle.plugins.JaxbPlugin
 
@@ -27,7 +27,7 @@ class JaxbNamespaceTask extends DefaultTask {
   @TaskAction
   void start() { 
     log.info("finding all xsd files in: {}", getXsdDir())
-    def files = FileHelper.findAllXsdFiles(getXsdDir())
+    def files = FileUtil.findAllXsdFiles(getXsdDir())
 
     log.info("aquiring unique namespaces from xsd files")
     files.each { file ->
