@@ -1,7 +1,7 @@
-package com.jacobo.gradle.plugins.model
+package com.jacobo.gradle.plugins.slurper
 
 import com.jacobo.gradle.plugins.util.ListUtil
-import com.jacobo.gradle.plugins.util.FileHelper
+import com.jacobo.gradle.plugins.util.FileUtil
 import com.jacobo.gradle.plugins.structures.ExternalNamespaceMetaData
 
 import org.gradle.api.logging.Logging
@@ -94,9 +94,9 @@ class XsdSlurper {
             def dependentSchemaLocation = xsdElement.@schemaLocation.text()
             log.debug("the dependeny schema location is at {}", dependentSchemaLocation)
             if (dependencyType == "import") { //either going to be import or include
-                ListUtil.addElementToList(xsdImports, FileHelper.getAbsoluteSchemaLocation(dependentSchemaLocation, document.parentFile))
+                ListUtil.addElementToList(xsdImports, FileUtil.getAbsoluteSchemaLocation(dependentSchemaLocation, document.parentFile))
             } else {
-                ListUtil.addElementToList(xsdIncludes,FileHelper.getAbsoluteSchemaLocation(dependentSchemaLocation, document.parentFile))
+                ListUtil.addElementToList(xsdIncludes,FileUtil.getAbsoluteSchemaLocation(dependentSchemaLocation, document.parentFile))
             }
         }
     }
@@ -109,7 +109,7 @@ class XsdSlurper {
 	def newExternalImport = new ExternalNamespaceMetaData()
 	newExternalImport.namespace = externalImportedNamespace
 	def slurper = new XsdSlurper()
-	slurper.document = FileHelper.getAbsoluteSchemaLocation(externalDependentSchemaLocation, document.parentFile) 
+	slurper.document = FileUtil.getAbsoluteSchemaLocation(externalDependentSchemaLocation, document.parentFile) 
 	newExternalImport.externalSlurper = slurper
 	externalImports << newExternalImport
       }
