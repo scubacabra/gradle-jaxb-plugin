@@ -3,7 +3,8 @@ package com.jacobo.gradle.plugins.structures
 import org.gradle.api.logging.Logging
 import org.gradle.api.logging.Logger
 import com.jacobo.gradle.plugins.util.ListUtil
-import com.jacobo.gradle.plugins.reader.DocumentReader
+import com.jacobo.gradle.plugins.slurper.DocumentReader
+import com.jacobo.gradle.plugins.resolver.ExternalNamespaceResolver
 
 class OrderGraph { 
   static final Logger log = Logging.getLogger(OrderGraph.class)
