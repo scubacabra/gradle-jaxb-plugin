@@ -1,10 +1,11 @@
-package com.jacobo.gradle.plugins.structures
+package com.jacobo.gradle.plugins.resolver
 
 import org.gradle.api.logging.Logging
 import org.gradle.api.logging.Logger
 import com.jacobo.gradle.plugins.util.ListUtil
-import com.jacobo.gradle.plugins.util.FileHelper
-import com.jacobo.gradle.plugins.reader.DocumentReader
+import com.jacobo.gradle.plugins.util.FileUtil
+import com.jacobo.gradle.plugins.slurper.DocumentReader
+import com.jacobo.gradle.plugins.structures.ExternalNamespaceMetaData
 
 /**
  * This class resolves all external namespaces, traversing all schemaLocations and gethering all the imported namespaces
@@ -63,7 +64,7 @@ class ExternalNamespaceResolver {
         ListUtil.addElementToList(externalImport.importedNamespaces, it)
       }
     }
-    log.debug("returning the imported namespaces {}", externalImportedNamespaces)
+    log.debug("returning the imported namespaces {}", externalImport)
     return externalImport
   }
 }

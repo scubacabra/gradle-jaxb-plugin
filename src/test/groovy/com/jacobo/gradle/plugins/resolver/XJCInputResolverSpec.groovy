@@ -1,9 +1,9 @@
-package com.jacobo.gradle.plugins.util
+package com.jacobo.gradle.plugins.resolver
 
 import spock.lang.Specification
 
 import com.jacobo.gradle.plugins.structures.NamespaceMetaData
-import com.jacobo.gradle.plugins.model.XsdSlurper
+import com.jacobo.gradle.plugins.slurper.XsdSlurper
 
 class XJCInputResolverSpec extends Specification {
   

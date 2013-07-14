@@ -1,6 +1,7 @@
-package com.jacobo.gradle.plugins.util
+package com.jacobo.gradle.plugins.resolver
 
 import com.jacobo.gradle.plugins.structures.NamespaceMetaData
+import com.jacobo.gradle.plugins.util.ListUtil
 
 import org.gradle.api.logging.Logging
 import org.gradle.api.logging.Logger
