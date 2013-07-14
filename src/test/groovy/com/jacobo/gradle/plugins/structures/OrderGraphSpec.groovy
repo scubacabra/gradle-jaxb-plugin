@@ -1,6 +1,6 @@
 package com.jacobo.gradle.plugins.structures
 
-import com.jacobo.gradle.plugins.model.XsdSlurper
+import com.jacobo.gradle.plugins.slurper.XsdSlurper
 
 import spock.lang.Specification
 
@@ -160,7 +160,6 @@ class OrderGraphSpec extends Specification {
   def "process external imports, each of the three NamespaceMetaData has the same external import" () { 
   setup: "make the external import"
     def emd = new ExternalNamespaceMetaData()
-    emd.namespace = "http://www.example.org/Kitchen"
     emd.externalSchemaLocation = new File(this.getClass().getResource("/schema/testImports/Kitchen.xsd").toURI()).absoluteFile
     def slurper = new XsdSlurper()
     slurper.document = emd.externalSchemaLocation
@@ -173,20 +172,20 @@ class OrderGraphSpec extends Specification {
 
   then: "order graph external dependencies should be of length one, and the ns ext imports should be populated"
     og.externalDependencies.size == 1
-    og.externalDependencies[0].externalImportedNamespaces.size == 2
-    og.externalDependencies[0].externalImportedNamespaces*.namespace == ["http://www.example.org/LivingRoom", "http://www.example.org/Den"]
+    og.externalDependencies[0].importedNamespaces.size == 2
+    og.externalDependencies[0].importedNamespaces*.namespace == ["http://www.example.org/LivingRoom", "http://www.example.org/Den"]
     og.externalDependencies[0] == emd
     ns1.externalImportedNamespaces.size == 1
-    ns1.externalImportedNamespaces[0].externalImportedNamespaces.size() == 2
-    ns1.externalImportedNamespaces[0].externalImportedNamespaces*.namespace == ["http://www.example.org/LivingRoom", "http://www.example.org/Den"]
+    ns1.externalImportedNamespaces[0].importedNamespaces.size() == 2
+    ns1.externalImportedNamespaces[0].importedNamespaces*.namespace == ["http://www.example.org/LivingRoom", "http://www.example.org/Den"]
     ns1.externalImportedNamespaces[0] == emd
     ns2.externalImportedNamespaces.size == 1
-    ns2.externalImportedNamespaces[0].externalImportedNamespaces.size() == 2
-    ns2.externalImportedNamespaces[0].externalImportedNamespaces*.namespace == ["http://www.example.org/LivingRoom", "http://www.example.org/Den"]
+    ns2.externalImportedNamespaces[0].importedNamespaces.size() == 2
+    ns2.externalImportedNamespaces[0].importedNamespaces*.namespace == ["http://www.example.org/LivingRoom", "http://www.example.org/Den"]
     ns2.externalImportedNamespaces[0] == emd
     ns3.externalImportedNamespaces.size == 1
-    ns3.externalImportedNamespaces[0].externalImportedNamespaces.size() == 2
-    ns3.externalImportedNamespaces[0].externalImportedNamespaces*.namespace == ["http://www.example.org/LivingRoom", "http://www.example.org/Den"]
+    ns3.externalImportedNamespaces[0].importedNamespaces.size() == 2
+    ns3.externalImportedNamespaces[0].importedNamespaces*.namespace == ["http://www.example.org/LivingRoom", "http://www.example.org/Den"]
     ns3.externalImportedNamespaces[0] == emd
     
   }

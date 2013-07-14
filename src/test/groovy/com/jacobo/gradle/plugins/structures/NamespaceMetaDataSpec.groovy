@@ -1,6 +1,6 @@
 package com.jacobo.gradle.plugins.structures
 
-import com.jacobo.gradle.plugins.model.XsdSlurper
+import com.jacobo.gradle.plugins.slurper.XsdSlurper
 
 import spock.lang.Specification
 

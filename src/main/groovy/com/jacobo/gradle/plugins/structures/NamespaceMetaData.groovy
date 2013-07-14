@@ -5,7 +5,7 @@ import com.jacobo.gradle.plugins.util.ListUtil
 import com.jacobo.gradle.plugins.structures.NamespaceMetaData
 import com.jacobo.gradle.plugins.structures.ExternalNamespaceMetaData
 
-import com.jacobo.gradle.plugins.model.XsdSlurper
+import com.jacobo.gradle.plugins.slurper.XsdSlurper
 
 import org.gradle.api.logging.Logging
 import org.gradle.api.logging.Logger
