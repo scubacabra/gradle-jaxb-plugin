@@ -10,7 +10,7 @@ import org.gradle.api.InvalidUserDataException
 import com.jacobo.gradle.plugins.JaxbPlugin
 import com.jacobo.gradle.plugins.structures.OrderGraph
 import com.jacobo.gradle.plugins.structures.NamespaceMetaData
-import com.jacobo.gradle.plugins.util.XJCInputResolver
+import com.jacobo.gradle.plugins.resolver.XJCInputResolver
 import com.jacobo.gradle.plugins.util.ListUtil
 
 /**
