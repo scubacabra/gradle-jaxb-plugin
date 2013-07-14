@@ -1,6 +1,6 @@
-package com.jacobo.gradle.plugins.reader
+package com.jacobo.gradle.plugins.slurper
 
-import com.jacobo.gradle.plugins.model.XsdSlurper
+import com.jacobo.gradle.plugins.slurper.XsdSlurper
 
 import org.gradle.api.logging.Logging
 import org.gradle.api.logging.Logger
