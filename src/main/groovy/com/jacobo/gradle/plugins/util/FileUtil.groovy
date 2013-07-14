@@ -8,7 +8,7 @@ import groovy.io.FileType
  * Date: 5/22/13
  * Time: 10:14 AM
  */
-class FileHelper {
+class FileUtil {
 
     /**
      * Figure out the ABSOLUTE schema location of the String relative to the parent/current directory
