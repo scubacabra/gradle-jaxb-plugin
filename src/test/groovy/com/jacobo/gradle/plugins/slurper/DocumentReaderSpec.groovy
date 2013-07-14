@@ -1,7 +1,7 @@
-package com.jacobo.gradle.plugins.reader
+package com.jacobo.gradle.plugins.slurper
 
 import groovy.util.slurpersupport.GPathResult
-import com.jacobo.gradle.plugins.model.XsdSlurper
+import com.jacobo.gradle.plugins.slurper.XsdSlurper
 import spock.lang.Specification
 
 class DocumentReaderSpec extends Specification {

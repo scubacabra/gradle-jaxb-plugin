@@ -1,6 +1,6 @@
-package com.jacobo.gradle.plugins.model
+package com.jacobo.gradle.plugins.slurper
 
-import com.jacobo.gradle.plugins.util.FileHelper
+import com.jacobo.gradle.plugins.util.FileUtil
 
 import spock.lang.Specification
 
@@ -17,19 +17,19 @@ class XsdSlurperSpec extends Specification {
   slurper.processXsdDependencyLocations(slurped.import)
 
   then:
-  slurper.xsdImports == imports.collect {  FileHelper.getAbsoluteSchemaLocation(it, slurper.document.parentFile) }
+  slurper.xsdImports == imports.collect {  FileUtil.getAbsoluteSchemaLocation(it, slurper.document.parentFile) }
   
   when: 
   slurper.processXsdDependencyLocations(slurped.include)
   
   then:
-  slurper.xsdIncludes == includes.collect {  FileHelper.getAbsoluteSchemaLocation(it, slurper.document.parentFile) }
+  slurper.xsdIncludes == includes.collect {  FileUtil.getAbsoluteSchemaLocation(it, slurper.document.parentFile) }
 
   when: 
   def result = slurper.gatherAllRelativeLocations()
   
   then: 
-  result == relativeLocations.collect {  FileHelper.getAbsoluteSchemaLocation(it, slurper.document.parentFile) }
+  result == relativeLocations.collect {  FileUtil.getAbsoluteSchemaLocation(it, slurper.document.parentFile) }
 
   where:
   file | imports | includes | relativeLocations
