@@ -1,7 +1,5 @@
 package com.jacobo.gradle.plugins.structures
 
-import com.jacobo.gradle.plugins.util.ListUtil
-
 import com.jacobo.gradle.plugins.structures.ExternalNamespaceData
 import com.jacobo.gradle.plugins.model.DocumentSlurper
 import com.jacobo.gradle.plugins.reader.DocumentReader
