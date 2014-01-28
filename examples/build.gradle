@@ -1,12 +1,12 @@
 buildscript {
   repositories { 
-    ivy { 
+    maven { 
       url 'http://dl.bintray.com/content/djmijares/gradle-plugins' 
     }
   }
 
   dependencies {
-    classpath 'com.jacobo.gradle.plugins:gradle-jaxb-plugin:1.0'
+    classpath 'com.jacobo.gradle.plugins:gradle-jaxb-plugin:1.1'
   }
 }
 
