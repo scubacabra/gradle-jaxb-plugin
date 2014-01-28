@@ -69,7 +69,7 @@ class JaxbPlugin implements Plugin<Project> {
     JaxbNamespaceTask jnt = project.tasks.add(JAXB_NAMESPACE_GRAPH_TASK,  JaxbNamespaceTask)
     jnt.description = "go through the ${jaxb.xsdDirectoryForGraph} folder and find all unique namespaces, create a namespace graph and parse in teh graph order with jaxb"
     jnt.group = JAXB_NAMESPACE_TASK_GROUP
-    jnt.conventionMapping.xsdDir = { project.jaxb.xsdDirectoryForGraph }
+    jnt.conventionMapping.xsdDirectory = { new File(project.rootDir, project.jaxb.xsdDirectoryForGraph) }
     return jnt
   }
 
