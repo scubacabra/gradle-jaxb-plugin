@@ -1,6 +1,5 @@
 package com.jacobo.gradle.plugins.model
 
-import com.jacobo.gradle.plugins.util.FileHelper
 import com.jacobo.gradle.plugins.reader.DocumentReader
 import com.jacobo.gradle.plugins.BaseSpecification
 
