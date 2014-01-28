@@ -3,15 +3,20 @@ package com.jacobo.gradle.plugins.task
 import org.gradle.api.logging.Logging
 import org.gradle.api.logging.Logger
 import org.gradle.api.tasks.TaskAction
-import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.DefaultTask
-import com.jacobo.gradle.plugins.structures.OrderGraph
-import com.jacobo.gradle.plugins.util.FileHelper
-import com.jacobo.gradle.plugins.structures.NamespaceMetaData
+
+import com.jacobo.gradle.plugins.structures.NamespaceData
 import com.jacobo.gradle.plugins.JaxbPlugin
+import com.jacobo.gradle.plugins.model.DocumentSlurper
+import com.jacobo.gradle.plugins.reader.DocumentReader
+import com.jacobo.gradle.plugins.model.TreeNode
+import com.jacobo.gradle.plugins.model.TreeManager
+import groovy.io.FileType
+import com.google.common.annotations.VisibleForTesting
 
 /**
- * @author djmijares
+ * @author jacobono
  * Created: Tue Dec 04 09:01:34 EST 2012
  */
 
@@ -19,35 +24,150 @@ class JaxbNamespaceTask extends DefaultTask {
   
   static final Logger log = Logging.getLogger(JaxbNamespaceTask.class)
   
-  @Input
-  String xsdDir
-
-  OrderGraph order = new OrderGraph()
+  @InputDirectory
+  File xsdDirectory
 
   @TaskAction
   void start() { 
-    log.info("finding all xsd files in: {}", getXsdDir())
-    def files = FileHelper.findAllXsdFiles(getXsdDir())
-
-    log.info("aquiring unique namespaces from xsd files")
-    files.each { file ->
-      order.obtainUniqueNamespaces(file)
-    }
-
-    log.info("getting all import and includes statments in namespace files to see what they depend on and resolving internal/external namespace dependencies")
-    order.obtainNamespacesMetaData()
-
-    order.gatherIndependentNamespaces()
-    log.info("found namespaces that need to be parsed first")
-
-    order.arrangeDependentNamespacesInOrder()
-    log.info("namespaces with dependencies have been arranged on the order graph")
-
-    log.info("processing external Dependencies")
-    order.obtainExternalImportsDependencies()
-
-    project.jaxb.dependencyGraph = order
-    log.info("all {} (unique) namespaces have been ordered and saved for parsing. Their order is : {}", order.namespaceData.size(), order.orderGraph)
+    def xsdFiles = this.findAllXsdFiles( getXsdDirectory() )
+    def slurpedDocuments = this.slurpXsdFiles(xsdFiles)
+    def groupedByNamespace = this.groupSlurpedDocumentsByNamespace(
+      slurpedDocuments)
+    def groupedNamespaces = this.groupNamespaces(groupedByNamespace)
+    def slurpedFileHistory = this.resolveNamespaceDependencies(
+      slurpedDocuments, groupedNamespaces)
+    def dependencyTree = this.generateDependencyTree(groupedNamespaces)
+    this.resolveExternalDependencies(groupByNamespace.keySet(),
+				     groupedNamespaces, slurpedFileHistory)
+    project.jaxb.dependencyGraph = dependencyTree
+    log.info( "all {} (unique) namespaces have been ordered and saved for parsing",
+	      treeManager.managedNodes.size())
   }
 
+  /**
+   * @param operatingDirectory --> the directory to search for all *.xsd files
+   * @return xsdFiles --> a list of all xsd Files
+   * Finds all the xsd files in #operatingDirectory
+   */
+  @VisibleForTesting
+  public List<File> findAllXsdFiles(File operatingDirectory) {
+    if ( !operatingDirectory.exists() ) // operating Directory does not exist
+      throw new RuntimeException(
+	"Configured operating directory '{}' does not exist",
+	operatingDirectory)
+
+    log.info("Finding all XSD files in '{}'", operatingDirectory)
+    def xsdFiles = []
+    operatingDirectory.eachFileRecurse(FileType.FILES) {  xsdFile -> 
+      if(xsdFile.name.split("\\.")[-1] == 'xsd') {
+	xsdFiles << xsdFile
+      }
+    }
+    return xsdFiles
+  }
+
+  /**
+   * @param xsdFiles the xsd files to slurp data from (only namespace slurping)
+   * @return slurpedDocuments --> a list of slurped documents
+   * Takes each xsd file and slurps important data from it
+   * (namespace, includes, and imports)
+   */
+  @VisibleForTesting
+  def slurpXsdFiles(List<File> xsdFiles) {
+    def slurpedDocuments = []
+    xsdFiles.each { xsdFile ->
+      def slurpedDocument = DocumentReader.slurpDocument(xsdFile)
+      slurpedDocument.slurpNamespace()
+      slurpedDocuments << slurpedDocument
+    }
+    return slurpedDocuments
+  }
+
+  /**
+   * @param slurpedDocuments --> the slurped documents to group by namespace
+   * @return groupedNamespaces --> a map of grouped namespaces with the namespace string as key and a list of #DocumentSlurpers as a value
+   * Go through each slurped document and group documents by their namespace
+   */
+  @VisibleForTesting    
+  def groupSlurpedDocumentsByNamespace(List<DocumentSlurper> slurpedDocuments) {
+    // key is namepsace string, value is List of DocumentSlurped objects
+    def groupedNamespaces = [:]
+    slurpedDocuments.each { slurpedDocument ->
+      //already in map, just add to list
+      if (groupedNamespaces.containsKey(slurpedDocument.xsdNamespace)) {
+	groupedNamespaces[slurpedDocument.xsdNamespace] << slurpedDocument
+	return true
+      }
+
+      // new to map, need a new list as well
+      groupedNamespaces[slurpedDocument.xsdNamespace] = [slurpedDocument]
+    }
+    return groupedNamespaces
+  }
+
+
+  @VisibleForTesting
+  def groupNamespaces(Map<String, List<DocumentSlurper>> groupedByNamespaces) { 
+    def groupedNamespaces = []
+    groupedByNamespaces.each { namespace, slurpedDocuments -> //key, value
+      def namespaceData = new NamespaceData(namespace, slurpedDocuments)
+      groupedNamespaces << namespaceData
+    }
+    return groupedNamespaces
+  }
+
+  @VisibleForTesting
+  def resolveNamespaceDependencies(List<DocumentSlurper> slurpedDocuments,
+				   List<NamespaceData> groupedNamespaces) {
+    // was going to use a Set, but the Namespace Data needs the element
+    // not really a way to do that with a set, but Map<File, DocumentSlurper>
+    // good enough.  Take slurped objects and get their doc Files, put in hashmap
+    def historySlurpedFiles = [:]
+    slurpedDocuments.each { slurped ->
+      historySlurpedFiles.put(slurped.documentFile, slurped)
+    }
+    
+    groupedNamespaces.each { namespace -> 
+      historySlurpedFiles = namespace.findDependedNamespaces(
+	groupByNamespace.keySet(), historySlurpedFiles)
+    }
+    return historySlurpedFiles
+  }
+
+  @VisibleForTesting
+  def resolveExternalDependencies(Set<String> operatingNamespaces,
+				  List<NamespaceData> groupedNamespaces,
+				  Map<File, DocumentSlurper> slurpedFileHistory) { 
+    def namespacesWithExternalDeps = groupedNamespaces.findAll { namespace ->
+      namespace.hasExternalDependencies
+    }
+    log.debug("Namespaces with external dependencies are '{}'",
+	      namespacesWithExternalDeps)
+
+    namespacesWithExternalDeps.each { namespace ->
+      slurpedFileHistory = namespace.findAllNamespacesDependedOn(
+	operatingNamespaces, slurpedFileHistory)
+    }
+  }
+
+  @VisibleForTesting
+  def generateDependencyTree(List<NamespaceData> groupedNamespaces) { 
+    def treeManager = new TreeManager()
+    def noDependencies = groupedNamespaces.findAll{
+      namespace -> namespace.hasDependencies == false }
+    log.debug("Generating Dependency Tree, the '{}' base namespaces are '{}'",
+	      noDependencies.size, noDependencies)
+    treeManager.createTreeRoot(noDependencies)
+    def dependentNamespaces = groupedNamespaces.findAll {
+      namespace -> namespace.hasDependencies == true }
+    log.debug("Attempting to layout '{}' namespaces on this graph...'{}'",
+	      dependentNamespaces.size, dependentNamespaces)
+    // still have some namespaces left to layout!
+    while(groupedNamespaces.size != treeManager.managedNodes.size()) {
+      def nextChildren = treeManager.findNextChildrenNamespaces(dependentNamespaces)
+      treeManager.addChildren(nextChildren)
+    }
+    // done laying out treeNodes, reset pointer to base, return base row
+    return treeManager.resetRowPointer()
+  }
 }
