@@ -1,7 +1,6 @@
 package com.jacobo.gradle.plugins
 
 import org.gradle.api.Project
-import com.jacobo.gradle.plugins.structures.OrderGraph
 
 /**
  * @author djmijares
@@ -25,7 +24,7 @@ class JaxbExtension {
 
   List bindingIncludes = []
 
-  OrderGraph dependencyGraph
+  def dependencyGraph
 
   JaxbExtension(Project project) { 
     this.project = project
