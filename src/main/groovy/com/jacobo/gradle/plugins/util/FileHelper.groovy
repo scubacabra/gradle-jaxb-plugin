@@ -20,34 +20,4 @@ class FileHelper {
         def relPath = new File(parentDir, schemaLocation)
         return new File(relPath.canonicalPath)
     }
-
-  /**
-   * @param directory the directory to search for all *.xsd files
-   * Finds all the xsd files in #directory, populates the Namesapce Meta Data #namespaceData
-   */
-  public static List<File> findAllXsdFiles(String directory) { 
-    def schemaList = []
-    def baseDirectory = new File(directory)
-    baseDirectory.eachFileRecurse(FileType.FILES) {  file -> 
-      if(file.name.split("\\.")[-1] == 'xsd') {
-	schemaList << file
-      }
-    }
-    return schemaList
-  }
-
-  /**
-   * @param directory the directory to search for all *.xsd files
-   * Finds all the xsd files in #directory, populates the Namesapce Meta Data #namespaceData
-   */
-  public static List<File> findAllXsdFiles(File directory) { 
-    def schemaList = []
-    directory.eachFileRecurse(FileType.FILES) {  file -> 
-      if(file.name.split("\\.")[-1] == 'xsd') {
-	schemaList << file
-      }
-    }
-    return schemaList
-  }
-
 }

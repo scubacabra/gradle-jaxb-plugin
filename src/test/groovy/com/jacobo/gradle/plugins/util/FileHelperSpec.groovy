@@ -3,33 +3,6 @@ package com.jacobo.gradle.plugins.util
 import spock.lang.Specification
 
 class FileHelperSpec extends Specification {
-  
- def "Get all XSD Files in the directory passed as a String (absolute)"() { 
-  when:
-  def files = FileHelper.findAllXsdFiles(directory)
-  
-  then:
-  files.size == 3
-  files == xsdFiles*.absoluteFile
-  
-  where:
-  directory = new File("build/resources/test/schema/House").absolutePath
-  xsdFiles = [new File("build/resources/test/schema/House/Kitchen.xsd"), new File("build/resources/test/schema/House/KitchenSubset.xsd"), new File("build/resources/test/schema/House/LivingRoom.xsd")]
-  }
-
- def "Get all XSD Files in the directory passed as a File (absolute)"() { 
-  when:
-  def files = FileHelper.findAllXsdFiles(directory)
-  
-  then:
-  files.size == 3
-  files == xsdFiles*.absoluteFile
-  
-  where:
-  directory = new File("build/resources/test/schema/House").absoluteFile
-  xsdFiles = [new File("build/resources/test/schema/House/Kitchen.xsd"), new File("build/resources/test/schema/House/KitchenSubset.xsd"), new File("build/resources/test/schema/House/LivingRoom.xsd")]
-  }
-
  def "test absolute schema location"() { 
   expect:
   result == FileHelper.getAbsoluteSchemaLocation(schemaLocale, parent)
