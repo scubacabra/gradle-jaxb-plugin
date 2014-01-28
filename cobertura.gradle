@@ -1,0 +1,5 @@
+apply plugin: 'cobertura'
+
+cobertura {
+    coverageSourceDirs << project.sourceSets.main.groovy.srcDirs
+}

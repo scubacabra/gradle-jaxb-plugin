@@ -1,5 +1,10 @@
+buildscript{ 
+  apply from: 'buildscript.gradle'
+}
+
 apply plugin: 'groovy'
 apply plugin: 'maven'
+apply from: 'cobertura.gradle'
 
 group = 'com.jacobo.gradle.plugins'
 
@@ -9,8 +14,10 @@ repositories {
 
 dependencies {
    compile gradleApi()
-   groovy localGroovy()
-   testCompile "org.spockframework:spock-core:0.6-groovy-1.8" 
+   compile localGroovy()
+   testCompile "org.spockframework:spock-core:0.7-groovy-1.8"
+   testCompile 'cglib:cglib-nodep:2.2'
+   testCompile 'org.objenesis:objenesis:1.2'
 }
 
 task unversionedJar (type: Jar, dependsOn: 'jar') {
