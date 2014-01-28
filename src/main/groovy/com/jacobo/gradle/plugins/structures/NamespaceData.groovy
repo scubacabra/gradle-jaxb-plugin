@@ -17,11 +17,6 @@ class NamespaceData {
   static final Logger log = Logging.getLogger(NamespaceData.class)
 
   /**
-   * a map of String, File pairs that contain unique externally imported namespaces and the @schemaLocation file turned into an absolute File that they import.  only unique external imported namespace and unique absolute file paths are in this Map
-   */
-  List<ExternalNamespaceData> externalImportedNamespaces = []
-
-  /**
    * the namespace for this group of file(s)
    */
   def namespace
@@ -178,7 +173,6 @@ class NamespaceData {
     // out += "files with this namespace:\n ${parseFiles ?: "none" }\n"
     // out += "namespace imports over all the files:\n ${importedNamespaces ?: "none" }\n"
     // out += "namespace includes over all the files:\n ${includeFiles ?: "none" }\n"
-    // out += "namespace external dependencies over all the files:\n ${externalImportedNamespaces ?: "none" }\n
     return out
   }
 }
