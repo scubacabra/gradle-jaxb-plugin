@@ -1,59 +1,33 @@
 package com.jacobo.gradle.plugins.model
 
 import com.jacobo.gradle.plugins.util.FileHelper
+import com.jacobo.gradle.plugins.reader.DocumentReader
+import com.jacobo.gradle.plugins.BaseSpecification
 
-import spock.lang.Specification
+import spock.lang.Unroll
 
-class XsdSlurperSpec extends Specification {
+class XsdSlurperSpec extends BaseSpecification {
   
   def slurper = new XsdSlurper()
   
-  def "process xsd dependencies" () {
-  setup:
-  def slurped = new XmlSlurper().parse(new File(file.toURI()))
-  slurper.content = slurped
-  slurper.document = new File(file.toURI())
-  when:
-  slurper.processXsdDependencyLocations(slurped.import)
+  @Unroll("resolved Dependencies for #filePath is 'imports':'#imports' and 'includes':'#includes'")
+  def "resolve XSD Document Dependencies" () {
+    setup: "slurp the document and populate the slurper object"
+      def file = getFileFromResourcePath(filePath)
+      slurper.slurpedDocument = new XmlSlurper().parse(file)
+      slurper.documentFile = file
 
-  then:
-  slurper.xsdImports == imports.collect {  FileHelper.getAbsoluteSchemaLocation(it, slurper.document.parentFile) }
-  
-  when: 
-  slurper.processXsdDependencyLocations(slurped.include)
-  
-  then:
-  slurper.xsdIncludes == includes.collect {  FileHelper.getAbsoluteSchemaLocation(it, slurper.document.parentFile) }
+    when: "resolve the slurper dependencies"
+      slurper.resolveDocumentDependencies()
 
-  when: 
-  def result = slurper.gatherAllRelativeLocations()
-  
-  then: 
-  result == relativeLocations.collect {  FileHelper.getAbsoluteSchemaLocation(it, slurper.document.parentFile) }
+    then: "get the certain imports and include"
+      slurper.xsdImports == imports as Set
+      slurper.xsdIncludes == includes as Set
+      slurper.documentDependencies == dependencyLocations.collect{ getFileFromResourcePath(it) } as Set
 
-  where:
-  file | imports | includes | relativeLocations
-  this.getClass().getResource("/schema/Include/OrderNumber.xsd") | ["Product.xsd"] | ["include.xsd", "include2.xsd"] | ["Product.xsd", "include.xsd", "include2.xsd"]
-  this.getClass().getResource("/schema/Include/Product.xsd") | [] | [] | []
-  }
-
-  def "make sure that the right type of object is populated correctly coming out of the get Imported Namespaces"() { 
-  setup: "slurp schema, grab import node to pass into the imported namespaces, set up the Parent Directory for the function properly"
-    def xmlDoc = new XmlSlurper().parse(schemaToSlurp)
-    slurper.content = xmlDoc
-    slurper.document = schemaToSlurp
-    
-  when: "you get imported namespaces the external Imported Namespace List should contain 1 element and have the namespace and the file populated"
-    def result = slurper.obtainExternalDependencies()
-
-  then: "check the external Import List"
-    result.size == 1
-    result[0].namespace == xmlDoc.import[0].@namespace.text()
-    result[0].externalSlurper.document == externalAbsoluteFile
-
-  where: "inputs and outputs are according to:"
-    schemaToSlurp       |  externalAbsoluteFile
-    new File(this.getClass().getResource("/schema/testImports/Kitchen.xsd").toURI()).absoluteFile | new File("build/resources/test/schema/testImports/LivingRoom.xsd").absoluteFile
-    new File(this.getClass().getResource("/schema/testImports/LivingRoom.xsd").toURI()).absoluteFile | new File("build/resources/test/schema/testImports/Den.xsd").absoluteFile
+    where:
+      filePath				| imports		| includes				| dependencyLocations
+      "/schema/Include/OrderNumber.xsd"	| ["Product.xsd"]	| ["include.xsd", "include2.xsd"]	| ["/schema/Include/Product.xsd", "/schema/Include/include.xsd", "/schema/Include/include2.xsd"]
+      "/schema/Include/Product.xsd"	| []			| []					| []
   }
 }

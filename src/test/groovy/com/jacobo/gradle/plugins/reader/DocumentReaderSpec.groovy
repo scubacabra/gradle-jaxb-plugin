@@ -13,8 +13,8 @@ class DocumentReaderSpec extends Specification {
 
   then:
   result instanceof XsdSlurper
-  result.document == file
-  result.content instanceof GPathResult
+  result.documentFile == file
+  result.slurpedDocument instanceof GPathResult
   
   where:
   file =  new File(this.getClass().getResource("/schema/House/Kitchen.xsd").toURI())
