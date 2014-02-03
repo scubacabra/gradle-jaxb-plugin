@@ -78,3 +78,11 @@
 
 * DONE Fix the failing test case that shifts a namespace down, but it must also shift the namespace that this depends on down as well.
   CLOSED: [2014-02-03 Mon 14:39]
+
+* TODO Accidentally deleted the NamespaceData equals and hashCode methods messing around with magit. Put them back in there.
+
+* TODO Tree node hash and equals need to be cleaned up
+
+* TODO mock antbuilder so can write integration tests all the way through
+
+* TODO Task -> Task configuration through dependencies
