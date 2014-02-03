@@ -124,8 +124,8 @@ class NamespaceData {
       def dependentFile = unparsed.iterator().next()
       // already parsed, add to dependentExternalNamespaces, might be duplicated
       // must do this anyway, history could contain and save the trouble of parsing
-      if (historySlurpedFiles.contains(document)) { 
-	def slurper = historySlurpedFiles.get(document)
+      if (historySlurpedFiles.contains(dependentFile)) { 
+	def slurper = historySlurpedFiles.get(dependentFile)
 	this.dependentExternalNamespaces.add(slurper.xsdNamespace)
 	unparsed.addAll(slurper.xsdImports)
 	break
