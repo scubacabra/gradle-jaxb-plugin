@@ -7,9 +7,9 @@ class TreeNode<T> {
   static final Logger log = Logging.getLogger(TreeNode.class)
 
   T data
+  // TECHNICALLY, order of these don't matter. could convert to Set.
   LinkedList<TreeNode<T>> parents
   LinkedList<TreeNode<T>> children
-  TreeNode<T> next
 
   public TreeNode(T data) {
     this.parents = null
@@ -43,10 +43,11 @@ class TreeNode<T> {
   }
 
   public void addParent(TreeNode<T> parent) {
-    log.debug("Adding parent node '{}' to child Node '{}'", parent.data, this.data)
+    log.debug("Adding parent node '{}' to child Node '{}'",
+	      parent.data, this.data)
     this.parents.add(parent)
   }
-}
+
   public boolean equals(Object other) {
     log.debug("'{}' == '{}' ??", this, other)
     if(!(other instanceof TreeNode)) return false
@@ -138,3 +139,4 @@ class TreeNode<T> {
     return data
   }
 
+}
