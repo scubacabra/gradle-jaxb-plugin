@@ -155,7 +155,12 @@ class JaxbNamespaceTask extends DefaultTask {
 	operatingNamespaces, slurpedFileHistory)
     }
   }
-
+  
+  /**
+   * @param List<NamespaceData> groupedNamespaces
+   * @return TreeManager
+   * generates the dependency Tree and returns the manager of the tree
+   */
   @VisibleForTesting
   def generateDependencyTree(List<NamespaceData> groupedNamespaces) { 
     def treeManager = new TreeManager()
