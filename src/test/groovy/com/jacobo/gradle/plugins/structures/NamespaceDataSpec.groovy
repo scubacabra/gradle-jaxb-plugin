@@ -53,11 +53,13 @@ class NamespaceDataSpec extends BaseSpecification {
     depExternal << [[], [], [new File("someFile.xsd")]]
   }
 
+  @Unroll("ns3 with imports #slurpedImports relative location, in #documentDependencies")
   def "namespace depends on all internal namespaces" () { 
     setup:
     nmd.namespace = "ns3"
     nmd.slurpedDocuments = new XsdSlurper(documentFile: new File("ns3"),
-					  xsdImports: slurpedImports)
+					  xsdImports: slurpedImports,
+					  documentDependencies: documentDependencies)
     
     when:
     def result = nmd.findNamespacesDependentOn(operatingNamespaces,
@@ -76,7 +78,8 @@ class NamespaceDataSpec extends BaseSpecification {
     }
     
     where:
-    slurpedImports << [[new File("ns2")] as Set, [] as Set]
+    slurpedImports << [["ns2"] as Set, [] as Set]
+    documentDependencies << [["ns2": new File("ns2")], [:]]
     hasDeps << [true, false]
     depsEmpty << [false, true]
     depNamespaces << [["ns2"], []]
@@ -86,7 +89,8 @@ class NamespaceDataSpec extends BaseSpecification {
     setup:
     nmd.namespace = "ns3"
     nmd.slurpedDocuments = new XsdSlurper(documentFile: new File("ns3"),
-    					  xsdImports: slurpedImports)
+  					  xsdImports: slurpedImports,
+					  documentDependencies: documentDependencies)
     def slurper = GroovyMock(XsdSlurper)
     def reader = GroovySpy(DocumentReader, global: true)
 
@@ -112,7 +116,8 @@ class NamespaceDataSpec extends BaseSpecification {
     }
 
     where:
-    slurpedImports << [[new File("ns13.xsd")] as Set, [new File("ns10.xsd")] as Set]
+    slurpedImports << [["ns13.xsd"] as Set, ["ns10.xsd"] as Set]
+    documentDependencies << [["ns13": new File("ns13")], ["ns10": new File("ns10")]]
     externalDependency << ["ns13", "ns10"]
   }
 }
