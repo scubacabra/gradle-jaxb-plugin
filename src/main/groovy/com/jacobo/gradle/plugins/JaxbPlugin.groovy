@@ -78,6 +78,14 @@ class JaxbPlugin implements Plugin<Project> {
     xjc.description = "run through the Directory Graph for ${jaxb.xsdDirectoryForGraph} and parse all schemas in order generating episode files to ${jaxb.jaxbEpisodeDirectory}"
     xjc.group = JAXB_NAMESPACE_TASK_GROUP
     xjc.dependsOn(jnt)
-    
+    xjc.conventionMapping.manager = {
+      new File(project.rootDir, project.jaxb.dependencyGraph) }
+    xjc.conventionMapping.episodeDirectory = {
+      new File(project.rootDir, project.jaxb.jaxbEpisodeDirectory) }
+    xjc.conventionMapping.customBindingDirectory = {
+      new File(project.rootDir, project.jaxb.jaxbBindingDirectory) }
+    xjc.conventionMapping.generatedFilesDirectory = {
+      new File(project.projectDir, project.jaxb.jaxbSchemaDestinationDirectory) }
+
   }
 }
