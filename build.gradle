@@ -20,6 +20,12 @@ dependencies {
    testCompile 'org.objenesis:objenesis:1.2'
 }
 
+test {
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
 task unversionedJar (type: Jar, dependsOn: 'jar') {
 	version = null
 	from sourceSets.main.output
