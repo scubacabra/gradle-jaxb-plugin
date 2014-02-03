@@ -32,15 +32,20 @@ class XsdSlurper extends DocumentSlurper {
      */
     @Override
     public void resolveDocumentDependencies() {
-        log.debug("Getting document dependencies for xsd '{}'", this.documentFile.name)
-        slurpDependencies(this.slurpedDocument?.import, this.xsdImports) // imports slurping
-        slurpDependencies(this.slurpedDocument?.include, this.xsdIncludes) // includes slurping
+        log.debug("Getting document dependencies for xsd '{}'",
+		  this.documentFile.name)
+	// imports slurping
+        slurpDependencies(this.slurpedDocument?.import, this.xsdImports)
+	// includes slurping
+        slurpDependencies(this.slurpedDocument?.include, this.xsdIncludes)
 	this.resolveRelativePathDependencies([this.xsdImports, this.xsdIncludes])
     }
-    
+
     /**
-     * dependentElements is the slurped elements needed, contains schemaLocation for either import/include data
-     * collection is the collection to put the paths in -- all of are Strings (that's what schema Location is)
+     * dependentElements is the slurped elements needed, contains
+     * schemaLocation for either import/include data collection is the
+     * collection to put the paths in
+     * all of are Strings (that's what schema Location is)
      **/
     def slurpDependencies(dependentElements, elementCollection) { // TODO what if null inputs?
       log.debug("Slurping Dependencies for '{}' elements of the '{}' type",
