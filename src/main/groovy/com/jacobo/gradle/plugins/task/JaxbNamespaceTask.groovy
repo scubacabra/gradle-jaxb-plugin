@@ -38,7 +38,7 @@ class JaxbNamespaceTask extends DefaultTask {
     def groupedNamespaces = this.groupNamespaces(groupedByNamespace)
     log.lifecycle("jaxb: resolving individual namespace dependencies", xsdDirectory)
     def slurpedFileHistory = this.resolveNamespaceDependencies(
-      slurpedDocuments, groupedNamespaces)
+      slurpedDocuments, groupedNamespaces, groupedByNamespace.keySet())
     def dependencyTreeManager = this.generateDependencyTree(groupedNamespaces)
     this.resolveExternalDependencies(groupedByNamespace.keySet(),
 				     groupedNamespaces, slurpedFileHistory)
@@ -133,8 +133,8 @@ class JaxbNamespaceTask extends DefaultTask {
     }
     log.info("previously slurped '{}' documents", historySlurpedFiles.size())
     groupedNamespaces.each { namespace -> 
-      historySlurpedFiles = namespace.findDependedNamespaces(
-	groupByNamespace.keySet(), historySlurpedFiles)
+      historySlurpedFiles = namespace.findNamespacesDependentOn(
+	availableNamespaces, historySlurpedFiles)
     }
     return historySlurpedFiles
   }
