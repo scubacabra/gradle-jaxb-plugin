@@ -97,7 +97,7 @@ class JaxbXJCTask extends DefaultTask {
       //produces (dir : destinationDirectory)
       schema (dir : schemasDirectory,
 	      includes : xsdFiles )
-      if (!customBinding.isEmpty() && customBinding != null) {
+      if (!customBinding.isEmpty()) {
 	binding(dir : bindingDirectory, includes : bindings)
       }
       episodeBindings.each { episode ->

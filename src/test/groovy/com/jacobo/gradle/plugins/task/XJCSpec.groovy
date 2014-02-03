@@ -86,20 +86,23 @@ class JaxbXJCSpec extends ProjectTaskSpecification {
   }
 
   @Unroll
-  def "list of custom bindings #bindings converted to XJC task input #xjcBindings" () {
+  def "list of custom bindings '#bindings' converted to XJC task input '#xjcBindings'" () {
   when:
   def result = task.transformBindingListToString(bindings)
 
   then:
   result == xjcBindings
+  result.isEmpty() == isEmpty
 
   where:
   bindings << [["binding1.xjc", "binding2.xjc", "binding3.xjc"],
-	       ["my_binding.xjc", "your_binding.xjc", "we_all_bind.xjc"]
+	       ["my_binding.xjc", "your_binding.xjc", "we_all_bind.xjc"],
+	       []
 	      ]
   xjcBindings << ["binding1.xjc binding2.xjc binding3.xjc",
-		  "my_binding.xjc your_binding.xjc we_all_bind.xjc"
+		  "my_binding.xjc your_binding.xjc we_all_bind.xjc", ""
 		 ]
+  isEmpty << [false, false, true]
   }
 
   @Unroll
