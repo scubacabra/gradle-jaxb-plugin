@@ -52,7 +52,11 @@ class XsdSlurper extends DocumentSlurper {
     def slurpNamespace() { 
       xsdNamespace = slurpedDocument?.@targetNamespace.text()
       if (!xsdNamespace) {
-	log.warn("There is no targetNamespace attribute for file '{}' (assigning filname as namespace to it).  A Schema should ALWAYS include a targetNamespace attribute at its root element.  No targetNamespaces are referred to using the Chameleon design pattern, which is not an advisable pattern!", documentFile)
+	log.warn("""There is no targetNamespace attribute for file '{}'(assigning
+                    filname as namespace to it).  A Schema should ALWAYS include
+                    a targetNamespace attribute at its root element.  No
+                    targetNamespaces are referred to using the Chameleon design
+                    pattern, which is not an advisable pattern!""", documentFile)
 	xsdNamespace = documentFile.name
       }
       log.debug("grabbed XSD namespace : {}", xsdNamespace)

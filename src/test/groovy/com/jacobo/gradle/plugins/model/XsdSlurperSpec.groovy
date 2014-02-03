@@ -38,4 +38,20 @@ class XsdSlurperSpec extends BaseSpecification {
 			      "/schema/Include/include.xsd",
 			      "/schema/Include/include2.xsd"], []]
   }
+
+  def "xsd with no target Namespace.  Namespace is populated with the documentFile name"() {
+    given:
+    def xsdFile = getFileFromResourcePath(xsdPath)
+    slurper.slurpedDocument = new XmlSlurper().parse(xsdFile)
+    slurper.documentFile = xsdFile
+
+    when:
+    slurper.slurpNamespace()
+
+    then:
+    slurper.xsdNamespace == xsdFile.name
+
+    where:
+    xsdPath << ["/schema/no-namespace.xsd", "/schema/living-room-no-namespace.xsd"]
+  }
 }
