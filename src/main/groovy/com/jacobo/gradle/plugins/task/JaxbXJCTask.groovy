@@ -47,18 +47,22 @@ class JaxbXJCTask extends DefaultTask {
   @TaskAction
   void start() {
     def treeManager = getManager()
+    log.lifecycle("jaxb: attempting to parse '{}' nodes in tree, base nodes are '{}'",
+		  treeManager.managedNodes.size(), treeManager.currentNodeRow)
     parseNodes(treeManager.currentNodeRow)
   }
 
   def parseNodes(baseTreeNodes) {
     def nextRow = baseTreeNodes as Set
     while(nextRow) {
+      log.info("parsing '{}' nodes '{}'", nextRow.size(), nextRow)
       nextRow.each { node -> parseNode(node) }
       nextRow = manager.nextNodeRow(nextRow)
     }
   }
 
   def parseNode(TreeNode<NamespaceData> node) {
+    log.info("gathering information for node '{}'", node)
     def episodeBindings = this.resolveEpisodeFiles(node)
     def episodeName = this.convertNamespaceToEpisodeName(node.data.namespace)
     // def episodePath = project.jaxb.jaxbEpisodeDirectory +
@@ -168,6 +172,7 @@ class JaxbXJCTask extends DefaultTask {
     // must check for current nodes external dependencies.  Could have 0
     // parents and only possible external dependencies lay in this node
     if (node.data.hasExternalDependencies) {
+      log.info("node '{}' has external dependencies", node)
       dependentNamespaces.addAll(node.data.dependentExternalNamespaces)
     }
 
@@ -177,12 +182,16 @@ class JaxbXJCTask extends DefaultTask {
       dependentNamespaces.addAll(parents.data.namespace)
       // check if any parent has external dependencies
       parents.each { parent ->
+	log.info("node '{}' depends on Parent node '{}'", node, parent)
 	if (parent.data.hasExternalDependencies) {
+	  log.info("parent node '{}' has external dependencies", parent)
 	  dependentNamespaces.addAll(parent.data.dependentExternalNamespaces)
 	}
       }
     }
 
+    log.info("node '{}' depends on a total of '{}' namespaces", node,
+	     dependentNamespaces.size())
     def episodeBindings = dependentNamespaces.collect { dependentNamespace ->
       this.convertNamespaceToEpisodeName(dependentNamespace)
     }
@@ -197,7 +206,7 @@ class JaxbXJCTask extends DefaultTask {
   */
   public String xsdFilesListToString(List<File> filesToParse) {
     String fileNames = filesToParse.name.join(" ")
-    log.debug("List of files to Parse for xjc is '{}'", fileNames)
+    log.info("xjc file list input is '{}'", fileNames)
     return fileNames
   }
 
@@ -211,7 +220,7 @@ class JaxbXJCTask extends DefaultTask {
    */
   public String transformBindingListToString(List bindings) { 
     String bindingNames = bindings.join(" ")
-    log.debug("List of custom bindings for xjc is '{}'", bindingNames)
+    log.info("list of custom bindings for xjc input is '{}'", bindingNames)
     return bindingNames
   }
 
@@ -224,6 +233,8 @@ class JaxbXJCTask extends DefaultTask {
     def episodeName = namespace.replace("http://", "")
     episodeName = episodeName.replace(":", "-")
     episodeName = episodeName.replace("/", "-")
+    log.info("converted namespace '{}' to episode name '{}'", namespace,
+	     episodeName)
     return  episodeName
   }
 }
