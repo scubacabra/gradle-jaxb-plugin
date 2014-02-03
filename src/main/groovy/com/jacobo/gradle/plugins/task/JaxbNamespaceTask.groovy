@@ -40,7 +40,7 @@ class JaxbNamespaceTask extends DefaultTask {
     def slurpedFileHistory = this.resolveNamespaceDependencies(
       slurpedDocuments, groupedNamespaces)
     def dependencyTree = this.generateDependencyTree(groupedNamespaces)
-    this.resolveExternalDependencies(groupByNamespace.keySet(),
+    this.resolveExternalDependencies(groupedByNamespace.keySet(),
 				     groupedNamespaces, slurpedFileHistory)
     project.jaxb.dependencyGraph = dependencyTree
     log.info( "all {} (unique) namespaces have been ordered and saved for parsing",
