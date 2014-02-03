@@ -43,7 +43,8 @@ class XsdSlurper extends DocumentSlurper {
      * collection is the collection to put the paths in -- all of are Strings (that's what schema Location is)
      **/
     def slurpDependencies(dependentElements, elementCollection) { // TODO what if null inputs?
-      log.debug("Slurping Dependencies for '{}' elements of the '{}' type", dependentElements.size, dependentElements[0].name())
+      log.debug("Slurping Dependencies for '{}' elements of the '{}' type",
+		dependentElements.size, dependentElements[0].name())
       dependentElements?.each { element ->
 	elementCollection.add(element.@schemaLocation.text())
       }
