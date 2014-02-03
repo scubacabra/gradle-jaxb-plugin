@@ -42,9 +42,7 @@ class JaxbNamespaceTask extends DefaultTask {
     def dependencyTree = this.generateDependencyTree(groupedNamespaces)
     this.resolveExternalDependencies(groupedByNamespace.keySet(),
 				     groupedNamespaces, slurpedFileHistory)
-    project.jaxb.dependencyGraph = dependencyTree
-    log.info( "all {} (unique) namespaces have been ordered and saved for parsing",
-	      treeManager.managedNodes.size())
+    project.jaxb.dependencyGraph = dependencyTreeManager
   }
 
   /**
