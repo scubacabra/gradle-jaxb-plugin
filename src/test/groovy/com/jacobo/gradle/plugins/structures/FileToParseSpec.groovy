@@ -10,116 +10,134 @@ import org.gradle.api.logging.Logger
 class FileToParseSpec extends Specification {
   static final Logger log = Logging.getLogger(FileToParseSpec.class)
 
-  def nmd = new NamespaceData()
-  
-  def "get Files to parse, simple 2 files, one includes the other, should only get one file to parse" () { 
-  setup: "setup the Slurper class"
-  def result
-  def slurped1 = new XsdSlurper()
-  slurped1.documentFile = doc
-  slurped1.xsdNamespace = "http://www.example.org/Kitchen"
-  slurped1.xsdIncludes = [includeFile]
-  def slurped2 = new XsdSlurper()
-  slurped2.documentFile = includeFile
-  slurped2.xsdNamespace = "http://www.example.org/Kitchen"
-  nmd.namespace = slurped1.xsdNamespace
-  nmd.slurpedDocuments = [slurped1, slurped2]
+  def nd = new NamespaceData()
+  def namespace = "same-namespace"
+  def s1 = new XsdSlurper()
+  def s2 = new XsdSlurper()
+  def s3 = new XsdSlurper()
+  def mainXsd = new File("main-document.xsd")
 
-  when: "we process include files, the parse Files should be without the included file"
-  result = nmd.filesToParse()
-
-  then: "parse Files should only be of length 1"
-  result.size == 1
-  result[0] == doc
-  
-  where:
-  doc = new File(this.getClass().getResource("/schema/testIncludes/Kitchen.xsd").toURI()).absoluteFile
-  includeFile = new File(this.getClass().getResource("/schema/testIncludes/KitchenSubset.xsd").toURI()).absoluteFile
+  def setup() {
+    nd.namespace = namespace
+    s1.with {
+      documentFile = mainXsd
+      xsdNamespace = namespace
+    }
   }
 
-  def "get Files to parse, 3 files, 1 includes 2 and 2 includes 3, should only get one file to parse" () { 
-  setup: "setup the Slurper class"
-  def result
-  def slurped1 = new XsdSlurper()
-  slurped1.documentFile = doc
-  slurped1.xsdNamespace = "http://www.example.org/Kitchen"
-  slurped1.xsdIncludes = [includeFile]
-  def slurped2 = new XsdSlurper()
-  slurped2.documentFile = includeFile
-  slurped2.xsdNamespace = "http://www.example.org/Kitchen"
-  slurped2.xsdIncludes = [secondInclude]
-  def slurped3 = new XsdSlurper()
-  slurped3.documentFile = secondInclude
-  slurped3.xsdNamespace = "http://www.example.org/Kitchen"
-  nmd.namespace = slurped1.xsdNamespace
-  nmd.slurpedDocuments = [slurped1, slurped2, slurped3]
+  def "get files to parse, main doc includes another doc, should only get 1, main doc to parse"() {
+    given:
+    s1.with {
+      xsdIncludes = [relPath] as Set
+      documentDependencies.put(relPath,includeFile)
+    }
+    s2.with {
+      xsdNamespace = namespace
+      documentFile = includeFile
+    }
+    nd.slurpedDocuments = [s1, s2]
 
-  when: "we process include files, the parse Files should be without the included file"
-  result = nmd.filesToParse()
+    when:
+    def result = nd.filesToParse()
 
-  then: "parse Files should only be of length 1"
-  result.size == 1
-  result[0] == doc
+    then:
+    result.size == 1
+    result[0] == mainXsd
+
+    where:
+    relPath = "s2.xsd"
+    includeFile = new File("s2.xsd")
+
+  }
   
-  where:
-  doc = new File(this.getClass().getResource("/schema/testIncludes/Kitchen.xsd").toURI()).absoluteFile
-  includeFile = new File(this.getClass().getResource("/schema/testIncludes/KitchenSubset.xsd").toURI()).absoluteFile
-  secondInclude = new File(this.getClass().getResource("/schema/testIncludes/KitchenSubset2.xsd").toURI()).absoluteFile
+
+  def "get files to parse, main document includes a sub, that includes a sub -- only the main document should be parsed"() {
+    given:
+    s1.with {
+      xsdIncludes = [relPath] as Set
+      documentDependencies.put(relPath,includeFile)
+    }
+    s2.with {
+      xsdNamespace = namespace
+      documentFile = includeFile
+      documentDependencies.put(subRelPath, subIncludeFile)
+      xsdIncludes = [subRelPath] as Set
+    }
+    s3.with {
+      xsdNamespace = namespace
+      documentFile = subIncludeFile
+    }
+    nd.slurpedDocuments = [s1, s2, s3]
+
+    when:
+    def result = nd.filesToParse()
+
+    then:
+    result.size == 1
+    result[0] == mainXsd
+
+    where:
+    relPath = "s2.xsd"
+    includeFile = new File("s2.xsd")
+    subRelPath = "s3.xsd"
+    subIncludeFile = new File("s3.xsd")
   }
 
-  def "get Files to parse, 3 files, 1 includes 2 and 3, should only get one file to parse" () { 
-  setup: "setup the Slurper class"
-  def result
-  def slurped1 = new XsdSlurper()
-  slurped1.documentFile = doc
-  slurped1.xsdNamespace = "http://www.example.org/Kitchen"
-  slurped1.xsdIncludes = [includeFile, secondInclude]
-  def slurped2 = new XsdSlurper()
-  slurped2.documentFile = includeFile
-  slurped2.xsdNamespace = "http://www.example.org/Kitchen"
-  slurped2.xsdIncludes = [secondInclude]
-  def slurped3 = new XsdSlurper()
-  slurped3.documentFile = secondInclude
-  slurped3.xsdNamespace = "http://www.example.org/Kitchen"
-  nmd.namespace = slurped1.xsdNamespace
-  nmd.slurpedDocuments = [slurped1, slurped2, slurped3]
+  def "get files to parse, main document includes a sub AND another sub, sub  includes the last sub -- only the main document should be parsed"() {
+    given:
+    s1.with {
+      xsdIncludes = [relPath, subRelPath] as Set
+      documentDependencies.put(relPath,includeFile)
+      documentDependencies.put(subRelPath, subIncludeFile)
+    }
+    s2.with {
+      xsdNamespace = namespace
+      documentFile = includeFile
+      documentDependencies.put(subRelPath, subIncludeFile)
+      xsdIncludes = [subRelPath] as Set
+    }
+    s3.with {
+      xsdNamespace = namespace
+      documentFile = subIncludeFile
+    }
+    nd.slurpedDocuments = [s1, s2, s3]
 
-  when: "we process include files, the parse Files should be without the included file"
-  result = nmd.filesToParse()
+    when:
+    def result = nd.filesToParse()
 
-  then: "parse Files should only be of length 1"
-  result.size == 1
-  result[0] == doc
-  
-  where:
-  doc = new File(this.getClass().getResource("/schema/testIncludes/Kitchen.xsd").toURI()).absoluteFile
-  includeFile = new File(this.getClass().getResource("/schema/testIncludes/KitchenSubset.xsd").toURI()).absoluteFile
-  secondInclude = new File(this.getClass().getResource("/schema/testIncludes/KitchenSubset2.xsd").toURI()).absoluteFile
+    then:
+    result.size == 1
+    result[0] == mainXsd
+
+    where:
+    relPath = "s2.xsd"
+    includeFile = new File("s2.xsd")
+    subRelPath = "s3.xsd"
+    subIncludeFile = new File("s3.xsd")
   }
 
-  def "slurped up includes, circular dependency (error in writing your schema) now, doc includes include1 and include1 includes doc, parseFiles is null : error writing schema should be fixed." () {
-  setup:
-  def slurped1 = new XsdSlurper()
-  slurped1.documentFile = doc
-  slurped1.xsdNamespace = "http://www.example.org/Kitchen"
-  slurped1.xsdIncludes = [includeFile]
-  def slurped2 = new XsdSlurper()
-  slurped2.documentFile = includeFile
-  slurped2.xsdNamespace = "http://www.example.org/Kitchen"
-  slurped2.xsdIncludes = [doc]
+  def "get files to parse, main doc includes another doc, but there is a circular dependency.  the sub also includes the main."() {
+    given:
+    s1.with {
+      xsdIncludes = [relPath] as Set
+      documentDependencies.put(relPath,includeFile)
+    }
+    s2.with {
+      xsdNamespace = namespace
+      documentFile = includeFile
+      xsdIncludes = [mainXsd.name] as Set
+      documentDependencies.put(mainXsd.name, mainXsd)
+    }
+    nd.slurpedDocuments = [s1, s2]
 
-  when:
-  nmd.slurpedDocuments = [slurped1, slurped2]
-  nmd.namespace = "http://www.example.org/Kitchen"
-  def result = nmd.filesToParse()
+    when:
+    def result = nd.filesToParse()
 
-  then: "include files should be 2 and parse files should be 0" //TODO an error should really be thrown IMO
-  result.size == 0
-  result.find { it == includeFile } == null
-  result.find { it == doc } == null
-  
-  where:
-  doc = new File(this.getClass().getResource("/schema/testIncludes/Kitchen.xsd").toURI()).absoluteFile
-  includeFile = new File(this.getClass().getResource("/schema/testIncludes/KitchenSubset.xsd").toURI()).absoluteFile
+    then:
+    thrown RuntimeException
+
+    where:
+    relPath = "s2.xsd"
+    includeFile = new File("s2.xsd")
   }
 }
