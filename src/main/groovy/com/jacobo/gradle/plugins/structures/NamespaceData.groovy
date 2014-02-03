@@ -116,7 +116,7 @@ class NamespaceData {
     def unparsed = [] as Set // set of java.io.File
     dependentExternalFiles.each { dependentFile ->
       def slurper = historySlurpedFiles.get(dependentFile)
-      this.dependentNamespaces.add(slurper.xsdNamespace)
+      this.dependentExternalNamespaces.add(slurper.xsdNamespace)
       unparsed.addAll(slurper.xsdImports)
     }
 
