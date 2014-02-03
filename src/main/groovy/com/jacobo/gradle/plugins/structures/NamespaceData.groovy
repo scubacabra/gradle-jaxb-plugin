@@ -114,6 +114,8 @@ class NamespaceData {
 
   def findAllNamespacesDependedOn(operatingNamespaces, historySlurpedFiles) { 
     def unparsed = [] as Set // set of java.io.File
+    log.info("'{}' has dependencies on '{}'", this.namespace,
+	     dependentExternalFiles)
     dependentExternalFiles.each { dependentFile ->
       def slurper = historySlurpedFiles.get(dependentFile)
       this.dependentExternalNamespaces.add(slurper.xsdNamespace)
