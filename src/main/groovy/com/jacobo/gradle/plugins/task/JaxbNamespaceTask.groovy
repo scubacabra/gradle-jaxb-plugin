@@ -28,12 +28,15 @@ class JaxbNamespaceTask extends DefaultTask {
   File xsdDirectory
 
   @TaskAction
-  void start() { 
+  void start() {
+    log.lifecycle("jaxb: finding and slurping xsd files in '{}'", xsdDirectory)
     def xsdFiles = this.findAllXsdFiles( getXsdDirectory() )
     def slurpedDocuments = this.slurpXsdFiles(xsdFiles)
+    log.lifecycle("jaxb: grouping files by individual namespace", xsdDirectory)
     def groupedByNamespace = this.groupSlurpedDocumentsByNamespace(
       slurpedDocuments)
     def groupedNamespaces = this.groupNamespaces(groupedByNamespace)
+    log.lifecycle("jaxb: resolving individual namespace dependencies", xsdDirectory)
     def slurpedFileHistory = this.resolveNamespaceDependencies(
       slurpedDocuments, groupedNamespaces)
     def dependencyTree = this.generateDependencyTree(groupedNamespaces)
@@ -74,6 +77,7 @@ class JaxbNamespaceTask extends DefaultTask {
    */
   @VisibleForTesting
   def slurpXsdFiles(List<File> xsdFiles) {
+    log.info("slurping '{}' files", xsdFiles.size())
     def slurpedDocuments = []
     xsdFiles.each { xsdFile ->
       def slurpedDocument = DocumentReader.slurpDocument(xsdFile)
@@ -90,6 +94,7 @@ class JaxbNamespaceTask extends DefaultTask {
    */
   @VisibleForTesting    
   def groupSlurpedDocumentsByNamespace(List<DocumentSlurper> slurpedDocuments) {
+    log.info("grouping '{}' documents by their unique namespaces", slurpedDocuments.size())
     // key is namepsace string, value is List of DocumentSlurped objects
     def groupedNamespaces = [:]
     slurpedDocuments.each { slurpedDocument ->
@@ -126,13 +131,14 @@ class JaxbNamespaceTask extends DefaultTask {
     slurpedDocuments.each { slurped ->
       historySlurpedFiles.put(slurped.documentFile, slurped)
     }
-    
+    log.info("previously slurped '{}' documents", historySlurpedFiles.size())
     groupedNamespaces.each { namespace -> 
       historySlurpedFiles = namespace.findDependedNamespaces(
 	groupByNamespace.keySet(), historySlurpedFiles)
     }
     return historySlurpedFiles
   }
+    log.info("'{}' slurped documents total", historySlurpedFiles.size())
 
   @VisibleForTesting
   def resolveExternalDependencies(Set<String> operatingNamespaces,
@@ -141,7 +147,7 @@ class JaxbNamespaceTask extends DefaultTask {
     def namespacesWithExternalDeps = groupedNamespaces.findAll { namespace ->
       namespace.hasExternalDependencies
     }
-    log.debug("Namespaces with external dependencies are '{}'",
+    log.info("namespaces with external dependencies are '{}'",
 	      namespacesWithExternalDeps)
 
     namespacesWithExternalDeps.each { namespace ->
@@ -155,12 +161,12 @@ class JaxbNamespaceTask extends DefaultTask {
     def treeManager = new TreeManager()
     def noDependencies = groupedNamespaces.findAll{
       namespace -> namespace.hasDependencies == false }
-    log.debug("Generating Dependency Tree, the '{}' base namespaces are '{}'",
+    log.info("generating dependency tree, the '{}' base namespaces are '{}'",
 	      noDependencies.size, noDependencies)
     treeManager.createTreeRoot(noDependencies)
     def dependentNamespaces = groupedNamespaces.findAll {
       namespace -> namespace.hasDependencies == true }
-    log.debug("Attempting to layout '{}' namespaces on this graph...'{}'",
+    log.info("attempting to layout '{}' namespaces on this graph --> '{}'",
 	      dependentNamespaces.size, dependentNamespaces)
     // still have some namespaces left to layout!
     while(groupedNamespaces.size != treeManager.managedNodes.size()) {
