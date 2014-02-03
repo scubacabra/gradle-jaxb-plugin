@@ -11,10 +11,39 @@ import spock.lang.*
 class JaxbXJCSpec extends ProjectTaskSpecification {
   
   def treeManager = GroovyMock(TreeManager)
-
+  @Shared
+  def episodes = ["ns1.episode", "ns2.episode", "ns3.episode", "ns10.episode",
+		  "ns11.episode", "ns12.episode", "ns13.episode",
+		  "ns14.episode", "ns15.episode", "ns16.episode"
+		 ]
   def setup() {
     task = project.tasks[JaxbPlugin.JAXB_NAMESPACE_GENERATE_TASK] as JaxbXJCTask
-    task.manager = treeManager
+    task.with { 
+      manager = treeManager
+      episodeDirectory = getFileFromResourcePath("/episodes")
+    }
+  }
+
+  // Make episode files in the episode directory so the episode Check doesn't
+  // throw errors
+  def setupSpec() {
+    def resourcesRoot = getFileFromResourcePath("/")
+    def episodeFolder = new File(resourcesRoot, "episodes")
+    episodeFolder.mkdir()
+    episodes.each { episode ->
+      def file = new File(episodeFolder, episode)
+      file.createNewFile()
+    }
+  }
+
+  // cleanup episode files and episode folder created
+  def cleanupSpec() {
+    def episodeFolder = getFileFromResourcePath("/episodes")
+    episodes.each { episode ->
+      def file = new File(episodeFolder, episode)
+      file.delete()
+    }
+    episodeFolder.delete()
   }
 
   @Unroll
