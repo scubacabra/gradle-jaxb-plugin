@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <xsd:element name="home" type="home"/>
+
+  <xsd:complexType name="home">
+    <xsd:sequence>
+      <xsd:element name="livingRoom" type="livingRoom"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="livingRoom">
+    <xsd:sequence>
+      <xsd:element name="sofa" type="sofa"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="sofa" abstract="true">
+    <xsd:sequence/>
+  </xsd:complexType>
+
+  <xsd:complexType name="Lane">
+    <xsd:complexContent>
+      <xsd:extension base="sofa">
+  <xsd:sequence>
+	  <xsd:element name="price" type="xsd:decimal"/>
+	  <xsd:element name="clock" type="xsd:string"/>
+	  <xsd:element name="depth" type="xsd:decimal"/>
+	  <xsd:element name="height" type="xsd:decimal"/>
+	</xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+
+  <xsd:complexType name="Berkline">
+    <xsd:complexContent>
+      <xsd:extension base="sofa">
+	<xsd:sequence>
+	  <xsd:element name="price" type="xsd:decimal"/>
+	  <xsd:element name="clock" type="xsd:string"/>
+	  <xsd:element name="depth" type="xsd:decimal"/>
+	  <xsd:element name="height" type="xsd:decimal"/>
+	  <xsd:element name="color" type="xsd:string"/>
+	</xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+
+</xsd:schema>
