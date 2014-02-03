@@ -39,7 +39,9 @@ class JaxbNamespaceTask extends DefaultTask {
     log.lifecycle("jaxb: resolving individual namespace dependencies", xsdDirectory)
     def slurpedFileHistory = this.resolveNamespaceDependencies(
       slurpedDocuments, groupedNamespaces, groupedByNamespace.keySet())
+    log.lifecycle("jaxb: generating xsd namespace dependency tree")
     def dependencyTreeManager = this.generateDependencyTree(groupedNamespaces)
+    log.lifecycle("jaxb: resolving indiviual namespace external dependencies")
     this.resolveExternalDependencies(groupedByNamespace.keySet(),
 				     groupedNamespaces, slurpedFileHistory)
     project.jaxb.dependencyGraph = dependencyTreeManager
@@ -136,9 +138,9 @@ class JaxbNamespaceTask extends DefaultTask {
       historySlurpedFiles = namespace.findNamespacesDependentOn(
 	availableNamespaces, historySlurpedFiles)
     }
+    log.info("'{}' slurped documents total", historySlurpedFiles.size())
     return historySlurpedFiles
   }
-    log.info("'{}' slurped documents total", historySlurpedFiles.size())
 
   @VisibleForTesting
   def resolveExternalDependencies(Set<String> operatingNamespaces,
@@ -178,6 +180,7 @@ class JaxbNamespaceTask extends DefaultTask {
       def nextChildren = treeManager.findNextChildrenNamespaces(dependentNamespaces)
       treeManager.addChildren(nextChildren)
     }
+    log.info("dependencies layed out, total tree nodes of '{}'", treeManager.managedNodes.size())
     // done laying out treeNodes, reset pointer to base, return base row
     treeManager.resetRowPointer()
     return treeManager
