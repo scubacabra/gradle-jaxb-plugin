@@ -63,8 +63,10 @@ class NamespaceData {
     def importedDependencies = [] as Set
     log.debug("Gathering all the imported dependencies for namespace  '{}'",
 	      this.namespace)
-    slurpedDocuments.xsdImports.each { dependencies ->
-      importedDependencies.addAll(dependencies) }
+
+    slurpedDocuments.each { slurped ->
+      importedDependencies.addAll(slurped.xsdImports)
+    }
 
     // empty imported Dependencies, nothing else to do
     if( importedDependencies.isEmpty() ) 
