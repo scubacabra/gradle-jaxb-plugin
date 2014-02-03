@@ -124,7 +124,7 @@ Finally the tree manager allows upwards traversal to get all the parents for a p
 # Handling External Namespaces
 An example of an external namespace is if the schema to be parsed are under `/schema/parse_me` and one of the schemas there imports something that is found in `/schema/no_parse_me`.  The plugin handles this by taking a note of the File where this external dependency lies and slurping it.  It stores this in the history of slurped files.  After the tree is laid out, the plugin checks if any namespaces have external dependencies (a flag is set if the above happens).  It takes all of these namespaces and calls findAllDependentNamespaces on these objects (`namespace` object).
 
-This is not the standard findDependentsOn. It takes the external namespace File and parses it until there are no more imports.  It stores the `targetNamespace` of each slurper (keeps going as long as `imports` section is populated in the xsd) into the `namespace` object that is calling this method (as an externalNamespaceDependency). **TODO WHAT IF TARGETNAMESPACE IS NULL? SAME THING WITH FILE NAME**
+This is not the standard findDependentsOn. It takes the external namespace File and parses it until there are no more imports.  It stores the `targetNamespace` of each slurper (keeps going as long as `imports` section is populated in the xsd) into the `namespace` object that is calling this method (as an externalNamespaceDependency). If, `targetNamespace` is null, the file name is set as the namespace
 
 history of slurped files is used to make sure that Files of external dependency objects are not parsed more than once.
 
@@ -151,3 +151,118 @@ Takes the current Node the plugin is looking to parse.
 these dependent namespaces return a set, because parent namespaces COULD depend on the same externals as the children.  It would be poorly written schema, but I've seen this in real life.
 
 Take dependent namespaces and convert each to their episode name.
+
+# Slurper Objects storing relative file paths (from document) and Absolute File objects
+The slurper obviously stores the relative file paths in the inherited objects, but the object that is extended `DocumentSlurper` resolves those relative paths into File objects and stores them in `documentDependencies`.
+
+This works for the wsdl plugin, because all it cares about (for now) is what to include in the WAR.  But for this jaxb plugin, it needs to know xsdImports and xsdIncludes.  So the way it works is going to have to be changed.
+
+`documentDependencies` will store a map with the *relative_path* as the key, and the *absolute* file object as the value.  This way the `wsdl-plugin` can just use the map.values() to get the dependencies and during jaxb processing, it can use the xsdImports values as keys to get their absolute File equivalents.
+
+## Overriding getXsdImports and getXsdIncludes
+So then getting these fields from `XsdSlurper` will require the overriding of the default methods generated from a groovy bean.  The code for each override is practically the same, but is just iterating over the *current* values for either `xsdImport` or `xsdInclude` and then finding their values in the `documentDependencies` map.  The return is a Set of File objects, **the values for the fields xsdImport and xsdInclude remain the same** the overrides just return the absolute file equivalents instead of strings.
+
+## Processing xsd files with no namespace
+God, this really bothers me, and maybe it is not prevalent, but I have seen many a schema from a *nameless company* that used these types of schema patterns.
+
+The naming convention won't work for a null namespace, so if there is no `targetNamespace` value, it takes the filename as the namespace.
+
+xjc task folder checks
+======================
+
+There are a couple of things that need to be present for the XJC task to succeed, and not barf.
+
+* There needs to be *at least* 1 file name to pass in to the xjc param `includes`
+
+	```groovy
+	schema (dir : schemasDirectory, includes : xsdFiles )
+	```
+
+	Here, `xsdFiles` is a string of space separated file names that fall under
+	the `schemasDirectory`.  So if that string is empty, then the ant xjc task
+	is going to fail.  This can be checked and an error thrown in the
+	`NamespaceData` object that gets the list of files.
+
+* Next certain directories need to exist:
+
+  * `jaxbSchemaDestinationDirectory`[^1]
+	This is the directory where the generated java files will go.  usually
+	`<project-folder>/src/main/java`. 
+
+  * `jaxbEpisodeDirectory`[^2]
+	This is the directory where to find **and** put episode files.  This
+	directory needs to exist even if not depending on episode files
+	because the plugin generates episode files for each namespace
+
+  * `jaxbBindingDirectory`[^3]
+    This is the directory where custom bindings for jaxb sjc task may be placed.
+	It doesn't necessarily have any bindings, but should still have the directory
+	anyway.
+	
+  * episode binding files must be on the file system, inside the`jaxbEpisodeDirectory` directory
+	Only if the namesapce is depending on another namespace and using episode files.
+
+If these don't exist when they need to, then the xjc task will just barf.  So it might be nice to
+provide the user with a little exception to let them know what is going on without having to look
+through debug or info output.
+
+Gradle uses the annotation `OutputDirectory` for its incremental build support, and might be nice
+for the directories that need to be instantiated, as it just creates the directories if they don't
+exist. :) oh happy day.
+
+With this, then, `jaxbSchemaDestinationDirectory`, `jaxbEpisodeDirectory`, `jaxbBindingDirectory`
+can be passed in from the `JaxbPlugin` config class and annoted with `OutputDirectory` and we don't
+have to worry about checking for these directories existing.
+
+Episode files I am guessing should still be checked, even if there are many -- better to see an error here than sift through info or debug output on console
+
+integration testing
+===================
+**TODO**
+It would be a good idea to put some empty xsd files with different namespaces that each depend on each other in a specific hierarchy.
+
+The only problem is that to run the full Task methods, the `ant.*` is called twice.  Once for `taskdef` and once for `xjc`.  I tried to mock the `org.gradle.api.AntBuilder` but it is an abstract class and can't mock it. If I could somehow mock it, I could test that it gets called a certain number of times and the code is run all the way through so I know it probably won't barf when you try and run it.
+
+One such integration test is written, but it must be stashed, because I run it by commenting out the xjc code so that I can test **most** of the top to bottom calls.  Would really like to mock AntBuilder though.  **TODO**
+
+Task Depends On Another Task
+============================
+**TODO**
+The same way that one would write a compilation dependency project to project,
+i.e.
+
+```groovy
+dependencies {
+    compile 'project(:projectA)'
+}
+```
+
+I would like to do but between the tree generation tasks.  In the simple case of two projects.  *internal* and *external*:
+
+Basically, the schema of *internal* depends on the schema of *external* to be parsed first, and that schema is not in the current folders of the `jaxbSchemaDirectory` for *internal*, hence it is an **external** namespace dependency, then this _external_ namespace should be parsed first.  This *external* namespace should also be compiled first and its jar artifact used for the compilation of the *internal* project.
+
+I would like to specify all of the above ala
+
+```groovy
+dependencies {
+  jaxb 'project(:external)'
+}
+```
+
+technically, I can do this right now, but there is nothing that happens. I need some code in the `JaxbPlugin` code that handles this.  But I am not sure how to get to this.
+
+Testing in a project before deploying to artifactory server
+===========================================================
+
+After running integration tests AND unit tests, one further test should be run in the `examples` folder.  Build the plugin jar and reference it in the `examples` folder.
+
+Extensions and default configurations
+=====================================
+
+**TODO** *Flush out*
+
+[^1]: required
+
+[^2]: required
+
+[^3]: only required if there are custom jaxb bindings that are being used
