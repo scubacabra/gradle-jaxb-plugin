@@ -150,8 +150,30 @@ class JaxbXJCTask extends DefaultTask {
     def episodeBindings = dependentNamespaces.collect { dependentNamespace ->
       this.convertNamespaceToEpisodeName(dependentNamespace)
     }
-
+    if(episodeBindings)
+      checkEpisodeFilesExist(episodeBindings, node.data.namespace)
     return episodeBindings
+  }
+
+  /**
+   * Make sure episode files exist.  If not throw an error, letting the
+   * user know what is wrong instead of making them sift through info
+   * or debug output from command line
+   * @param episodeNames -> list of episode file names to check for existence of
+   * @param namespace -> the namespace that depends on these episode
+   */
+  def checkEpisodeFilesExist(List episodeNames, String namespace) {
+    log.info("checking existence of '{}' episode files", episodeNames.size())
+    episodeNames.each { episode ->
+      def file = new File(getEpisodeDirectory(), "${episode}.episode")
+      if (file.exists())
+	return
+
+      def exceptionString = """Episode file '${file}' doesn't exist! Namespace
+'${namespace}' depends on this episode file.  Make sure that the project this
+namespace depends on has been parsed and has generated an episode file"""
+      throw new RuntimeException(exceptionString)
+    }
   }
 
   /**

@@ -99,6 +99,18 @@ class JaxbXJCSpec extends ProjectTaskSpecification {
   }
 
   @Unroll
+  def "check episode Files existence, 'ns5.episode' not present, will throw error"() {
+    given:
+    def episodeNames = ["ns1", "ns2", "ns5"]// ns5 not in episode folder error
+
+    when:
+    checkEpisodeFilesExist(episodeNames, "ns3")
+
+    then:
+    thrown RuntimeException
+  }
+
+  @Unroll
   def "resolve Dependencies for '#namespace' with parents '#parents' into -> '#episodefilenames', node has external dependencies, parents have no external dependencies"() { 
     given:
     treeManager.getParents(_) >> parents.collect{ parent -> new TreeNode(parent) }
