@@ -17,12 +17,31 @@ import com.jacobo.gradle.plugins.structures.NamespaceData
  * Created: Tue Dec 04 09:01:34 EST 2012
  */
 
-class JaxbXJCTask extends DefaultTask { 
-  
+class JaxbXJCTask extends DefaultTask {
   static final Logger log = Logging.getLogger(JaxbXJCTask.class)
 
   @Input
   TreeManager manager
+
+  /**
+   * If an xsd namespace has dependencies, references episode files from
+   * this directory. Must write own episode file to this directory
+   */
+  @OutputDirectory
+  File episodeDirectory
+
+  /**
+   * User can create custom bindings, they would be in this directory
+   */
+  @OutputDirectory
+  File customBindingDirectory
+
+  /**
+   * directory where the generated java files from xjc would go
+   * Usually <pre><project-root>/src/main/java</pre>
+   */
+  @OutputDirectory
+  File generatedFilesDirectory
 
   @TaskAction
   void start() {
