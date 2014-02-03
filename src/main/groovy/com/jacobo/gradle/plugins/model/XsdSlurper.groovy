@@ -57,4 +57,57 @@ class XsdSlurper extends DocumentSlurper {
       }
       log.debug("grabbed XSD namespace : {}", xsdNamespace)
     }
+
+    /**
+     * Returns the xsd imports of this namespace, but instead of returning
+     * the relative path String Set it contains, it matches them with the
+     * absolute file document dependencies instance field, and returns
+     * the files with the matching keys.  All members of the xsdImports Set
+     * should be accounted for in the documentDependencies HashMap, but still
+     * double check
+     * @return -> xsdImports as absolute Files from documentDependencies HashMap
+     */
+    def getXsdImports() {
+      log.debug("'{}' has relative imports '{}' that correspond to '{}'",
+		this.xsdNamespace, this.xsdImports,
+		this.documentDependencies.values())
+      def importedDependencies = this.xsdImports.collect { anImport ->
+	if(!this.documentDependencies.containsKey(anImport)) {
+	  log.warn("THE IMPORT '{}' ISN'T IN THE ABSOLUTE FILE HASHMAP '{}'",
+		   anImport, this.documentDependencies)
+	  return null
+	}
+	this.documentDependencies.get(anImport)
+      }
+      log.debug("'{}' depends (imports) on files '{}'",this.xsdNamespace,
+		importedDependencies)
+      return importedDependencies as Set
+    }
+
+    /**
+     * Returns the xsd includes of this namespace, but instead of returning
+     * the relative path String Set it contains, it matches them with the
+     * absolute file document dependencies instance field, and returns
+     * the files with the matching keys.  All members of the xsdIncludes Set
+     * should be accounted for in the documentDependencies HashMap, but still
+     * double check
+     * @return -> xsdIncludes as absolute Files from documentDependencies
+     * HashMap
+     */
+    def getXsdIncludes() {
+      log.debug("'{}'@'{}' has relative includes '{}' that correspond to '{}'",
+		this.xsdNamespace, this.documentFile.name, this.xsdIncludes,
+		this.documentDependencies.values())
+      def includedDependencies = this.xsdIncludes.collect { anInclude ->
+	if(!this.documentDependencies.containsKey(anInclude)) {
+	  log.warn("THE INCLUDE '{}' ISN'T IN THE ABSOLUTE FILE HASHMAP '{}'",
+		   anInclude, this.documentDependencies)
+	  return null
+	}
+	this.documentDependencies.get(anInclude)
+      }
+      log.debug("'{}'@'{}'includes (dependent on) on files '{}'",
+		this.xsdNamespace, this.documentFile.name, includedDependencies)
+      return includedDependencies as Set
+    }
 }
