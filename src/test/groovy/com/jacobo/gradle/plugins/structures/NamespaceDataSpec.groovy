@@ -33,7 +33,7 @@ class NamespaceDataSpec extends BaseSpecification {
   def "add dependency to this namespace"() { 
     setup:
     def slurpedDoc = new XsdSlurper(xsdNamespace: slurpedNamespace,
-				documentFile: slurpedFile)
+				    documentFile: slurpedFile)
     
     when:
     nmd.addDependencyToNamespace(operatingNamespaces, slurpedDoc)
