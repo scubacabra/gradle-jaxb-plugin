@@ -112,7 +112,8 @@ class JaxbNamespaceTask extends DefaultTask {
 
 
   @VisibleForTesting
-  def groupNamespaces(Map<String, List<DocumentSlurper>> groupedByNamespaces) { 
+  def groupNamespaces(Map<String, List<DocumentSlurper>> groupedByNamespaces) {
+    log.info("creating '{}' NamespaceData objects", groupedByNamespaces.size())
     def groupedNamespaces = []
     groupedByNamespaces.each { namespace, slurpedDocuments -> //key, value
       def namespaceData = new NamespaceData(namespace, slurpedDocuments)
@@ -123,7 +124,8 @@ class JaxbNamespaceTask extends DefaultTask {
 
   @VisibleForTesting
   def resolveNamespaceDependencies(List<DocumentSlurper> slurpedDocuments,
-				   List<NamespaceData> groupedNamespaces) {
+				   List<NamespaceData> groupedNamespaces,
+				   Set<String> availableNamespaces) {
     // was going to use a Set, but the Namespace Data needs the element
     // not really a way to do that with a set, but Map<File, DocumentSlurper>
     // good enough.  Take slurped objects and get their doc Files, put in hashmap
