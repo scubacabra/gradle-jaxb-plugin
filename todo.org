@@ -67,7 +67,8 @@
   Lose one extra line of code in build.gradle or whatee
 * DONE The extra code that is in the XJCTask could be factored out and could have better tests written for it
   CLOSED: [2013-01-24 Thu 18:54]
-* TODO Make a better test suite covering
+* DONE Make a better test suite covering
+  CLOSED: [2014-02-03 Mon 14:39]
 ** xsd imports
 ** xsd includes
 ** xsd external imported namespaces
@@ -75,5 +76,5 @@
   CLOSED: [2013-01-24 Thu 18:17]
 
 
-
-* TODO Fix the failing test case that shifts a namespace down, but it must also shift the namespace that this depends on down as well.
+* DONE Fix the failing test case that shifts a namespace down, but it must also shift the namespace that this depends on down as well.
+  CLOSED: [2014-02-03 Mon 14:39]
