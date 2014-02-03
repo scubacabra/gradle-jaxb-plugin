@@ -15,9 +15,10 @@ abstract class DocumentSlurper {
   def slurpedDocument
 
   /**
-   * absolute File Object Set of document dependencies
+   * absolute File Object HashMap.  document relative dependent string
+   * Key - absolute document File location on file system
    */
-  AbstractSet<File> documentDependencies = new HashSet<File>()
+  Map<String, File> documentDependencies = new HashMap<String, File>()
 
   /**
    * resolve dependencies for this slurped Document
@@ -28,10 +29,10 @@ abstract class DocumentSlurper {
    * resolve all relative Dependency Paths from a variety of dependency lists and
    * resolve to their absolute Location on the File System, add to documentDependencies
    */
-  def resolveRelativePathDependencies(List<Set<File>> relativeDependencies) { 
+  def resolveRelativePathDependencies(List<Set<String>> relativeDependencies) {
     relativeDependencies?.each { dependencyList ->
       dependencyList.each { relativeLocation ->
-	this.documentDependencies.add(FileHelper.getAbsoluteSchemaLocation(relativeLocation, this.documentFile.parentFile))
+	this.documentDependencies.put(relativeLocation, FileHelper.getAbsoluteSchemaLocation(relativeLocation, this.documentFile.parentFile))
       }
     }
   }
