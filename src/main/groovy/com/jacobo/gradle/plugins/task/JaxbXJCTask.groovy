@@ -21,20 +21,19 @@ class JaxbXJCTask extends DefaultTask {
   
   static final Logger log = Logging.getLogger(JaxbXJCTask.class)
 
-  // from project memory
+  @Input
   TreeManager manager
 
   @TaskAction
   void start() {
-    parseNodes(project.jaxb.dependencyTree)
+    def treeManager = getManager()
+    parseNodes(treeManager.currentNodeRow)
   }
 
-  def parseNodes(baseTreeNodes) { 
+  def parseNodes(baseTreeNodes) {
     def nextRow = baseTreeNodes as Set
     while(nextRow) {
-      nextRow.each { node ->
-	parseNode(node)
-      }
+      nextRow.each { node -> parseNode(node) }
       nextRow = manager.nextNodeRow(nextRow)
     }
   }

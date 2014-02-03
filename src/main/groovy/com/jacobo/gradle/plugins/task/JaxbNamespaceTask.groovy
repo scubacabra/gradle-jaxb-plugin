@@ -39,7 +39,7 @@ class JaxbNamespaceTask extends DefaultTask {
     log.lifecycle("jaxb: resolving individual namespace dependencies", xsdDirectory)
     def slurpedFileHistory = this.resolveNamespaceDependencies(
       slurpedDocuments, groupedNamespaces)
-    def dependencyTree = this.generateDependencyTree(groupedNamespaces)
+    def dependencyTreeManager = this.generateDependencyTree(groupedNamespaces)
     this.resolveExternalDependencies(groupedByNamespace.keySet(),
 				     groupedNamespaces, slurpedFileHistory)
     project.jaxb.dependencyGraph = dependencyTreeManager
@@ -179,6 +179,7 @@ class JaxbNamespaceTask extends DefaultTask {
       treeManager.addChildren(nextChildren)
     }
     // done laying out treeNodes, reset pointer to base, return base row
-    return treeManager.resetRowPointer()
+    treeManager.resetRowPointer()
+    return treeManager
   }
 }
