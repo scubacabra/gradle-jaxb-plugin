@@ -1,84 +1,72 @@
 package com.jacobo.gradle.plugins.task
 
-import com.jacobo.gradle.plugins.ProjectTaskSpecification
+import org.gradle.testfixtures.ProjectBuilder
+import org.gradle.api.Project
+
+import com.jacobo.gradle.plugins.DependencyTreeSpecification
 import com.jacobo.gradle.plugins.structures.NamespaceData
+import com.jacobo.gradle.plugins.model.TreeNode
 import com.jacobo.gradle.plugins.JaxbPlugin
 
-class GenerateDependencyTreeSpec extends ProjectTaskSpecification {
-  // Namespace objects
-  def ns1 = new NamespaceData("ns1", []);
-  def ns2 = new NamespaceData("ns2", []);
-  def ns3 = new NamespaceData(namespace: "ns3",
-			      dependentNamespaces: ["ns1"],
-			      hasDependencies: true);
-  def ns4 = new NamespaceData(namespace: "ns4", 
-			      dependentNamespaces: ["ns1", "ns2"],
-			      hasDependencies: true);
-  def ns5 = new NamespaceData(namespace: "ns5",
-			      dependentNamespaces: ["ns2"],
-			      hasDependencies: true);
-  def ns6 = new NamespaceData(namespace: "ns6",
-			      dependentNamespaces: ["ns3"],
-			      hasDependencies: true);
-  def ns7 = new NamespaceData(namespace: "ns7",
-			      dependentNamespaces: ["ns4"],
-			      hasDependencies: true);
-  def ns8 = new NamespaceData(namespace: "ns8",
-			      dependentNamespaces: ["ns5"],
-			      hasDependencies: true);
+class GenerateDependencyTreeSpec extends DependencyTreeSpecification {
 
-  def setup() {
+  def project
+  def task
+
+  def setup() { 
+    project = ProjectBuilder.builder().build()
+    project.apply(plugin: "jaxb")
     task = project.tasks[JaxbPlugin.JAXB_NAMESPACE_GRAPH_TASK] as JaxbNamespaceTask
   }
 
   def "two elements are the base namespace elements, two depend on one different namespace each, the other 3 depend on each of the 3 first children"() {
     setup:
       def namespaces = [ns1, ns2, ns3, ns4, ns5, ns6, ns7, ns8]
-      def graphedNamespaces = ["ns1", "ns2", "ns3", "ns4", "ns5", "ns6", "ns7", "ns8"]
-      def dependentNamespaces = ["ns3", "ns4", "ns5", "ns6", "ns7", "ns8"]
-      def baseNamespaces = ["ns1", "ns2"]
 
     when:
       def dependencyRoot = task.generateDependencyTree(namespaces)
+      def firstNode = dependencyRoot.currentNodeRow[0]
+      def secondNode = dependencyRoot.currentNodeRow[1]
 
     then:
-      dependencyRoot.size() == 2
-      dependencyRoot.each { it.parents == null }
-      dependencyRoot.each { it.children.isEmpty() == false }
-      dependencyRoot.each { it.data.namespace.each { baseNamespaces.contains(it) } }
-      dependencyRoot.each { it.children.data.namespace.each { dependentNamespaces.contains(it) } }
-    }
+      firstNode == node1
+      secondNode == node2
+      firstNode.children == [node3, node4]
+      secondNode.children == [node4, node5]
+      firstNode.children[0].children == [node6]
+      firstNode.children[1].children == [node7]
+      secondNode.children[1].children == [node8]
+  }
 
   def "two elements are the base namespace elements, two others depend on each of the base namespaces"() {
     setup:
-    def namespaces = [ns1, ns2, ns3, ns5]
-    def graphedNamespaces = ["ns1", "ns2", "ns3", "ns5"]
-    def dependentNamespaces = ["ns3", "ns5"]
-    def baseNamespaces 	= ["ns1", "ns2"]
+      def namespaces = [ns1, ns2, ns3, ns5]
+      node1.children = [node3] as LinkedList
+      node2.children = [node5] as LinkedList
+      node3.children = [] as LinkedList
+      node5.children = [] as LinkedList
 
     when:
       def dependencyRoot = task.generateDependencyTree(namespaces)
+      def firstNode = dependencyRoot.currentNodeRow[0]
+      def secondNode = dependencyRoot.currentNodeRow[1]
 
     then:
-      dependencyRoot.size() == 2
-      dependencyRoot.each { it.parents == null }
-      dependencyRoot.each { it.children.isEmpty() == false }
-      dependencyRoot.each { it.data.namespace.each { baseNamespaces.contains(it) } }
-      dependencyRoot.each { it.children.data.namespace.each { dependentNamespaces.contains(it) } }
+      firstNode == node1
+      secondNode == node2
+      firstNode.children == [node3]
+      secondNode.children == [node5]
   }
 
   def "Generate the dependency tree, all 4 namespace objects are base object, they depend on no other namespaces"() { 
     setup: 
       def namespaces = [ns1, ns2, new NamespaceData("ns3", []), new NamespaceData("ns4", [])]
-      def graphedNamespaces = ["ns1", "ns2", "ns3", "ns4"]
+      def nodes = namespaces.collect{ new TreeNode(it) }
 
     when:
       def dependencyRoot = task.generateDependencyTree(namespaces)
 
-    then: "order size is 1, but the inner list has 4 elements, all should be of type NamespaceData"
-      dependencyRoot.size() == 4
-      dependencyRoot.each { it.parents == null }
-      dependencyRoot.each { it.children.isEmpty() == true }
-      dependencyRoot.each { it.data.namespace.each{ graphedNamespaces.contains(it) } }
+    then:
+      dependencyRoot.currentNodeRow == nodes
   }
 }
