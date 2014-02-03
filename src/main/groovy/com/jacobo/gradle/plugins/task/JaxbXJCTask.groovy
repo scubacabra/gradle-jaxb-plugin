@@ -71,13 +71,13 @@ class JaxbXJCTask extends DefaultTask {
     def parseFiles = this.xsdFilesListToString(xsdFiles)
     def bindings = this.transformBindingListToString(project.jaxb.bindingIncludes)
 
-
-    xjc(project.jaxb.jaxbSchemaDestinationDirectory, project.jaxb.extension,
-	project.jaxb.removeOldOutput, project.jaxb.header,
-	project.jaxb.xsdDirectoryForGraph, parseFiles,
-	project.jaxb.bindingIncludes, project.jaxb.jaxbBindingDirectory,
-	bindings, episodeBindings, project.jaxb.jaxbEpisodeDirectory,
-	episodeName)
+    log.info("running ant xjc task on node '{}'", node)
+    xjc(getGeneratedFilesDirectory(), project.jaxb.extension,
+    	project.jaxb.removeOldOutput, project.jaxb.header,
+    	project.jaxb.xsdDirectoryForGraph, parseFiles,
+    	project.jaxb.bindingIncludes, getCustomBindingDirectory(),
+    	bindings, episodeBindings, getEpisodeDirectory(),
+    	episodeName)
   }
 
   def xjc(destinationDirectory, extension, removeOldOutput, header,
