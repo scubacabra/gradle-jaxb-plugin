@@ -130,6 +130,7 @@ class NamespaceData {
 	def slurper = historySlurpedFiles.get(dependentFile)
 	this.dependentExternalNamespaces.add(slurper.xsdNamespace)
 	unparsed.addAll(slurper.xsdImports)
+	unparsed.remove(dependentFile)
 	break
       }
 
