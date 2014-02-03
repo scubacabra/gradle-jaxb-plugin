@@ -3,7 +3,8 @@ package com.jacobo.gradle.plugins.task
 import org.gradle.api.logging.Logging
 import org.gradle.api.logging.Logger
 import org.gradle.api.tasks.TaskAction
-import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.Input
 import org.gradle.api.DefaultTask
 import org.gradle.api.InvalidUserDataException
 
