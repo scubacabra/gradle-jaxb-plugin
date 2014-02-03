@@ -37,4 +37,24 @@ abstract class DocumentSlurper {
     }
   }
 
+  String toString() {
+    return documentFile
+  }
+
+  // shouldn't need to compare document Dependencies, because this comes from slurper object
+  public boolean equals(Object other) {
+    if(!(other instanceof DocumentSlurper)) return false
+    if(other == null) return false
+    if(this.is(other)) return true
+    if(this.documentFile != this.documentFile) return false
+    if(this.slurpedDocument != this.slurpedDocument) return false
+    return true
+  }
+
+  public int hashCode() {
+    def hashCode = 1
+    hashCode = hashCode * 17 + documentFile.hashCode()
+    hashCode = hashCode * 51 + slurpedDocument.hashCode()
+    return hashCode
+  }
 }
