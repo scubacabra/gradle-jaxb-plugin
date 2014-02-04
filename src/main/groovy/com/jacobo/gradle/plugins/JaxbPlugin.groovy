@@ -65,7 +65,7 @@ class JaxbPlugin implements Plugin<Project> {
   }
 
   private void configureJaxbNamespaceConfiguration(final Project project) { 
-    project.configurations.add(JAXB_CONFIGURATION_NAME) { 
+    project.configurations.create(JAXB_CONFIGURATION_NAME) { 
       visible = true
       transitive = true
       description = "The JAXB XJC libraries to be used for this project."
@@ -74,7 +74,7 @@ class JaxbPlugin implements Plugin<Project> {
 
   private JaxbNamespaceTask configureJaxbNamespaceDependencyGraph(
     final Project project, JaxbExtension jaxb) {
-    JaxbNamespaceTask jnt = project.tasks.add(JAXB_NAMESPACE_GRAPH_TASK,
+    JaxbNamespaceTask jnt = project.tasks.create(JAXB_NAMESPACE_GRAPH_TASK,
 					      JaxbNamespaceTask)
     jnt.description = "go through the ${jaxb.xsdDirectoryForGraph} folder " +
       "and find all unique namespaces, create a namespace graph and parse in " +
@@ -88,7 +88,7 @@ class JaxbPlugin implements Plugin<Project> {
   private void configureJaxbGenerateSchemas(final Project project,
 					    JaxbExtension jaxb,
 					    JaxbNamespaceTask jnt) {
-    JaxbXJCTask xjc = project.tasks.add(JAXB_NAMESPACE_GENERATE_TASK,
+    JaxbXJCTask xjc = project.tasks.create(JAXB_NAMESPACE_GENERATE_TASK,
 					JaxbXJCTask)
     xjc.description = "run through the Directory Graph for " +
       "${jaxb.xsdDirectoryForGraph} and parse all schemas in order generating" +
