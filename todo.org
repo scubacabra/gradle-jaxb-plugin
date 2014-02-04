@@ -85,4 +85,11 @@
 
 * TODO mock antbuilder so can write integration tests all the way through
 
-* TODO Task -> Task configuration through dependencies
+* DONE Task -> Task configuration through dependencies
+  CLOSED: [2014-02-04 Tue 16:32]
+  Done through the addDependsOn* method in JaxbPlugin.  If there is a 
+  configuration that depends on the jaxb configuration, then the 'xjc'
+  task depends on the 'graph' task like always.  But now the 'graph' task
+  will depend on the ':common:xjc' task, or whatever the project is named,
+  that will in turn depend on it's own 'graph' task.  So projects can depend
+  on each other to be parsed first so the dependency is there. Yea.

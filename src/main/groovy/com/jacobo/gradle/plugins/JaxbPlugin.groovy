@@ -4,7 +4,8 @@ import org.gradle.api.Project
 import org.gradle.api.Plugin
 
 import org.gradle.api.plugins.JavaPlugin
-
+import org.gradle.api.Task
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.logging.Logging
 import org.gradle.api.logging.Logger
 
@@ -72,6 +73,27 @@ class JaxbPlugin implements Plugin<Project> {
     }
   }
 
+  /**
+   * Adds a dependency on tasks with the specified name in other projects.  The other projects are determined from
+   * project lib dependencies using the specified configuration name. These may be projects this project depends on or
+   * projects that depend on this project based on the useDependOn argument.
+   *
+   * @param task Task to add dependencies to
+   * @param useDependedOn if true, add tasks from projects this project depends on, otherwise use projects that depend
+   * on this one.
+   * @param otherProjectTaskName name of task in other projects
+   * @param configurationName name of configuration to use to find the other projects
+   */
+  private void addDependsOnTaskInOtherProjects(final Task task, boolean useDependedOn,
+					       String otherProjectTaskName,
+					       String configurationName) {
+    Project project = task.getProject();
+    final Configuration configuration = project.getConfigurations().getByName(
+      configurationName);
+    task.dependsOn(configuration.getTaskDependencyFromProjectDependency(
+		     useDependedOn,otherProjectTaskName));
+  }
+
   private JaxbNamespaceTask configureJaxbNamespaceDependencyGraph(
     final Project project, JaxbExtension jaxb) {
     JaxbNamespaceTask jnt = project.tasks.create(JAXB_NAMESPACE_GRAPH_TASK,
@@ -82,6 +104,9 @@ class JaxbPlugin implements Plugin<Project> {
     jnt.group = JAXB_NAMESPACE_TASK_GROUP
     jnt.conventionMapping.xsdDirectory = {
       new File(project.rootDir, project.jaxb.jaxbSchemaDirectory) }
+    // dependencies on projects with config jaxb, adds their xjc task to this tasks dependencies
+    addDependsOnTaskInOtherProjects(jnt, true, JAXB_NAMESPACE_GENERATE_TASK,
+    				    JAXB_CONFIGURATION_NAME)
     return jnt
   }
 
