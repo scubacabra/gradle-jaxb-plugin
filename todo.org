@@ -93,3 +93,5 @@
   will depend on the ':common:xjc' task, or whatever the project is named,
   that will in turn depend on it's own 'graph' task.  So projects can depend
   on each other to be parsed first so the dependency is there. Yea.
+
+* TODO Figure out a way to incrementally execute these tasks.  especially if projA depends on projB.  Project B should be executed twice!
