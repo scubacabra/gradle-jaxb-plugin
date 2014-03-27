@@ -70,7 +70,7 @@ class JaxbXJCTask extends DefaultTask {
 
   def parseNode(TreeNode<NamespaceData> node) {
     log.info("gathering information for node '{}'", node)
-    def episodeBindings = this.resolveEpisodeFiles(node)
+    def episodeBindings = this.resolveEpisodeFiles(node, project.jaxb.dependencyGraph)
     def episodeName = this.convertNamespaceToEpisodeName(node.data.namespace)
     // def episodePath = project.jaxb.jaxbEpisodeDirectory +
     //   "/${episodeName}.episode"
@@ -132,7 +132,7 @@ class JaxbXJCTask extends DefaultTask {
    * can be duplicated, so a Set of dependentNamespaces is constructed
    * and then each namespace is converted to it episode file name.
    */
-  def resolveEpisodeFiles(TreeNode<NamespaceData> node) { 
+  def resolveEpisodeFiles(TreeNode<NamespaceData> node, TreeManager manager) { 
     def dependentNamespaces = [] as Set
     // must check for current nodes external dependencies.  Could have 0
     // parents and only possible external dependencies lay in this node

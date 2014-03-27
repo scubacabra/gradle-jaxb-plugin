@@ -114,7 +114,7 @@ class JaxbXJCSpec extends ProjectTaskSpecification {
     def node = new TreeNode(new NamespaceData(namespace))
     
     when:
-    def result = task.resolveEpisodeFiles(node)
+    def result = task.resolveEpisodeFiles(node, treeManager)
 
     then:
     result.size() == episodefilenames.size()
@@ -154,7 +154,7 @@ class JaxbXJCSpec extends ProjectTaskSpecification {
 			hasExternalDependencies: true))
     
     when:
-    def result = task.resolveEpisodeFiles(node)
+    def result = task.resolveEpisodeFiles(node, treeManager)
 
     then:
     result.size() == episodefilenames.size()
@@ -186,7 +186,7 @@ class JaxbXJCSpec extends ProjectTaskSpecification {
 			hasExternalDependencies: true))
     
     when:
-    def result = task.resolveEpisodeFiles(node)
+    def result = task.resolveEpisodeFiles(node, treeManager)
 
     then:
     result.size() == episodefilenames.size()
