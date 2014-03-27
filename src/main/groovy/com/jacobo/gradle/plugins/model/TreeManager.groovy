@@ -134,7 +134,8 @@ class TreeManager {
   // recursively retrieve parent nodes for a given child node
   // parent nodes can be duplicated at some point, therefore put in set
   // Returns a Set of parent Nodes, sorted highest to lowest in the tree Hierarchy
-  def getParents(TreeNode<NamespaceData> node) { 
+  def getParents(TreeNode<NamespaceData> node) {
+    log.debug("getting parents for '{}'", node)
     def ancestors = [] as Set
     if(node.parents == null)
       return []
@@ -145,6 +146,7 @@ class TreeManager {
       ancestors.add(parent)
     }
     
+    log.debug("'{}' has '{}' ancestors", ancestors.size())
     return ancestors
   }
 }
