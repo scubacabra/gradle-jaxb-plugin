@@ -29,14 +29,15 @@ class JaxbNamespaceTask extends DefaultTask {
 
   @TaskAction
   void start() {
-    log.lifecycle("jaxb: finding and slurping xsd files in '{}'", xsdDirectory)
+    log.lifecycle("jaxb: starting Namespace Task")
+    log.info("jaxb: finding and slurping xsd files in '{}'", xsdDirectory)
     def xsdFiles = this.findAllXsdFiles( getXsdDirectory() )
     def slurpedDocuments = this.slurpXsdFiles(xsdFiles)
-    log.lifecycle("jaxb: grouping files by individual namespace", xsdDirectory)
+    log.info("jaxb: grouping '{}' files by individual namespace", xsdFiles.size())
     def groupedByNamespace = this.groupSlurpedDocumentsByNamespace(
       slurpedDocuments)
     def groupedNamespaces = this.groupNamespaces(groupedByNamespace)
-    log.lifecycle("jaxb: resolving individual namespace dependencies", xsdDirectory)
+    log.info("jaxb: resolving '{}' individual namespace dependencies", groupedNamespaces.size())
     def slurpedFileHistory = this.resolveNamespaceDependencies(
       slurpedDocuments, groupedNamespaces, groupedByNamespace.keySet())
     log.lifecycle("jaxb: generating xsd namespace dependency tree")

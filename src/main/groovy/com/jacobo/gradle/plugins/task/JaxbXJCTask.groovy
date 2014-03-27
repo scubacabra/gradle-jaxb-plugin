@@ -54,7 +54,7 @@ class JaxbXJCTask extends DefaultTask {
   @TaskAction
   void start() {
     def treeManager = getManager()
-    log.lifecycle("jaxb: attempting to parse '{}' nodes in tree, base nodes are '{}'",
+    log.info("jaxb: attempting to parse '{}' nodes in tree, base nodes are '{}'",
 		  treeManager.managedNodes.size(), treeManager.currentNodeRow)
     parseNodes(treeManager.currentNodeRow)
   }
@@ -91,6 +91,9 @@ class JaxbXJCTask extends DefaultTask {
 	  schemasDirectory, xsdFiles, customBinding, bindingDirectory,
 	  bindings, episodeBindings, episodesDirectory, episodeName) {
     ant.taskdef (name : 'xjc', 
+    log.info("dest dir '{}', schema dir '{}', files to parse '{}', bindign dir '{}', episode bindings '{}', episode dir '{}', episode name '{}'",
+	     destinationDirectory, schemasDirectory, xsdFiles, bindingDirectory,
+	     episodeBindings, episodesDirectory, episodeName)
 		 classname : 'com.sun.tools.xjc.XJCTask',
 		 classpath : project.configurations[JaxbPlugin.JAXB_CONFIGURATION_NAME].asPath
 		)
@@ -139,6 +142,7 @@ class JaxbXJCTask extends DefaultTask {
     }
 
     def parents = manager.getParents(node)
+    log.info("getting parents for node '{}'", node)
     // returns empty set if no parents found
     if (parents) {
       dependentNamespaces.addAll(parents.data.namespace)
