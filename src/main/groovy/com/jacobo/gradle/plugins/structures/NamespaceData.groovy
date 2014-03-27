@@ -135,6 +135,7 @@ class NamespaceData {
       }
 
       def slurper = DocumentReader.slurpDocument(dependentFile)
+      slurper.slurpNamespace()
       historySlurpedFiles.put(dependentFile, slurper)
       this.dependentExternalNamespaces.add(slurper.xsdNamespace)
       unparsed.addAll(slurper.xsdImports)
