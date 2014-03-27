@@ -5,6 +5,7 @@ import org.gradle.api.logging.Logger
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.DefaultTask
 import org.gradle.api.InvalidUserDataException
 
@@ -43,6 +44,12 @@ class JaxbXJCTask extends DefaultTask {
    */
   @OutputDirectory
   File generatedFilesDirectory
+
+  /**
+   * All schemas to be parsed are under this directory
+   */
+  @InputDirectory
+  File schemasDirectory
 
   @TaskAction
   void start() {

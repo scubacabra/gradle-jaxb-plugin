@@ -128,6 +128,7 @@ class JaxbPlugin implements Plugin<Project> {
       new File(project.rootDir, project.jaxb.jaxbBindingDirectory) }
     xjc.conventionMapping.generatedFilesDirectory = {
       new File(project.projectDir, project.jaxb.jaxbSchemaDestinationDirectory) }
-
+    xjc.conventionMapping.schemasDirectory = {
+      new File(project.rootDir, project.jaxb.jaxbSchemaDirectory) }
   }
 }
