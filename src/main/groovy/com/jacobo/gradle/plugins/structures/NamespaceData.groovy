@@ -1,7 +1,7 @@
 package com.jacobo.gradle.plugins.structures
 
-import com.jacobo.gradle.plugins.model.DocumentSlurper
-import com.jacobo.gradle.plugins.reader.DocumentReader
+import org.gradle.jacobo.schema.BaseSchemaDocument
+import org.gradle.jacobo.schema.factory.DocumentFactory
 
 import org.gradle.api.logging.Logging
 import org.gradle.api.logging.Logger
@@ -41,7 +41,10 @@ class NamespaceData {
    * a Set of File objects of the externally imported Namespaces
    */
   def dependentExternalFiles = [] as Set
-  
+
+  //todo GUICE inject
+  DocumentFactory documentFactory
+
   public NamespaceData() { }
   
   public NamespaceData(String namespace) {
@@ -51,7 +54,7 @@ class NamespaceData {
   /**
    * basic constructor, need a namespace and a list of slurped documents
    */
-  public NamespaceData(String namespace, List<DocumentSlurper> slurpedDocuments) { 
+  public NamespaceData(String namespace, List<BaseSchemaDocument> slurpedDocuments) {
     this.namespace = namespace
     this.slurpedDocuments = slurpedDocuments
   }
@@ -59,22 +62,21 @@ class NamespaceData {
   /**
    *
    */
-  def findNamespacesDependentOn(Set<String> operatingNamespaces, Map<File, DocumentSlurper> historySlurpedFiles) {
+  def findNamespacesDependentOn(Set<String> operatingNamespaces, Map<File, BaseSchemaDocument> historySlurpedFiles) {
     def importedDependencies = [] as Set
     log.debug("Gathering all the imported dependencies for namespace  '{}'",
 	      this.namespace)
 
     slurpedDocuments.each { slurped ->
-      importedDependencies.addAll(slurped.xsdImports)
+      importedDependencies.addAll(slurped.findResolvedXsdImports())
     }
-
+    
     // empty imported Dependencies, nothing else to do
     if( importedDependencies.isEmpty() ) 
       return historySlurpedFiles
 
     // go through each dependency File
     importedDependencies.each { dependencyFile -> 
-
       // already slurped, don't need to slurp again
       if (historySlurpedFiles.containsKey(dependencyFile)) { 
 	this.addDependencyToNamespace(operatingNamespaces,
@@ -82,11 +84,10 @@ class NamespaceData {
 	return true 
       }
 
-      def slurpedDependency = DocumentReader.slurpDocument(dependencyFile)
-      slurpedDependency.slurpNamespace()
-      historySlurpedFiles.put(dependencyFile, slurpedDependency)
+      def dependency = documentFactory.createDocument(dependencyFile)
+      historySlurpedFiles.put(dependencyFile, dependency)
 
-      this.addDependencyToNamespace(operatingNamespaces, slurpedDependency)
+      this.addDependencyToNamespace(operatingNamespaces, dependency)
     }
 
     if ( !this.dependentNamespaces.isEmpty() )
@@ -102,10 +103,10 @@ class NamespaceData {
   // Dependency could be external OR internal, add to the appropriate
   // data structure of this object
   def addDependencyToNamespace(Set<String> operatingNamespaces,
-			       DocumentSlurper slurpedDocument) {
+			       BaseSchemaDocument slurpedDocument) {
     // dependency is in the current namespace tree list (operating namespace)
     if (operatingNamespaces.contains(slurpedDocument.xsdNamespace)) {
-      this.dependentNamespaces.add(slurpedDocument.xsdNamespace) 
+      this.dependentNamespaces.add(slurpedDocument.xsdNamespace)
       return
     }
     
@@ -134,11 +135,10 @@ class NamespaceData {
 	break
       }
 
-      def slurper = DocumentReader.slurpDocument(dependentFile)
-      slurper.slurpNamespace()
-      historySlurpedFiles.put(dependentFile, slurper)
-      this.dependentExternalNamespaces.add(slurper.xsdNamespace)
-      unparsed.addAll(slurper.xsdImports)
+      def document = DocumentFactory.createDocument(dependentFile)
+      historySlurpedFiles.put(dependentFile, document)
+      this.dependentExternalNamespaces.add(document.xsdNamespace)
+      unparsed.addAll(document.xsdImports)
       // this will allow a dependency to be added and gone thorugh again
       // but if in history of slurped files, breaks anyway, so I'll take this hit
       unparsed.remove(dependentFile)
@@ -148,7 +148,7 @@ class NamespaceData {
   }
 
   def checkForExternalCircularDependency(Set<String> operatingNamespaces,
-					 DocumentSlurper slurpedDocument) {
+					 BaseSchemaDocument slurpedDocument) {
     // TODO if circular dependency throw error!
     this.dependentNamespaces.add(slurpedDocument.xsdNamespace)
   }
@@ -159,8 +159,9 @@ class NamespaceData {
    */
   public List<File> filesToParse() {
     def slurperFiles = slurpedDocuments.documentFile
+    def resolvedIncludes = slurpedDocuments*.findResolvedXsdIncludes()
     def includes = [] as Set
-    slurpedDocuments.xsdIncludes.findAll { !it.isEmpty() }.each { includes.addAll(it) }
+    resolvedIncludes.findAll { !it.isEmpty() }.each { includes.addAll(it) }
     if (includes.isEmpty()) {
       log.info("namespace '{}' does not include any slurperFiles")
       return slurperFiles

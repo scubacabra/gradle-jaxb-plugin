@@ -6,10 +6,10 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.DefaultTask
 
+import org.gradle.jacobo.schema.factory.DocumentFactory
+import org.gradle.jacobo.schema.BaseSchemaDocument
 import com.jacobo.gradle.plugins.structures.NamespaceData
 import com.jacobo.gradle.plugins.JaxbPlugin
-import com.jacobo.gradle.plugins.model.DocumentSlurper
-import com.jacobo.gradle.plugins.reader.DocumentReader
 import com.jacobo.gradle.plugins.model.TreeNode
 import com.jacobo.gradle.plugins.model.TreeManager
 import groovy.io.FileType
@@ -27,15 +27,16 @@ class JaxbNamespaceTask extends DefaultTask {
   @InputDirectory
   File xsdDirectory
 
+  DocumentFactory docFactory
+
   @TaskAction
   void start() {
     log.lifecycle("jaxb: starting Namespace Task")
     log.info("jaxb: finding and slurping xsd files in '{}'", xsdDirectory)
     def xsdFiles = this.findAllXsdFiles( getXsdDirectory() )
-    def slurpedDocuments = this.slurpXsdFiles(xsdFiles)
+    def documents = xsdFiles.collect{file -> docFactory.createDocument(file)}
     log.info("jaxb: grouping '{}' files by individual namespace", xsdFiles.size())
-    def groupedByNamespace = this.groupSlurpedDocumentsByNamespace(
-      slurpedDocuments)
+    def groupedByNamespace = this.groupSlurpedDocumentsByNamespace(documents)
     def groupedNamespaces = this.groupNamespaces(groupedByNamespace)
     log.info("jaxb: resolving '{}' individual namespace dependencies", groupedNamespaces.size())
     def slurpedFileHistory = this.resolveNamespaceDependencies(
@@ -71,30 +72,12 @@ class JaxbNamespaceTask extends DefaultTask {
   }
 
   /**
-   * @param xsdFiles the xsd files to slurp data from (only namespace slurping)
-   * @return slurpedDocuments --> a list of slurped documents
-   * Takes each xsd file and slurps important data from it
-   * (namespace, includes, and imports)
-   */
-  @VisibleForTesting
-  def slurpXsdFiles(List<File> xsdFiles) {
-    log.info("slurping '{}' files", xsdFiles.size())
-    def slurpedDocuments = []
-    xsdFiles.each { xsdFile ->
-      def slurpedDocument = DocumentReader.slurpDocument(xsdFile)
-      slurpedDocument.slurpNamespace()
-      slurpedDocuments << slurpedDocument
-    }
-    return slurpedDocuments
-  }
-
-  /**
    * @param slurpedDocuments --> the slurped documents to group by namespace
-   * @return groupedNamespaces --> a map of grouped namespaces with the namespace string as key and a list of #DocumentSlurpers as a value
+   * @return groupedNamespaces --> a map of grouped namespaces with the namespace string as key and a list of #BaseSchemaDocuments as a value
    * Go through each slurped document and group documents by their namespace
    */
   @VisibleForTesting    
-  def groupSlurpedDocumentsByNamespace(List<DocumentSlurper> slurpedDocuments) {
+  def groupSlurpedDocumentsByNamespace(List<BaseSchemaDocument> slurpedDocuments) {
     log.info("grouping '{}' documents by their unique namespaces", slurpedDocuments.size())
     // key is namepsace string, value is List of DocumentSlurped objects
     def groupedNamespaces = [:]
@@ -113,7 +96,7 @@ class JaxbNamespaceTask extends DefaultTask {
 
 
   @VisibleForTesting
-  def groupNamespaces(Map<String, List<DocumentSlurper>> groupedByNamespaces) {
+  def groupNamespaces(Map<String, List<BaseSchemaDocument>> groupedByNamespaces) {
     log.info("creating '{}' NamespaceData objects", groupedByNamespaces.size())
     def groupedNamespaces = []
     groupedByNamespaces.each { namespace, slurpedDocuments -> //key, value
@@ -124,11 +107,11 @@ class JaxbNamespaceTask extends DefaultTask {
   }
 
   @VisibleForTesting
-  def resolveNamespaceDependencies(List<DocumentSlurper> slurpedDocuments,
+  def resolveNamespaceDependencies(List<BaseSchemaDocument> slurpedDocuments,
 				   List<NamespaceData> groupedNamespaces,
 				   Set<String> availableNamespaces) {
     // was going to use a Set, but the Namespace Data needs the element
-    // not really a way to do that with a set, but Map<File, DocumentSlurper>
+    // not really a way to do that with a set, but Map<File, BaseSchemaDocument>
     // good enough.  Take slurped objects and get their doc Files, put in hashmap
     def historySlurpedFiles = [:]
     slurpedDocuments.each { slurped ->
@@ -146,7 +129,7 @@ class JaxbNamespaceTask extends DefaultTask {
   @VisibleForTesting
   def resolveExternalDependencies(Set<String> operatingNamespaces,
 				  List<NamespaceData> groupedNamespaces,
-				  Map<File, DocumentSlurper> slurpedFileHistory) { 
+				  Map<File, BaseSchemaDocument> slurpedFileHistory) {
     def namespacesWithExternalDeps = groupedNamespaces.findAll { namespace ->
       namespace.hasExternalDependencies
     }

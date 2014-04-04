@@ -1,6 +1,10 @@
 package com.jacobo.gradle.plugins.structures
 
-import com.jacobo.gradle.plugins.model.XsdSlurper
+import org.gradle.jacobo.schema.XsdDocument
+import org.gradle.jacobo.schema.slurper.XsdSlurper
+import org.gradle.jacobo.schema.slurper.DocumentSlurper
+import org.gradle.jacobo.schema.resolver.DocumentResolver
+import org.gradle.jacobo.schema.factory.DocumentFactory
 
 import spock.lang.Specification
 
@@ -10,15 +14,24 @@ import org.gradle.api.logging.Logger
 class FileToParseSpec extends Specification {
   static final Logger log = Logging.getLogger(FileToParseSpec.class)
 
+  def xsdSlurper = Mock(XsdSlurper)
+  def documentSlurper = Mock(DocumentSlurper)
+  def documentResolver = Mock(DocumentResolver)
+  def mockSlurper = new XmlSlurper().parseText("<xsd></xsd>")
+
   def nd = new NamespaceData()
-  def namespace = "same-namespace"
-  def s1 = new XsdSlurper()
-  def s2 = new XsdSlurper()
-  def s3 = new XsdSlurper()
   def mainXsd = new File("main-document.xsd")
+  def namespace = "same-namespace"
+  def s1 = new XsdDocument(documentSlurper, documentResolver,
+			   xsdSlurper, mainXsd, mockSlurper)
+  def s2 = new XsdDocument(documentSlurper, documentResolver,
+			   xsdSlurper, mainXsd, mockSlurper)
+  def s3 = new XsdDocument(documentSlurper, documentResolver,
+			   xsdSlurper, mainXsd, mockSlurper)
 
   def setup() {
     nd.namespace = namespace
+    [s1, s2, s3]*.documentDependencies = [:]
     s1.with {
       documentFile = mainXsd
       xsdNamespace = namespace
@@ -36,6 +49,12 @@ class FileToParseSpec extends Specification {
       documentFile = includeFile
     }
     nd.slurpedDocuments = [s1, s2]
+
+    and:
+    xsdSlurper.findResolvedXsdIncludes("same-namespace", "main-document.xsd",
+    				      s1.xsdIncludes, s1.documentDependencies) >> [includeFile]
+    xsdSlurper.findResolvedXsdIncludes("same-namespace", "s2.xsd",
+    				      s2.xsdIncludes, s2.documentDependencies) >> []
 
     when:
     def result = nd.filesToParse()
@@ -69,6 +88,14 @@ class FileToParseSpec extends Specification {
     }
     nd.slurpedDocuments = [s1, s2, s3]
 
+    and:
+    xsdSlurper.findResolvedXsdIncludes("same-namespace", "main-document.xsd",
+				       s1.xsdIncludes, s1.documentDependencies) >> [includeFile]
+    xsdSlurper.findResolvedXsdIncludes("same-namespace", "s2.xsd",
+				       s2.xsdIncludes, s2.documentDependencies) >> [subIncludeFile]
+    xsdSlurper.findResolvedXsdIncludes("same-namespace", "s3.xsd",
+				       s3.xsdIncludes, s3.documentDependencies) >> []
+
     when:
     def result = nd.filesToParse()
 
@@ -101,6 +128,14 @@ class FileToParseSpec extends Specification {
       documentFile = subIncludeFile
     }
     nd.slurpedDocuments = [s1, s2, s3]
+
+    and:
+    xsdSlurper.findResolvedXsdIncludes("same-namespace", "main-document.xsd",
+				       s1.xsdIncludes, s1.documentDependencies) >> [includeFile, subIncludeFile]
+    xsdSlurper.findResolvedXsdIncludes("same-namespace", "s2.xsd",
+				       s2.xsdIncludes, s2.documentDependencies) >> [subIncludeFile]
+    xsdSlurper.findResolvedXsdIncludes("same-namespace", "s3.xsd",
+				       s3.xsdIncludes, s3.documentDependencies) >> []
 
     when:
     def result = nd.filesToParse()

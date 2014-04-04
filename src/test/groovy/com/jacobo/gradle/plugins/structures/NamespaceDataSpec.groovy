@@ -1,7 +1,12 @@
 package com.jacobo.gradle.plugins.structures
 
-import com.jacobo.gradle.plugins.model.XsdSlurper
-import com.jacobo.gradle.plugins.reader.DocumentReader
+import org.gradle.jacobo.schema.XsdDocument
+import org.gradle.jacobo.schema.BaseSchemaDocument
+import org.gradle.jacobo.schema.slurper.XsdSlurper
+import org.gradle.jacobo.schema.slurper.DocumentSlurper
+import org.gradle.jacobo.schema.resolver.DocumentResolver
+import org.gradle.jacobo.schema.factory.DocumentFactory
+
 import groovy.util.XmlSlurper
 import groovy.util.slurpersupport.NodeChild
 
@@ -16,6 +21,11 @@ import spock.lang.*
 class NamespaceDataSpec extends BaseSpecification {
   static final Logger log = Logging.getLogger(NamespaceDataSpec.class)
 
+  def xsdSlurper = Mock(XsdSlurper)
+  def documentSlurper = Mock(DocumentSlurper)
+  def documentResolver = Mock(DocumentResolver)
+  def mockSlurper = new XmlSlurper().parseText("<xsd></xsd>")
+
   def nmd = new NamespaceData()
   def operatingNamespaces = ["ns1", "ns2", "ns3"] as Set
   def historySlurpedFiles = [:]
@@ -23,8 +33,12 @@ class NamespaceDataSpec extends BaseSpecification {
   def setup() {
     def ns1File = new File("ns1")
     def ns2File = new File("ns2")
-    def slurpedNs1 = new XsdSlurper(xsdNamespace: "ns1", documentFile: ns1File)
-    def slurpedNs2 = new XsdSlurper(xsdNamespace: "ns2", documentFile: ns2File)
+    def slurpedNs1 = new XsdDocument(documentSlurper, documentResolver,
+				     xsdSlurper, ns1File, mockSlurper)
+    slurpedNs1.xsdNamespace = "ns1"
+    def slurpedNs2 = new XsdDocument(documentSlurper, documentResolver,
+				     xsdSlurper, ns2File, mockSlurper)
+    slurpedNs2.xsdNamespace = "ns2"
     historySlurpedFiles[ns1File] = slurpedNs1
     historySlurpedFiles[ns2File] = slurpedNs2
   }
@@ -32,8 +46,9 @@ class NamespaceDataSpec extends BaseSpecification {
   @Unroll("dependency #slurpedNamespace with current tree having #operatingNamespaces: has Dependencies? -- #emptyExternal, has externals? -- #empty")
   def "add dependency to this namespace"() { 
     setup:
-    def slurpedDoc = new XsdSlurper(xsdNamespace: slurpedNamespace,
-				    documentFile: slurpedFile)
+    def slurpedDoc = new XsdDocument(documentSlurper, documentResolver,
+				     xsdSlurper, slurpedFile, mockSlurper)
+    slurpedDoc.xsdNamespace = slurpedNamespace
     
     when:
     nmd.addDependencyToNamespace(operatingNamespaces, slurpedDoc)
@@ -56,11 +71,19 @@ class NamespaceDataSpec extends BaseSpecification {
   @Unroll("ns3 with imports #slurpedImports relative location, in #documentDependencies")
   def "namespace depends on all internal namespaces" () { 
     setup:
+    def factory = Mock(DocumentFactory)
     nmd.namespace = "ns3"
-    nmd.slurpedDocuments = new XsdSlurper(documentFile: new File("ns3"),
-					  xsdImports: slurpedImports,
-					  documentDependencies: documentDependencies)
+    def slurpedDoc = new XsdDocument(documentSlurper, documentResolver,
+				     xsdSlurper, new File("ns3"), mockSlurper)
+    slurpedDoc.xsdImports = slurpedImports
+    slurpedDoc.documentDependencies = documentDependencies
+
+    nmd.slurpedDocuments = slurpedDoc
+    nmd.documentFactory = factory
     
+    and:
+    xsdSlurper.findResolvedXsdImports(*_) >> documentDependencies.collect { k,v -> v}
+
     when:
     def result = nmd.findNamespacesDependentOn(operatingNamespaces,
 					       historySlurpedFiles)
@@ -85,20 +108,25 @@ class NamespaceDataSpec extends BaseSpecification {
     depNamespaces << [["ns2"], []]
   }
 
-  def "namespace has an external dependency, need to parse it and add it to the history list"() { 
+  @Unroll
+  def "namespace has an external dependency on '#externalDependency', need to parse it and add it to the history list"() {
     setup:
+    def factory = Mock(DocumentFactory)
     nmd.namespace = "ns3"
-    nmd.slurpedDocuments = new XsdSlurper(documentFile: new File("ns3"),
-  					  xsdImports: slurpedImports,
-					  documentDependencies: documentDependencies)
-    def slurper = GroovyMock(XsdSlurper)
-    def reader = GroovySpy(DocumentReader, global: true)
+    def slurpedDoc = new XsdDocument(documentSlurper, documentResolver,
+				     xsdSlurper, new File("ns3"), mockSlurper)
+    slurpedDoc.xsdImports = slurpedImports
+    slurpedDoc.documentDependencies = documentDependencies
+    nmd.slurpedDocuments = slurpedDoc
+    nmd.documentFactory = factory
+
+    def slurper = GroovyMock(XsdDocument)
 
     and:
-    slurper.slurpNamespace(_) >> externalDependency
+    xsdSlurper.findResolvedXsdImports(*_) >> [new File(externalDependency + ".xsd")]
+    factory.createDocument(_ as File) >> slurper
     slurper.getDocumentFile() >> new File(externalDependency + ".xsd")
     slurper.getXsdNamespace() >> externalDependency
-    1 * DocumentReader.slurpDocument(_) >> slurper
 
     when:
     def result = nmd.findNamespacesDependentOn(operatingNamespaces,

@@ -1,11 +1,20 @@
 package com.jacobo.gradle.plugins.task
 
+import org.gradle.jacobo.schema.XsdDocument
+import org.gradle.jacobo.schema.slurper.XsdSlurper
+import org.gradle.jacobo.schema.slurper.DocumentSlurper
+import org.gradle.jacobo.schema.resolver.DocumentResolver
+
 import com.jacobo.gradle.plugins.ProjectTaskSpecification
 import com.jacobo.gradle.plugins.JaxbPlugin
-import com.jacobo.gradle.plugins.model.XsdSlurper
 import com.jacobo.gradle.plugins.structures.NamespaceData
 
 class JaxbNamespaceSpec extends ProjectTaskSpecification {
+
+  def xsdSlurper = Mock(XsdSlurper)
+  def documentSlurper = Mock(DocumentSlurper)
+  def documentResolver = Mock(DocumentResolver)
+  def mockSlurper = new XmlSlurper().parseText("<xsd></xsd>")
 
   def setup() {
     task = project.tasks[JaxbPlugin.JAXB_NAMESPACE_GRAPH_TASK] as JaxbNamespaceTask
@@ -31,31 +40,6 @@ class JaxbNamespaceSpec extends ProjectTaskSpecification {
 	       ]
   }
 
-  def "slurp XSD files, return slurped object array"() { 
-    when:
-    task.with { 
-      xsdDirectory = directory
-    }
-
-    def slurpedFiles = task.slurpXsdFiles(xsdFiles)
-    
-    then:
-    slurpedFiles.size == 3
-    slurpedFiles.each { slurpedFile -> 
-      xsdFiles.contains(slurpedFile.documentFile)
-      namespaces.contains(slurpedFile.xsdNamespace)
-    }
-				 
-    where:
-    directory = getFileFromResourcePath("/schema/House")
-    xsdFiles = ["/schema/House/Kitchen.xsd",
-		"/schema/House/KitchenSubset.xsd",
-		"/schema/House/LivingRoom.xsd"].collect{
-      getFileFromResourcePath(it) }
-    namespaces = ["http://www.example.org/Kitchen",
-		  "http://www.example.org/LivingRoom"]
-  }
-
   def "Group slurpers according to their namespaces"() { 
     when:
     task.with { 
@@ -65,8 +49,10 @@ class JaxbNamespaceSpec extends ProjectTaskSpecification {
     def slurpedUp = []
     xsdFiles.each { k,v ->
       v.each { file ->
-	def slurped = new XsdSlurper(xsdNamespace: k, documentFile: file)
-	slurpedUp << slurped
+	def document = new XsdDocument(documentSlurper, documentResolver,
+				       xsdSlurper, file, mockSlurper)
+	document.xsdNamespace = k
+	slurpedUp << document
       }
     }
 
@@ -104,8 +90,10 @@ class JaxbNamespaceSpec extends ProjectTaskSpecification {
     xsdFiles.each { k,v ->
       def slurpedUp = []
       v.each { file ->
-	def slurped = new XsdSlurper(xsdNamespace: k, documentFile: file)
-	slurpedUp << slurped
+	def document = new XsdDocument(documentSlurper, documentResolver,
+				       xsdSlurper, file, mockSlurper)
+	document.xsdNamespace = k
+	slurpedUp << document
       }
       groupedMap[k] = slurpedUp
     }
