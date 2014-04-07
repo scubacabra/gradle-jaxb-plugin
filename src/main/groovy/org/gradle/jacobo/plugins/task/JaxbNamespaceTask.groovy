@@ -13,7 +13,6 @@ import org.gradle.jacobo.plugins.structures.NamespaceData
 import org.gradle.jacobo.plugins.JaxbPlugin
 import org.gradle.jacobo.plugins.model.TreeNode
 import org.gradle.jacobo.plugins.model.TreeManager
-import com.google.common.annotations.VisibleForTesting
 
 /**
  * @author jacobono
@@ -52,8 +51,7 @@ class JaxbNamespaceTask extends DefaultTask {
    * @param slurpedDocuments --> the slurped documents to group by namespace
    * @return groupedNamespaces --> a map of grouped namespaces with the namespace string as key and a list of #BaseSchemaDocuments as a value
    * Go through each slurped document and group documents by their namespace
-   */
-  @VisibleForTesting    
+   */    
   def groupSlurpedDocumentsByNamespace(List<BaseSchemaDocument> slurpedDocuments) {
     log.info("grouping '{}' documents by their unique namespaces", slurpedDocuments.size())
     // key is namepsace string, value is List of DocumentSlurped objects
@@ -72,7 +70,6 @@ class JaxbNamespaceTask extends DefaultTask {
   }
 
 
-  @VisibleForTesting
   def groupNamespaces(Map<String, List<BaseSchemaDocument>> groupedByNamespaces) {
     log.info("creating '{}' NamespaceData objects", groupedByNamespaces.size())
     def groupedNamespaces = []
@@ -83,7 +80,6 @@ class JaxbNamespaceTask extends DefaultTask {
     return groupedNamespaces
   }
 
-  @VisibleForTesting
   def resolveNamespaceDependencies(List<BaseSchemaDocument> slurpedDocuments,
 				   List<NamespaceData> groupedNamespaces,
 				   Set<String> availableNamespaces) {
@@ -103,7 +99,6 @@ class JaxbNamespaceTask extends DefaultTask {
     return historySlurpedFiles
   }
 
-  @VisibleForTesting
   def resolveExternalDependencies(Set<String> operatingNamespaces,
 				  List<NamespaceData> groupedNamespaces,
 				  Map<File, BaseSchemaDocument> slurpedFileHistory) {
@@ -124,7 +119,6 @@ class JaxbNamespaceTask extends DefaultTask {
    * @return TreeManager
    * generates the dependency Tree and returns the manager of the tree
    */
-  @VisibleForTesting
   def generateDependencyTree(List<NamespaceData> groupedNamespaces) { 
     def treeManager = new TreeManager()
     def noDependencies = groupedNamespaces.findAll{
