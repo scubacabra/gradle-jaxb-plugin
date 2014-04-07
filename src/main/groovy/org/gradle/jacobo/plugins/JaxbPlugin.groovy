@@ -102,8 +102,9 @@ class JaxbPlugin implements Plugin<Project> {
       "and find all unique namespaces, create a namespace graph and parse in " +
       "the graph order with jaxb"
     jnt.group = JAXB_NAMESPACE_TASK_GROUP
-    jnt.conventionMapping.xsdDirectory = {
-      new File(project.rootDir, project.jaxb.jaxbSchemaDirectory) }
+    jnt.conventionMapping.xsds = { project.fileTree( dir:
+	new File(project.rootDir,
+		 project.jaxb.jaxbSchemaDirectory), include: '**/*.xsd') }
     // dependencies on projects with config jaxb, adds their xjc task to this tasks dependencies
     addDependsOnTaskInOtherProjects(jnt, true, JAXB_NAMESPACE_GENERATE_TASK,
     				    JAXB_CONFIGURATION_NAME)

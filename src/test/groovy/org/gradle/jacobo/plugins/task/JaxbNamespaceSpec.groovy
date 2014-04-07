@@ -20,26 +20,6 @@ class JaxbNamespaceSpec extends ProjectTaskSpecification {
     task = project.tasks[JaxbPlugin.JAXB_NAMESPACE_GRAPH_TASK] as JaxbNamespaceTask
   }
 
-  def "Get all XSD Files in the directory passed as a File (absolute)"() { 
-    when:
-    task.with { 
-      xsdDirectory = directory
-    }
-
-    def files = task.findAllXsdFiles(directory)
-  
-    then:
-    files.size == 3
-    files.each { file -> xsdFiles.contains(file) == true }
-  
-    where:
-    directory = new File("build/resources/test/schema/House").absoluteFile
-    xsdFiles = [new File("build/resources/test/schema/House/Kitchen.xsd"),
-		new File("build/resources/test/schema/House/KitchenSubset.xsd"),
-		new File("build/resources/test/schema/House/LivingRoom.xsd")
-	       ]
-  }
-
   def "Group slurpers according to their namespaces"() { 
     when:
     task.with { 

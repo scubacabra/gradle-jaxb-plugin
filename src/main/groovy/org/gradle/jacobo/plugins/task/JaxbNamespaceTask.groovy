@@ -3,7 +3,8 @@ package org.gradle.jacobo.plugins.task
 import org.gradle.api.logging.Logging
 import org.gradle.api.logging.Logger
 import org.gradle.api.tasks.TaskAction
-import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.file.FileTree
 import org.gradle.api.DefaultTask
 
 import org.gradle.jacobo.schema.factory.DocumentFactory
@@ -12,7 +13,6 @@ import org.gradle.jacobo.plugins.structures.NamespaceData
 import org.gradle.jacobo.plugins.JaxbPlugin
 import org.gradle.jacobo.plugins.model.TreeNode
 import org.gradle.jacobo.plugins.model.TreeManager
-import groovy.io.FileType
 import com.google.common.annotations.VisibleForTesting
 
 /**
@@ -24,16 +24,15 @@ class JaxbNamespaceTask extends DefaultTask {
   
   static final Logger log = Logging.getLogger(JaxbNamespaceTask.class)
   
-  @InputDirectory
-  File xsdDirectory
+  @InputFiles
+  FileTree xsds
 
   DocumentFactory docFactory
 
   @TaskAction
   void start() {
     log.lifecycle("jaxb: starting Namespace Task")
-    log.info("jaxb: finding and slurping xsd files in '{}'", xsdDirectory)
-    def xsdFiles = this.findAllXsdFiles( getXsdDirectory() )
+    def xsdFiles = getXsds().files
     def documents = xsdFiles.collect{file -> docFactory.createDocument(file)}
     log.info("jaxb: grouping '{}' files by individual namespace", xsdFiles.size())
     def groupedByNamespace = this.groupSlurpedDocumentsByNamespace(documents)
@@ -47,28 +46,6 @@ class JaxbNamespaceTask extends DefaultTask {
     this.resolveExternalDependencies(groupedByNamespace.keySet(),
 				     groupedNamespaces, slurpedFileHistory)
     project.jaxb.dependencyGraph = dependencyTreeManager
-  }
-
-  /**
-   * @param operatingDirectory --> the directory to search for all *.xsd files
-   * @return xsdFiles --> a list of all xsd Files
-   * Finds all the xsd files in #operatingDirectory
-   */
-  @VisibleForTesting
-  public List<File> findAllXsdFiles(File operatingDirectory) {
-    if ( !operatingDirectory.exists() ) // operating Directory does not exist
-      throw new RuntimeException(
-	"Configured operating directory '{}' does not exist",
-	operatingDirectory)
-
-    log.info("Finding all XSD files in '{}'", operatingDirectory)
-    def xsdFiles = []
-    operatingDirectory.eachFileRecurse(FileType.FILES) {  xsdFile -> 
-      if(xsdFile.name.split("\\.")[-1] == 'xsd') {
-	xsdFiles << xsdFile
-      }
-    }
-    return xsdFiles
   }
 
   /**
