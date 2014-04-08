@@ -23,18 +23,22 @@ class JaxbPluginSpec extends ProjectTaskSpecification {
   }
 
   def "applies Java plugin and adds extension object"() {
-    when:
-    def extension = project.extensions.jaxb
-
-    then:
+    expect:
     project.plugins.getPlugin("java") instanceof JavaPlugin
-    extension instanceof JaxbExtension
-    extension.jaxbSchemaDirectory == "schema"
-    extension.jaxbEpisodeDirectory == "schema/episodes"
-    extension.jaxbBindingDirectory == "schema/bindings"
-    extension.jaxbSchemaDestinationDirectory == "src/main/java"
-    extension.extension == 'true'
-    extension.removeOldOutput == 'yes'
+    with(project.jaxb) {
+      it instanceof JaxbExtension
+      xsdDir == "schema"
+      episodesDir == "schema/episodes"
+      bindingsDir == "schema/bindings"
+      bindings == []
+      with(xjc) {
+      	destinationDir == "src/main/java"
+      	producesDir == "src/main/java"
+	extension == 'true'
+      	removeOldOutput == 'yes'
+	header == true
+      }
+    }
   }
 
   def "adds confiugration to this project"() {

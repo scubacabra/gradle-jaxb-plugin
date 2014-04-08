@@ -56,12 +56,18 @@ class JaxbPlugin implements Plugin<Project> {
   private void configureJaxbExtension(final Project project) { 
     extension = project.extensions.create("jaxb", JaxbExtension, project)
     extension.with { 
-      jaxbSchemaDirectory = "schema"
-      jaxbEpisodeDirectory = "schema/episodes"
-      jaxbBindingDirectory = "schema/bindings"
-      jaxbSchemaDestinationDirectory = "src/main/java"
+      xsdDir = "schema"
+      episodesDir = "schema/episodes"
+      bindingsDir = "schema/bindings"
+      bindings = []
+    }
+    def xjcExtension = project.jaxb.extensions.create("xjc", XjcExtension)
+    xjcExtension.with {
+      destinationDir = "src/main/java"
+      producesDir = "src/main/java"
       extension = 'true'
       removeOldOutput = 'yes'
+      header = true
     }
   }
 
@@ -98,13 +104,13 @@ class JaxbPlugin implements Plugin<Project> {
     final Project project, JaxbExtension jaxb) {
     JaxbNamespaceTask jnt = project.tasks.create(JAXB_NAMESPACE_GRAPH_TASK,
 					      JaxbNamespaceTask)
-    jnt.description = "go through the ${jaxb.xsdDirectoryForGraph} folder " +
+    jnt.description = "go through the folder ${jaxb.xsdDir} folder " +
       "and find all unique namespaces, create a namespace graph and parse in " +
       "the graph order with jaxb"
     jnt.group = JAXB_NAMESPACE_TASK_GROUP
     jnt.conventionMapping.xsds = { project.fileTree( dir:
 	new File(project.rootDir,
-		 project.jaxb.jaxbSchemaDirectory), include: '**/*.xsd') }
+		 project.jaxb.xsdDir), include: '**/*.xsd') }
     // dependencies on projects with config jaxb, adds their xjc task to this tasks dependencies
     addDependsOnTaskInOtherProjects(jnt, true, JAXB_NAMESPACE_GENERATE_TASK,
     				    JAXB_CONFIGURATION_NAME)
@@ -117,19 +123,19 @@ class JaxbPlugin implements Plugin<Project> {
     JaxbXJCTask xjc = project.tasks.create(JAXB_NAMESPACE_GENERATE_TASK,
 					JaxbXJCTask)
     xjc.description = "run through the Directory Graph for " +
-      "${jaxb.xsdDirectoryForGraph} and parse all schemas in order generating" +
-      " episode files to ${jaxb.jaxbEpisodeDirectory}"
+      "${jaxb.xsdDir} and parse all schemas in order generating" +
+      " episode files to ${jaxb.episodesDir}"
     xjc.group = JAXB_NAMESPACE_TASK_GROUP
     xjc.dependsOn(jnt)
     xjc.conventionMapping.manager = {
       new File(project.rootDir, project.jaxb.dependencyGraph) }
     xjc.conventionMapping.episodeDirectory = {
-      new File(project.rootDir, project.jaxb.jaxbEpisodeDirectory) }
+      new File(project.rootDir, project.jaxb.episodesDir) }
     xjc.conventionMapping.customBindingDirectory = {
-      new File(project.rootDir, project.jaxb.jaxbBindingDirectory) }
+      new File(project.rootDir, project.jaxb.bindingsDir) }
     xjc.conventionMapping.generatedFilesDirectory = {
-      new File(project.projectDir, project.jaxb.jaxbSchemaDestinationDirectory) }
+      new File(project.projectDir, project.jaxb.xjc.destinationDir) }
     xjc.conventionMapping.schemasDirectory = {
-      new File(project.rootDir, project.jaxb.jaxbSchemaDirectory) }
+      new File(project.rootDir, project.jaxb.xsdDir) }
   }
 }
