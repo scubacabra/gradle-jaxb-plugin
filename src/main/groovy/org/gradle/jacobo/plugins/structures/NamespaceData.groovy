@@ -21,7 +21,7 @@ class NamespaceData {
   def namespace
 
   // list of slurped Documents with this namespace
-  def slurpedDocuments
+  def documents
 
   boolean hasDependencies = false
   
@@ -153,33 +153,6 @@ class NamespaceData {
     this.dependentNamespaces.add(slurpedDocument.xsdNamespace)
   }
   
-  /**
-   * @return List<File> a list of files to parse for this namespace
-   * (include files are taken out of this list)
-   */
-  public List<File> filesToParse() {
-    def slurperFiles = slurpedDocuments.documentFile
-    def resolvedIncludes = slurpedDocuments*.findResolvedXsdIncludes()
-    def includes = [] as Set
-    resolvedIncludes.findAll { !it.isEmpty() }.each { includes.addAll(it) }
-    if (includes.isEmpty()) {
-      log.info("namespace '{}' does not include any slurperFiles")
-      return slurperFiles
-    }
-    log.info("namespace '{}' intends to parse '{}' and includes '{}'",
-	     namespace, slurperFiles, includes)
-    def filesToParse = slurperFiles.minus(includes)
-    if(filesToParse.isEmpty()) { 
-      def expectionString = "namespace '${namespace}' contains no files to" +
-	"actually parse due to a circular dependency in the includes files." +
-	"Check the files and their include statements.  '${namespace}' has " +
-	"'${slurperFiles.size()}' slurped files -> '${slurperFiles}' and " +
-	"includes '${includes.size()}' files -> '${includes}'."
-      throw new RuntimeException(exceptionString)
-    }
-    return filesToParse
-  }
-
   def String toString() { 
     def out = "${namespace}"
     // out += "files with this namespace:\n ${parseFiles ?: "none" }\n"
