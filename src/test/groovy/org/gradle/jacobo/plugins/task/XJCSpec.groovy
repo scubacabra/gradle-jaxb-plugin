@@ -69,21 +69,7 @@ class JaxbXJCSpec extends ProjectTaskSpecification {
 		  ]
   }
 
-  @Unroll("namespace #ns -> episode file name #episode (w/out extension)")
-  def "targetNamespace to episode file name" () {
-    when:
-    def result = task.convertNamespaceToEpisodeName(ns)
 
-    then:
-    result == episode
-
-    where:
-    ns                              | episode
-    "http://fake.com/donuts/glazed" | "fake.com-donuts-glazed"
-    "urn:real/boy/pinnochio"        | "urn-real-boy-pinnochio"
-    "tickle/me/elmo"                | "tickle-me-elmo"
-    "Alert.xsd"                     | "Alert.xsd"  // when file name is namespace because no namespace present
-  }
 
   @Unroll
   def "list of custom bindings '#bindings' converted to XJC task input '#xjcBindings'" () {
