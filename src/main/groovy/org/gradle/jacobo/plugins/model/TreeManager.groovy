@@ -12,143 +12,64 @@ class TreeManager implements Serializable {
 
   // managed set of Nodes (list of nodes already laid out on graph)
   def managedNodes = [] as Set
+
   // the current row in the tree of laid out Node
-  def currentNodeRow = [] // TODO BETTER NAME WOULD BE TREE ROW CURRENT NODES
+  def currentTreeRow = []
+
   // List of base namespaces that each compose their own tree
   // shares node objects if necessary
-  def treeBaseNamespaces = [] as LinkedList
+  def treeRoot = [] as LinkedList
 
-  def createTreeRoot(List<NamespaceData> baseNamespaces) { 
+  def createTreeRoot(List<NamespaceData> baseNamespaces) {
+    log.info("creating baseNamespaces '{}' as tree nodes", baseNamespaces.size)
     baseNamespaces.each { namespace ->
       def node = new TreeNode<NamespaceData>(namespace)
       managedNodes << node
-      treeBaseNamespaces << node
+      treeRoot << node
     }
-    currentNodeRow = treeBaseNamespaces
+    currentTreeRow = treeRoot
   }
 
-  def addChildren(List<NamespaceData> children) { 
-    children.each { child ->
-      def parentNodes = currentNodeRow.findAll { node ->
-	child.dependentNamespaces.contains(node.data.namespace)
+  def addChildren(Map<NamespaceData, Set<String>> children) {
+    def addedNodes = []
+    children.each { child, dependencies ->
+      def parents = null
+      def ancestors = null
+      def dependsOn = managedNodes.findAll { node ->
+	dependencies.contains(node.data.namespace)
       }
-      log.debug("Parents of child '{}' are '{}'", child, parentNodes.data)
-      // child nodes can be redundant -- check to if this namespace is managed
-      def childNode = managedNodes.find{
-	node -> node.data.namespace == child.namespace }
-      log.debug("Child node for namespace '{}' '{}' found",
-		child, "is" + (childNode ?  "": "not"))
-      parentNodes.each { parentNode ->
-	log.debug("Trying to add child '{}' to Parent Node '{}'",
-		  child, parentNode.data)
-	if(childNode == null) // new child node, not managed yet
-	  childNode = parentNode.addChild(child)
-	else // managed child node
-	  parentNode.addChild(childNode)
+      // dependencies aren't just represented in current row
+      if (!dependencies.every { currentTreeRow.data.namespace.contains(it) }) {
+	parents = dependsOn.findAll { currentTreeRow.contains(it) }
+	ancestors = dependsOn.findAll { !currentTreeRow.contains(it) }
+	log.debug("Child '{}' depends on parents '{}', AND ancestors '{}'", child, parents, ancestors)
       }
-      managedNodes << childNode
-    }
-
-    this.newCurrentTreeRowNodes(children)
-  }
-
-  // Finds the only possible children namespaces allowed to go on the
-  // next tree row.  Of all the dependent Namespaces passed in, it must
-  // pass 2 tests to be qualified.  These are:
-  //
-  // TODO what happens when find no children? error thrown?
-  def findNextChildrenNamespaces(List<NamespaceData> namespaces) { 
-    def nextChildren = []
-    log.debug("Find next children from namespaces '{}'", namespaces)
-    namespaces.each { namespace ->
-      if (isGraphableAtNextRow(namespace)) {
-	nextChildren << namespace	  
+      // all dependent in current row, all dependencies are parents
+      if (parents == null) parents = dependsOn
+      log.debug("adding child '{}' as a tree leaf, belonging to parents '{}'", child, parents)
+      def node = new TreeNode(child, parents as LinkedList)
+      // if there are ancestors, need to add a one way parent link to them
+      ancestors?.each { ancestor ->
+	log.debug("adding a 1-way reationship (child => parent) for child '{}', depending on ancestor '{}'", child, ancestor)
+	node.addParent(ancestor, false)
       }
+      managedNodes << node
+      addedNodes << node
     }
-    log.debug("Children To layout at next tree row are '{}'", nextChildren)
-    return nextChildren
-  }
-
-  // is graphable if has at least one dependency on the current row
-  // and all other dependencies are managed
-  def isGraphableAtNextRow(NamespaceData namespace) {
-    def dependentNamespaces = namespace.dependentNamespaces
-    def currentRowNamespaces = this.currentNodeRow.data.namespace
-    def managedNamespaces = this.managedNodes.data.namespace
-    log.debug("'{}' depends on namespaces '{}' -- Current Row is '{}'",
-		namespace, dependentNamespaces, currentRowNamespaces)
-
-    // dependencies are only one level up, so can't be bigger than
-    // nodes in current row
-    if (dependentNamespaces.size() > this.currentNodeRow.size()) {
-      return false
-    }
-    
-    for(dependentNamespace in dependentNamespaces) {
-      //not in the current Nodes namespaces, not able to graph next
-      if (!currentRowNamespaces.contains(dependentNamespace)) {
-	return false
-      }
-    }
-    // graphable
-    return true
-  }
-
-  // reset the row pointer back to the base tree row
-  // return the currentNodeRow back up
-  def resetRowPointer() { 
-    this.currentNodeRow = this.treeBaseNamespaces
-    return this.currentNodeRow
-  }
-
-  // Takes the newest added namespace Data and finds their nodes from
-  // managedNodes and gives currentNodeRow a new value of all those
-  // that match
-  def newCurrentTreeRowNodes(List<NamespaceData> newestAddedNamespaces) { 
-    def newCurrentNodeRow = [] as LinkedList
-    def newNamespaces = newestAddedNamespaces.namespace
-    this.managedNodes.each { node ->
-      if (newNamespaces.contains(node.data.namespace)) {
-	newCurrentNodeRow << node
-      }
-    }
-    currentNodeRow = newCurrentNodeRow
+    currentTreeRow = addedNodes
   }
 
   // return nodes in next row, based on nodes in current row
   // children nodes can be duplicated, therefore put in set
-  def nextNodeRow(Set<TreeNode<NamespaceData>> currentRow) { 
-    def nextRow  = [] as Set
-    currentRow.each { node ->
+  def Set<TreeNode<NamespaceData>> getNextDescendants(
+    Collection<TreeNode<NamespaceData>> currentNodes) {
+    def descendants  = [] as Set
+    currentNodes.each { node ->
       def children = node.children
-      if (children.isEmpty())
-	return
-
-      nextRow.addAll(children)
+      if(children.isEmpty()) return true // no children, go no further
+      descendants.addAll(children)
     }
-
-    if (nextRow.isEmpty())
-      return null
-
-    return nextRow
-  }
-  
-  // recursively retrieve parent nodes for a given child node
-  // parent nodes can be duplicated at some point, therefore put in set
-  // Returns a Set of parent Nodes, sorted highest to lowest in the tree Hierarchy
-  def getParents(TreeNode<NamespaceData> node) {
-    log.debug("getting parents for '{}'", node)
-    def ancestors = [] as Set
-    if(node.parents == null)
-      return []
-
-    node.parents.each { parent ->
-      def grandparents = getParents(parent)
-      ancestors.addAll(grandparents)
-      ancestors.add(parent)
-    }
-    
-    log.debug("'{}' has '{}' ancestors", ancestors.size())
-    return ancestors
+    if (descendants.isEmpty()) return null // no descendants, return null
+    return descendants
   }
 }
