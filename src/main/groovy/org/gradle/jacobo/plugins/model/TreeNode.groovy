@@ -11,41 +11,82 @@ class TreeNode<T> {
   LinkedList<TreeNode<T>> parents
   LinkedList<TreeNode<T>> children
 
+  /**
+   * Construct a TreeNode with 0 parents and 0 children
+   * @param data data for TreeNode
+   */
   public TreeNode(T data) {
     this.parents = null
     this.children = new LinkedList<TreeNode<T>>()
     this.data = data
   }
 
+  /**
+   * Construct a TreeNode with parents and 0 children
+   * set this tree node as the child of all parents to make a
+   * dual sided relationship
+   * @param data contents for TreeNode
+   * @param parents parents of the node-to-be
+   */
   public TreeNode(T data, LinkedList<TreeNode<T>> parents) {
     this.parents = parents
     this.children = new LinkedList<TreeNode<T>>()
     this.data = data
+    parents.each { parent ->
+      parent.addChild(this, false)
+    }
   }
 
+  /**
+   * Construct a TreeNode with 1 parent and 0 children
+   * set this tree node as the parent's child to make a
+   * dual sided relationship
+   * @param data contents for TreeNode
+   * @param parents parents of the node-to-be
+   */
   public TreeNode(T data, TreeNode<T> parent) {
     this.parents = new LinkedList<TreeNode<T>>() {{ add(parent) }}
     this.children = new LinkedList<TreeNode<T>>()
     this.data = data
+    parent.addChild(this, false)
   }
 
-  public void addChild(TreeNode<T> childNode) {
-    log.debug("Adding a child node '{}' to parent '{}'", childNode.data, this.data)
-    this.children.add(childNode)
-    childNode.addParent(this)
+  public void addChild(TreeNode<T> child, boolean twoWayRelationship) {
+    log.debug("Adding a child '{}' to node '{}'", child.data, this.data)
+    this.children.add(child)
+    if (twoWayRelationship) {
+      log.debug("creating a two way relationship '{}'[p]<=>'{}'[c]",
+		this.data, child.data)
+      child.addParent(this, false)
+    }
   }
 
-  public TreeNode<T> addChild(T data) {
-    log.debug("Adding a new child node '{}' to parent '{}'", data, this.data)
-    def childNode = new TreeNode<T>(data, this)
-    this.children.add(childNode)
-    return childNode
-  }
-
-  public void addParent(TreeNode<T> parent) {
-    log.debug("Adding parent node '{}' to child Node '{}'",
-	      parent.data, this.data)
+  public void addParent(TreeNode<T> parent, boolean twoWayRelationship) {
+    log.debug("Adding a parent '{}' to node '{}'", parent.data, this.data)
     this.parents.add(parent)
+    if (twoWayRelationship) {
+      log.debug("creating a two way relationship '{}'[p]<=>'{}'[c]",
+		parent.data, this.data)
+      parent.addChild(this, false)
+    }
+  }
+
+  /**
+   * Get ancestors, depth first.  Returns Set of Nodes, as ancestors
+   * could be duplicates depending on path
+   */
+  public Set<TreeNode<T>> getAncestors() {
+    def ancestors = [] as Set
+    log.debug("getting ancestors for node '{}'", this)
+    if (parents == null) {
+      return ancestors
+    }
+    parents.each { parent ->
+      ancestors.addAll(parent.getAncestors())
+      ancestors.add(parent)
+    }
+    log.debug("node '{}' has '{}' ancestors", this, ancestors.size())
+    return ancestors
   }
 
   public boolean equals(Object other) {
