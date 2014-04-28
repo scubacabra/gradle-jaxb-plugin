@@ -1,52 +1,45 @@
 package org.gradle.jacobo.plugins.model
 
-import org.gradle.jacobo.plugins.DependencyTreeSpecification
+import spock.lang.Unroll
+import org.gradle.jacobo.plugins.fixtures.TreeFixture
 
-class TreeAncestorSpec extends DependencyTreeSpecification {
-  def manager = new TreeManager()
+class TreeAncestorSpec extends TreeFixture {
 
-  def "get parents of top of the tree"() { 
+  def "get parents of tree root node"() { 
+    given:
+    def node = nodes.find { it.data.namespace == "xsd1" }
+    
     when:
-    def parents = manager.getParents(node2)
+    def parents = node.getAncestors()
 
     then:
     parents.size() == 0
     parents.isEmpty() == true
   }
 
-  def "get parents of first row node, one parent only"() { 
+  @Unroll
+  def "get parents of '#namespace'"() {
+    given:
+    def node = nodes.find { it.data.namespace == namespace }
+    
+    and:
+    def expectation = nodes.findAll { ancestors.contains(it.data.namespace) }
+
     when:
-    def parents = manager.getParents(node3)
+    def parents = node.getAncestors()
 
     then:
-    parents.size() == 1
-    parents == [node1] as Set
-  }
-
-  def "get parents of first row node, this node has two direct parents"() { 
-    when:
-    def parents = manager.getParents(node4)
-
-    then:
-    parents.size() == 2
-    parents == [node1, node2] as Set
-  }
-
-  def "get parents of last row node, this node has 1 direct parent"() { 
-    when:
-    def parents = manager.getParents(node6)
-
-    then:
-    parents.size() == 2
-    parents == [node1, node3] as Set
-  }
-
-  def "get parents of last row node, this node has 1 direct parent, 2 direct grandparents"() { 
-    when:
-    def parents = manager.getParents(node7)
-
-    then:
-    parents.size() == 3
-    parents == [node1, node2, node4] as Set
+    parents.size() == expectation.size()
+    parents.containsAll(expectation)
+    
+    where:
+    namespace | ancestors
+    "xsd3"    | ["xsd1"]
+    "xsd4"    | ["xsd1", "xsd2"]
+    "xsd5"    | ["xsd2"]
+    "xsd6"    | ["xsd3", "xsd1"]
+    "xsd7"    | ["xsd3", "xsd1"]
+    "xsd8"    | ["xsd4", "xsd5", "xsd1", "xsd2"]
+    "xsd9"    | ["xsd5", "xsd2"]
   }
 }
