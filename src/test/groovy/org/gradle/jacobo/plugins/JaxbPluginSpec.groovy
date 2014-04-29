@@ -55,14 +55,14 @@ class JaxbPluginSpec extends ProjectTaskSpecification {
   def "contains 2 tasks, xjc task depends on tree graph task"() {
     when:
     def xjcTask = project.tasks['xjc']
-    def dependencyTask = project.tasks['jaxb-generate-dependency-graph']
+    def dependencyTask = project.tasks['xsd-dependency-tree']
 
     then:
     [xjcTask, dependencyTask]*.group == ["parse", "parse"]
     dependencyTask instanceof JaxbNamespaceTask
     xjcTask instanceof JaxbXJCTask
     xjcTask.taskDependencies.getDependencies(xjcTask)*.path as Set ==
-      [':jaxb-generate-dependency-graph'] as Set
+      [':xsd-dependency-tree'] as Set
   }
 
   def "depends on other projects through jaxb configuration"() {
@@ -84,13 +84,13 @@ class JaxbPluginSpec extends ProjectTaskSpecification {
     when:
     def buildTask = lastProject.tasks['buildNeeded']
     def xjcTask = lastProject.tasks['xjc']
-    def treeTask = lastProject.tasks['jaxb-generate-dependency-graph']
+    def treeTask = lastProject.tasks['xsd-dependency-tree']
 
     then:
     buildTask.taskDependencies.getDependencies(buildTask)*.path as Set ==
       [':last:build', ':common:buildNeeded'] as Set
     xjcTask.taskDependencies.getDependencies(xjcTask)*.path as Set ==
-      [':last:jaxb-generate-dependency-graph'] as Set
+      [':last:xsd-dependency-tree'] as Set
     treeTask.taskDependencies.getDependencies(treeTask)*.path as Set ==
       [':common:xjc'] as Set
   }

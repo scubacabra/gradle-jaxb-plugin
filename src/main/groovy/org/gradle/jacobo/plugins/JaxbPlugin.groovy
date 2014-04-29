@@ -35,9 +35,9 @@ import org.gradle.jacobo.plugins.JaxbExtension
  * @see JaxbExtension
  */
 class JaxbPlugin implements Plugin<Project> {
-  static final String JAXB_NAMESPACE_TASK_GROUP = 'parse'
-  static final String JAXB_NAMESPACE_GRAPH_TASK = 'jaxb-generate-dependency-graph'
-  static final String JAXB_NAMESPACE_GENERATE_TASK = 'xjc'
+  static final String JAXB_TASK_GROUP = 'parse'
+  static final String JAXB_XSD_DEPENDENCY_TREE_TASK = 'xsd-dependency-tree'
+  static final String JAXB_XJC_TASK = 'xjc'
   static final String JAXB_CONFIGURATION_NAME = 'jaxb'
 
   static final Logger log = Logging.getLogger(JaxbPlugin.class)
@@ -47,10 +47,9 @@ class JaxbPlugin implements Plugin<Project> {
   void apply (Project project) {
     project.plugins.apply(JavaPlugin)
     configureJaxbExtension(project)
-    configureJaxbNamespaceConfiguration(project)
-    JaxbNamespaceTask jnt = configureJaxbNamespaceDependencyGraph(project,
-								  extension)
-    configureJaxbGenerateSchemas(project, extension, jnt)
+    configureJaxbConfiguration(project)
+    JaxbNamespaceTask jnt = configureJaxbDependencyTree(project, extension)
+    configureJaxbXjc(project, extension, jnt)
   }
   
   private void configureJaxbExtension(final Project project) { 
@@ -71,7 +70,7 @@ class JaxbPlugin implements Plugin<Project> {
     }
   }
 
-  private void configureJaxbNamespaceConfiguration(final Project project) { 
+  private void configureJaxbConfiguration(final Project project) {
     project.configurations.create(JAXB_CONFIGURATION_NAME) { 
       visible = true
       transitive = true
@@ -93,46 +92,53 @@ class JaxbPlugin implements Plugin<Project> {
   private void addDependsOnTaskInOtherProjects(final Task task, boolean useDependedOn,
 					       String otherProjectTaskName,
 					       String configurationName) {
-    Project project = task.getProject();
+    Project project = task.getProject()
     final Configuration configuration = project.getConfigurations().getByName(
-      configurationName);
+      configurationName)
     task.dependsOn(configuration.getTaskDependencyFromProjectDependency(
-		     useDependedOn,otherProjectTaskName));
+		     useDependedOn,otherProjectTaskName))
   }
 
-  private JaxbNamespaceTask configureJaxbNamespaceDependencyGraph(
-    final Project project, JaxbExtension jaxb) {
-    JaxbNamespaceTask jnt = project.tasks.create(JAXB_NAMESPACE_GRAPH_TASK,
-					      JaxbNamespaceTask)
+  private JaxbNamespaceTask configureJaxbDependencyTree(final Project project,
+							JaxbExtension jaxb) {
+    JaxbNamespaceTask jnt = project.tasks.create(JAXB_XSD_DEPENDENCY_TREE_TASK,
+						 JaxbNamespaceTask)
     jnt.description = "go through the folder ${jaxb.xsdDir} folder " +
       "and find all unique namespaces, create a namespace graph and parse in " +
       "the graph order with jaxb"
-    jnt.group = JAXB_NAMESPACE_TASK_GROUP
+    jnt.group = JAXB_TASK_GROUP
     jnt.conventionMapping.xsds = { project.fileTree( dir:
 	new File(project.rootDir,
 		 project.jaxb.xsdDir), include: '**/*.xsd') }
-    // dependencies on projects with config jaxb, adds their xjc task to this tasks dependencies
-    addDependsOnTaskInOtherProjects(jnt, true, JAXB_NAMESPACE_GENERATE_TASK,
+    // dependencies on projects with config jaxb, adds their xjc task to this
+    // tasks dependencies
+    addDependsOnTaskInOtherProjects(jnt, true, JAXB_XJC_TASK,
     				    JAXB_CONFIGURATION_NAME)
     return jnt
   }
 
-  private void configureJaxbGenerateSchemas(final Project project,
-					    JaxbExtension jaxb,
-					    JaxbNamespaceTask jnt) {
-    JaxbXJCTask xjc = project.tasks.create(JAXB_NAMESPACE_GENERATE_TASK,
-					JaxbXJCTask)
+  private void configureJaxbXjc(final Project project, JaxbExtension jaxb,
+				JaxbNamespaceTask jnt) {
+    JaxbXJCTask xjc = project.tasks.create(JAXB_XJC_TASK, JaxbXJCTask)
     xjc.description = "run through the Directory Graph for " +
       "${jaxb.xsdDir} and parse all schemas in order generating" +
       " episode files to ${jaxb.episodesDir}"
-    xjc.group = JAXB_NAMESPACE_TASK_GROUP
+    xjc.group = JAXB_TASK_GROUP
     xjc.dependsOn(jnt)
     xjc.conventionMapping.manager = {
       new File(project.rootDir, project.jaxb.dependencyGraph) }
     xjc.conventionMapping.episodeDirectory = {
       new File(project.rootDir, project.jaxb.episodesDir) }
-    xjc.conventionMapping.customBindingDirectory = {
-      new File(project.rootDir, project.jaxb.bindingsDir) }
+    xjc.conventionMapping.bindings = {
+       // empty filecollection if no bindinfs listed, so that
+       // files.files == empty set
+       project.jaxb.bindings.isEmpty() ? project.files() :
+       project.fileTree(dir:new File(project.rootDir, project.jaxb.bindingsDir),
+			include: project.jaxb.bindings)
+     }
+    // these two are here so that gradle can check if anything
+    // has changed in these folders and run this task again if so
+    // they serve no other purpose than this
     xjc.conventionMapping.generatedFilesDirectory = {
       new File(project.projectDir, project.jaxb.xjc.destinationDir) }
     xjc.conventionMapping.schemasDirectory = {
