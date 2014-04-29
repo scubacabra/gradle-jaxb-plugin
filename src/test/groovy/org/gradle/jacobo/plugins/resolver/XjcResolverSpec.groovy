@@ -2,10 +2,10 @@ package org.gradle.jacobo.plugins.resolver
 
 import org.gradle.api.GradleException
 
-import org.gradle.jacobo.plugins.DocumentSpec
+import org.gradle.jacobo.plugins.fixtures.DocumentFixture
 import org.gradle.jacobo.plugins.structures.NamespaceData
 
-class XjcResolverSpec extends DocumentSpec {
+class XjcResolverSpec extends DocumentFixture {
   def resolver = new XjcResolver()
 
   def namespace = new NamespaceData()
