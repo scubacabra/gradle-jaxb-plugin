@@ -1,8 +1,6 @@
 package org.gradle.jacobo.plugins.resolver
 
 import org.gradle.api.GradleException
-import org.gradle.api.Project
-import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.jacobo.plugins.structures.NamespaceData
