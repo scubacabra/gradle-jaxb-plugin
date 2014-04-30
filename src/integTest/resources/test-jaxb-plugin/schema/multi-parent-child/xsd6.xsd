@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema targetNamespace="http://www.test.plugin/xsd6"
+	    xmlns:tns="http://www.test.plugin/xsd6"
+	    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+	<xsd:import namespace="http://www.test.plugin/xsd3" schemaLocation="./xsd3.xsd" />
+</xsd:schema>

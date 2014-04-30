@@ -5,6 +5,7 @@ buildscript{
 apply plugin: 'groovy'
 apply plugin: 'maven'
 apply from: 'cobertura.gradle'
+apply from: 'integTest.gradle'
 
 group = 'com.jacobo.gradle.plugins'
 
