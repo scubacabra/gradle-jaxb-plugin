@@ -1,11 +1,11 @@
 package org.gradle.jacobo.plugins
 
-import org.gradle.jacobo.plugins.BaseSpecification
-
 import org.gradle.testfixtures.ProjectBuilder
 import org.gradle.api.Project
 
-class ProjectTaskSpecification extends BaseSpecification {
+import org.gradle.jacobo.plugins.fixtures.TreeFixture
+
+class ProjectTaskSpecification extends TreeFixture {
   
   def project
   def task
