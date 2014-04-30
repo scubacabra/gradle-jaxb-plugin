@@ -3,7 +3,7 @@ package org.gradle.jacobo.plugins.resolver
 import spock.lang.Unroll
 
 import org.gradle.jacobo.plugins.fixtures.DocumentFixture
-import org.gradle.jacobo.plugins.structures.NamespaceData
+import org.gradle.jacobo.plugins.xsd.XsdNamespace
 
 class NamespaceResolverSpec extends DocumentFixture {
   

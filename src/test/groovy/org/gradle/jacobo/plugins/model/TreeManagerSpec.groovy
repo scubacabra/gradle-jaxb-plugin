@@ -1,6 +1,6 @@
 package org.gradle.jacobo.plugins.model
 
-import org.gradle.jacobo.plugins.structures.NamespaceData
+import org.gradle.jacobo.plugins.xsd.XsdNamespace
 import org.gradle.jacobo.plugins.fixtures.NamespaceFixture
 import spock.lang.Unroll
 

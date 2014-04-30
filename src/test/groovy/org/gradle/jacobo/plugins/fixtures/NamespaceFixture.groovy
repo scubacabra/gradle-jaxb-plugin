@@ -2,7 +2,7 @@ package org.gradle.jacobo.plugins.fixtures
 
 import org.gradle.jacobo.schema.BaseSchemaDocument
 import org.gradle.jacobo.plugins.fixtures.DocumentFixture
-import org.gradle.jacobo.plugins.structures.NamespaceData
+import org.gradle.jacobo.plugins.xsd.XsdNamespace
 
 class NamespaceFixture extends DocumentFixture {
   def xsdNamespaces = ["xsd1", "xsd2", "xsd3", "xsd4", "xsd5",
@@ -143,52 +143,52 @@ class NamespaceFixture extends DocumentFixture {
   }
 
   def createNamespace(String namespace, BaseSchemaDocument document) {
-    return new NamespaceData(namespace, [document])
+    return new XsdNamespace(namespace, [document])
   }
 
   def createNamespace(String namespace, BaseSchemaDocument document,
 		      Set<String> externalDependencies) {
-    def ns = new NamespaceData(namespace, [document])
+    def ns = new XsdNamespace(namespace, [document])
     ns.externalDependencies = externalDependencies
     return ns
   }
 
   def createNamespace(String namespace, BaseSchemaDocument document,
 		      boolean hasDependencies) {
-    def ns = new NamespaceData(namespace, [document])
+    def ns = new XsdNamespace(namespace, [document])
     ns.hasDependencies = hasDependencies
     return ns
   }
 
   def createNamespace(String namespace, BaseSchemaDocument document,
 		      boolean hasDependencies, Set<String> externalDependencies) {
-    def ns = new NamespaceData(namespace, [document])
+    def ns = new XsdNamespace(namespace, [document])
     ns.hasDependencies = hasDependencies
     ns.externalDependencies = externalDependencies
     return ns
   }
 
   def createNamespace(String namespace, List<BaseSchemaDocument> documents) {
-    return new NamespaceData(namespace, documents)
+    return new XsdNamespace(namespace, documents)
   }
 
   def createNamespace(String namespace, List<BaseSchemaDocument> documents,
 		      boolean hasDependencies) {
-    def ns = new NamespaceData(namespace, documents)
+    def ns = new XsdNamespace(namespace, documents)
     ns.hasDependencies = hasDependencies
     return ns
   }
 
   def createNamespace(String namespace, List<BaseSchemaDocument> documents,
 		      Set<String> externalDependencies) {
-    def ns = new NamespaceData(namespace, documents)
+    def ns = new XsdNamespace(namespace, documents)
     ns.externalDependencies = externalDependencies
     return ns
   }
 
   def createNamespace(String namespace, List<BaseSchemaDocument> documents,
 		      boolean hasDependencies, Set<String> externalDependencies) {
-    def ns = new NamespaceData(namespace, documents)
+    def ns = new XsdNamespace(namespace, documents)
     ns.hasDependencies = hasDependencies
     ns.externalDependencies = externalDependencies
     return ns

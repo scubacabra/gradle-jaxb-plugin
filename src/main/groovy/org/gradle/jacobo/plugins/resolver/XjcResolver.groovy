@@ -3,14 +3,14 @@ package org.gradle.jacobo.plugins.resolver
 import org.gradle.api.GradleException
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
-import org.gradle.jacobo.plugins.structures.NamespaceData
+import org.gradle.jacobo.plugins.xsd.XsdNamespace
 
 class XjcResolver {
   static final Logger log = Logging.getLogger(XjcResolver.class)
 
   // get all included files for this namespace and subtract that set from the
   // total set of files this namespace includes  
-  public Set<File> resolve(NamespaceData namespace) {
+  public Set<File> resolve(XsdNamespace namespace) {
 
     def totalXsds = namespace.documents.documentFile as Set
     // included schemas are subset of totalXsds

@@ -5,7 +5,7 @@ import java.io.Serializable
 import org.gradle.api.logging.Logging
 import org.gradle.api.logging.Logger
 
-import org.gradle.jacobo.plugins.structures.NamespaceData
+import org.gradle.jacobo.plugins.xsd.XsdNamespace
 
 class TreeManager {
   static final Logger log = Logging.getLogger(TreeManager.class)
@@ -20,17 +20,17 @@ class TreeManager {
   // shares node objects if necessary
   def treeRoot = [] as LinkedList
 
-  def createTreeRoot(List<NamespaceData> baseNamespaces) {
+  def createTreeRoot(List<XsdNamespace> baseNamespaces) {
     log.info("creating baseNamespaces '{}' as tree nodes", baseNamespaces.size)
     baseNamespaces.each { namespace ->
-      def node = new TreeNode<NamespaceData>(namespace)
+      def node = new TreeNode<XsdNamespace>(namespace)
       managedNodes << node
       treeRoot << node
     }
     currentTreeRow = treeRoot
   }
 
-  def addChildren(Map<NamespaceData, Set<String>> children) {
+  def addChildren(Map<XsdNamespace, Set<String>> children) {
     def addedNodes = []
     children.each { child, dependencies ->
       def parents = null
@@ -61,8 +61,8 @@ class TreeManager {
 
   // return nodes in next row, based on nodes in current row
   // children nodes can be duplicated, therefore put in set
-  def Set<TreeNode<NamespaceData>> getNextDescendants(
-    Collection<TreeNode<NamespaceData>> currentNodes) {
+  def Set<TreeNode<XsdNamespace>> getNextDescendants(
+    Collection<TreeNode<XsdNamespace>> currentNodes) {
     def descendants  = [] as Set
     currentNodes.each { node ->
       def children = node.children

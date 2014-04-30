@@ -6,7 +6,7 @@ import org.gradle.api.logging.Logger
 
 import org.gradle.jacobo.schema.BaseSchemaDocument
 import org.gradle.jacobo.plugins.model.TreeManager
-import org.gradle.jacobo.plugins.structures.NamespaceData
+import org.gradle.jacobo.plugins.xsd.XsdNamespace
 
 class XsdDependencyTreeFactory {
   static final Logger log = Logging.getLogger(XsdDependencyTreeFactory.class)
@@ -18,7 +18,7 @@ class XsdDependencyTreeFactory {
     this.treeManager = treeManager
   }
 
-  public TreeManager createDependencyTree(List<NamespaceData> namespaces,
+  public TreeManager createDependencyTree(List<XsdNamespace> namespaces,
 					  List<BaseSchemaDocument> documents) {
     log.lifecycle("jaxb: generating xsd namespace dependency tree")
     treeManager.createTreeRoot(namespaces.findAll { it.hasDependencies == false })
@@ -43,8 +43,8 @@ class XsdDependencyTreeFactory {
     return treeManager
   }
 
-  def Map<NamespaceData, Set<String>> resolveDependentNamespaces(
-    List<NamespaceData> namespaces, List<BaseSchemaDocument> documents) {
+  def Map<XsdNamespace, Set<String>> resolveDependentNamespaces(
+    List<XsdNamespace> namespaces, List<BaseSchemaDocument> documents) {
     def namespaceDependencies = [:]
     namespaces.each { namespace ->
       def dependentNamespaces = [] as Set

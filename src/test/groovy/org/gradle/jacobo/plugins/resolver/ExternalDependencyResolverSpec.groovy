@@ -2,7 +2,7 @@ package org.gradle.jacobo.plugins.resolver
 
 import org.gradle.jacobo.schema.factory.DocumentFactory
 import org.gradle.jacobo.plugins.fixtures.DocumentFixture
-import org.gradle.jacobo.plugins.structures.NamespaceData
+import org.gradle.jacobo.plugins.xsd.XsdNamespace
 
 class ExternalDependencyResolverSpec extends DocumentFixture {
 
@@ -23,7 +23,7 @@ class ExternalDependencyResolverSpec extends DocumentFixture {
       createXsdDocument(new File(it + ".xsd"), it)
     }
     // create namespaces and add 1 document per namespace for xsdNamespaces
-    namespaces = xsdNamespaces.collect { new NamespaceData(it) }
+    namespaces = xsdNamespaces.collect { new XsdNamespace(it) }
     xsdNamespaces.each { ns ->
       def xsd = documents.find { doc -> doc.xsdNamespace == ns }
       def namespace = namespaces.find { it.namespace == ns }

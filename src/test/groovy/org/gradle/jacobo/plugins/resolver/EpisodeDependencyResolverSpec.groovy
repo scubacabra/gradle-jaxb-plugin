@@ -6,7 +6,7 @@ import spock.lang.Unroll
 import org.gradle.jacobo.plugins.converter.NamespaceToEpisodeConverter
 import org.gradle.jacobo.plugins.fixtures.TreeFixture
 import org.gradle.jacobo.plugins.model.TreeNode
-import org.gradle.jacobo.plugins.structures.NamespaceData
+import org.gradle.jacobo.plugins.xsd.XsdNamespace
 
 class EpisodeDependencyResolverSpec extends TreeFixture {
   

@@ -3,12 +3,12 @@ package org.gradle.jacobo.plugins.resolver
 import org.gradle.api.GradleException
 
 import org.gradle.jacobo.plugins.fixtures.DocumentFixture
-import org.gradle.jacobo.plugins.structures.NamespaceData
+import org.gradle.jacobo.plugins.xsd.XsdNamespace
 
 class XjcResolverSpec extends DocumentFixture {
   def resolver = new XjcResolver()
 
-  def namespace = new NamespaceData()
+  def namespace = new XsdNamespace()
   def sameNamespace = "same-namespace"
   def mainXsdFile = new File("main-document.xsd")
   def doc1 = createXsdDocument(mainXsdFile, sameNamespace)

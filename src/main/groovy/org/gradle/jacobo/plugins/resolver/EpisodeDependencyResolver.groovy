@@ -5,13 +5,13 @@ import org.gradle.api.logging.Logging
 
 import org.gradle.jacobo.plugins.converter.NamespaceToEpisodeConverter
 import org.gradle.jacobo.plugins.model.TreeNode
-import org.gradle.jacobo.plugins.structures.NamespaceData
+import org.gradle.jacobo.plugins.xsd.XsdNamespace
 
 class EpisodeDependencyResolver {
   static final Logger log = Logging.getLogger(EpisodeDependencyResolver.class)  
 
   /**
-   * @param Tree Node with NamespaceData as a data object
+   * @param Tree Node with XsdNamespace as a data object
    * @return List of episode names to bind with.
    * Based off of the current Node looking to parse.  Node's parents
    * form the core episode bindings, but the node, along with each
@@ -19,7 +19,7 @@ class EpisodeDependencyResolver {
    * can be duplicated, so a Set of dependentNamespaces is constructed
    * and then each namespace is converted to it episode file name.
    */
-  public Set<File> resolve(TreeNode<NamespaceData> node,
+  public Set<File> resolve(TreeNode<XsdNamespace> node,
 			   NamespaceToEpisodeConverter converter,
 			   File episodesDir) {
     def ancestors = node.getAncestors()

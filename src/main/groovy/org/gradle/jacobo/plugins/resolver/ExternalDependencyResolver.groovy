@@ -4,7 +4,7 @@ import com.google.inject.Inject
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 
-import org.gradle.jacobo.plugins.structures.NamespaceData
+import org.gradle.jacobo.plugins.xsd.XsdNamespace
 import org.gradle.jacobo.schema.BaseSchemaDocument
 import org.gradle.jacobo.schema.factory.DocumentFactory
 
@@ -19,7 +19,7 @@ class ExternalDependencyResolver {
     this.docFactory = docFactory
   }
 
-  public void resolve(Set<File> xsds, List<NamespaceData> namespaces) {
+  public void resolve(Set<File> xsds, List<XsdNamespace> namespaces) {
     log.info("resolving external dependencies for namespaces '{}'", namespaces)
     namespaces.each { namespace ->
       def dependencies = []

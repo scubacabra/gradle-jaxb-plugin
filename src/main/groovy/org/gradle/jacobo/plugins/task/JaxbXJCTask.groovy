@@ -16,7 +16,7 @@ import org.gradle.jacobo.plugins.model.TreeManager
 import org.gradle.jacobo.plugins.model.TreeNode
 import org.gradle.jacobo.plugins.resolver.EpisodeDependencyResolver
 import org.gradle.jacobo.plugins.resolver.XjcResolver
-import org.gradle.jacobo.plugins.structures.NamespaceData
+import org.gradle.jacobo.plugins.xsd.XsdNamespace
 
 /**
  * @author jacobono
@@ -75,7 +75,7 @@ class JaxbXJCTask extends DefaultTask {
     }
   }
 
-  def parseNode(TreeNode<NamespaceData> node) {
+  def parseNode(TreeNode<XsdNamespace> node) {
     log.info("resolving necessary information for node '{}'", node)
     def episodes = getDependencyResolver().resolve(node, getEpisodeConverter(),
 						   getEpisodeDirectory())
