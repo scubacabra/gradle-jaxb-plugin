@@ -1,4 +1,4 @@
-package org.gradle.jacobo.plugins
+package org.gradle.jacobo.plugins.extension
 
 import org.gradle.api.Project
 

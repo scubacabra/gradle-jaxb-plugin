@@ -14,7 +14,8 @@ import org.gradle.api.logging.Logger
 
 import org.gradle.jacobo.plugins.task.JaxbNamespaceTask
 import org.gradle.jacobo.plugins.task.JaxbXJCTask
-import org.gradle.jacobo.plugins.JaxbExtension
+import org.gradle.jacobo.plugins.extension.JaxbExtension
+import org.gradle.jacobo.plugins.extension.XjcExtension
 import org.gradle.jacobo.plugins.guice.JaxbPluginModule
 import org.gradle.jacobo.schema.guice.DocSlurperModule
 

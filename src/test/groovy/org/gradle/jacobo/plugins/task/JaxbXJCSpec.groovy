@@ -2,7 +2,7 @@ package org.gradle.jacobo.plugins.task
 
 import groovy.util.AntBuilder
 
-import org.gradle.jacobo.plugins.XjcExtension
+import org.gradle.jacobo.plugins.extension.XjcExtension
 import org.gradle.jacobo.plugins.JaxbPlugin
 import org.gradle.jacobo.plugins.ProjectTaskSpecification
 import org.gradle.jacobo.plugins.ant.AntXjc

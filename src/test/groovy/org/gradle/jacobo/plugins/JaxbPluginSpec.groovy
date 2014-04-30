@@ -1,6 +1,6 @@
 package org.gradle.jacobo.plugins
 
-import org.gradle.jacobo.plugins.JaxbExtension
+import org.gradle.jacobo.plugins.extension.JaxbExtension
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.jacobo.plugins.JaxbPlugin
 import org.gradle.testfixtures.ProjectBuilder
