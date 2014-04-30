@@ -1,17 +1,21 @@
 package org.gradle.jacobo.plugins.task
 
-import org.gradle.api.logging.Logging
+import org.gradle.api.DefaultTask
+import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
-import org.gradle.api.tasks.TaskAction
-import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
-import org.gradle.api.DefaultTask
-import org.gradle.api.InvalidUserDataException
-
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.TaskAction
 import org.gradle.jacobo.plugins.JaxbPlugin
+import org.gradle.jacobo.plugins.ant.AntExecutor
+import org.gradle.jacobo.plugins.converter.NamespaceToEpisodeConverter
 import org.gradle.jacobo.plugins.model.TreeManager
 import org.gradle.jacobo.plugins.model.TreeNode
+import org.gradle.jacobo.plugins.resolver.EpisodeDependencyResolver
+import org.gradle.jacobo.plugins.resolver.XjcResolver
 import org.gradle.jacobo.plugins.structures.NamespaceData
 
 /**
@@ -22,7 +26,6 @@ import org.gradle.jacobo.plugins.structures.NamespaceData
 class JaxbXJCTask extends DefaultTask {
   static final Logger log = Logging.getLogger(JaxbXJCTask.class)
 
-  @Input
   TreeManager manager
 
   /**
@@ -31,12 +34,6 @@ class JaxbXJCTask extends DefaultTask {
    */
   @OutputDirectory
   File episodeDirectory
-
-  /**
-   * User can create custom bindings, they would be in this directory
-   */
-  @OutputDirectory
-  File customBindingDirectory
 
   /**
    * directory where the generated java files from xjc would go
@@ -51,179 +48,44 @@ class JaxbXJCTask extends DefaultTask {
   @InputDirectory
   File schemasDirectory
 
+  /**
+   * jaxb custom binding files to bind with
+   */
+  @InputFiles
+  FileCollection bindings
+
+  AntExecutor xjc
+
+  NamespaceToEpisodeConverter episodeConverter
+
+  XjcResolver xjcResolver
+
+  EpisodeDependencyResolver dependencyResolver
+
   @TaskAction
   void start() {
-    def treeManager = getManager()
+    def manager = getManager()
     log.info("jaxb: attempting to parse '{}' nodes in tree, base nodes are '{}'",
-		  treeManager.managedNodes.size(), treeManager.currentNodeRow)
-    parseNodes(treeManager.currentNodeRow, treeManager)
-    return
-  }
-
-  def parseNodes(baseTreeNodes, TreeManager manager) {
-    def nextRow = baseTreeNodes as Set
-    while(nextRow) {
-      log.info("parsing '{}' nodes '{}'", nextRow.size(), nextRow)
-      nextRow.each { node -> parseNode(node) }
-      nextRow = manager.nextNodeRow(nextRow)
+	     manager.managedNodes.size(), manager.treeRoot)
+    def nodes = manager.treeRoot
+    while(nodes) {
+      log.info("parsing '{}' nodes '{}'", nodes.size(), nodes)
+      nodes.each { node -> parseNode(node) }
+      nodes = manager.getNextDescendants(nodes)
     }
   }
 
   def parseNode(TreeNode<NamespaceData> node) {
-    log.info("gathering information for node '{}'", node)
-    def episodeBindings = this.resolveEpisodeFiles(node, project.jaxb.dependencyGraph)
-    def episodeName = this.convertNamespaceToEpisodeName(node.data.namespace)
-    def episodeDirectory = getEpisodeDirectory()
-    def episodePath = "$episodeDirectory/${episodeName}.episode"
-    def xsdFiles = node.data.filesToParse()
-    def parseFiles = this.xsdFilesListToString(xsdFiles)
-    def bindings = this.transformBindingListToString(project.jaxb.bindingIncludes)
+    log.info("resolving necessary information for node '{}'", node)
+    def episodes = getDependencyResolver().resolve(node, getEpisodeConverter(),
+						   getEpisodeDirectory())
+    def xsds = getXjcResolver().resolve(node.data)
+    def episode = getEpisodeConverter().convert(node.data.namespace)
+    def episodeFile = new File(getEpisodeDirectory(), episode)
 
     log.info("running ant xjc task on node '{}'", node)
-    xjc(getGeneratedFilesDirectory(), project.jaxb.extension,
-    	project.jaxb.removeOldOutput, project.jaxb.header,
-    	getSchemasDirectory(), parseFiles,
-    	project.jaxb.bindingIncludes, getCustomBindingDirectory(),
-    	bindings, episodeBindings, episodeDirectory,
-    	episodePath)
-  }
-
-  def xjc(destinationDirectory, extension, removeOldOutput, header,
-	  schemasDirectory, xsdFiles, customBinding, bindingDirectory,
-	  bindings, episodeBindings, episodesDirectory, episodeName) {
-    log.info("dest dir '{}', schema dir '{}', files to parse '{}', bindign dir '{}', episode bindings '{}', episode dir '{}', episode name '{}'",
-	     destinationDirectory, schemasDirectory, xsdFiles, bindingDirectory,
-	     episodeBindings, episodesDirectory, episodeName)
-    ant.taskdef (name : 'xjc', 
-		 classname : 'com.sun.tools.xjc.XJCTask',
-		 classpath : project.configurations[JaxbPlugin.JAXB_CONFIGURATION_NAME].asPath
-		)
-
-    ant.xjc(destdir : destinationDirectory,
-	    extension : extension,
-	    removeOldOutput : removeOldOutput,
-	    header : header)
-    {
-      //TODO maybe should put the produces in there?
-      //produces (dir : destinationDirectory)
-      schema (dir : schemasDirectory,
-	      includes : xsdFiles )
-      if (!customBinding.isEmpty()) {
-	binding(dir : bindingDirectory, includes : bindings)
-      }
-      episodeBindings.each { episode ->
-	log.info("binding with file {}.episode", episode)
-	binding (dir : episodesDirectory,
-		 includes : "${episode}.episode")
-      }
-      log.info("episode file is {}", episodeName)
-      arg(value : '-episode')
-      arg(value: episodeName)
-      arg(value : '-verbose')
-      arg(value : '-npa')
-    }
-  }
-
-  /**
-   * @param Tree Node with NamespaceData as a data object
-   * @return List of episode names to bind with.
-   * Based off of the current Node looking to parse.  Node's parents
-   * form the core episode bindings, but the node, along with each
-   * one of its parents can depend on external namespaces, and these
-   * can be duplicated, so a Set of dependentNamespaces is constructed
-   * and then each namespace is converted to it episode file name.
-   */
-  def resolveEpisodeFiles(TreeNode<NamespaceData> node, TreeManager manager) { 
-    def dependentNamespaces = [] as Set
-    // must check for current nodes external dependencies.  Could have 0
-    // parents and only possible external dependencies lay in this node
-    if (node.data.hasExternalDependencies) {
-      log.info("node '{}' has external dependencies", node)
-      dependentNamespaces.addAll(node.data.dependentExternalNamespaces)
-    }
-
-    log.info("getting parents for node '{}'", node)
-    def parents = manager.getParents(node)
-    // returns empty set if no parents found
-    if (parents) {
-      dependentNamespaces.addAll(parents.data.namespace)
-      // check if any parent has external dependencies
-      parents.each { parent ->
-	log.info("node '{}' depends on Parent node '{}'", node, parent)
-	if (parent.data.hasExternalDependencies) {
-	  log.info("parent node '{}' has external dependencies", parent)
-	  dependentNamespaces.addAll(parent.data.dependentExternalNamespaces)
-	}
-      }
-    }
-
-    log.info("node '{}' depends on a total of '{}' namespaces", node,
-	     dependentNamespaces.size())
-    def episodeBindings = dependentNamespaces.collect { dependentNamespace ->
-      this.convertNamespaceToEpisodeName(dependentNamespace)
-    }
-    if(episodeBindings)
-      checkEpisodeFilesExist(episodeBindings, node.data.namespace)
-    return episodeBindings
-  }
-
-  /**
-   * Make sure episode files exist.  If not throw an error, letting the
-   * user know what is wrong instead of making them sift through info
-   * or debug output from command line
-   * @param episodeNames -> list of episode file names to check for existence of
-   * @param namespace -> the namespace that depends on these episode
-   */
-  def checkEpisodeFilesExist(List episodeNames, String namespace) {
-    log.info("checking existence of '{}' episode files", episodeNames.size())
-    episodeNames.each { episode ->
-      def file = new File(getEpisodeDirectory(), "${episode}.episode")
-      if (file.exists())
-	return
-
-      def exceptionString = """Episode file '${file}' doesn't exist! Namespace
-'${namespace}' depends on this episode file.  Make sure that the project this
-namespace depends on has been parsed and has generated an episode file"""
-      throw new RuntimeException(exceptionString)
-    }
-  }
-
-  /**
-   * @param List of File objects
-   * @return String fileNames -  the list of included schemas to undergo
-   * parsing via xjc. File name ONLY, space separated.
-  */
-  public String xsdFilesListToString(List<File> filesToParse) {
-    String fileNames = filesToParse.name.join(" ")
-    log.info("xjc file list input is '{}'", fileNames)
-    return fileNames
-  }
-
-
-  /**
-   * @param bindings a list of user defined bindings
-   * @return String binding list
-   * List transformed into a string so the xjc task can accordingly
-   * process it Takes a binding list (user defined) and turns it into an
-   * appropriate string for the xjc ant task to use
-   */
-  public String transformBindingListToString(List bindings) { 
-    String bindingNames = bindings.join(" ")
-    log.info("list of custom bindings for xjc input is '{}'", bindingNames)
-    return bindingNames
-  }
-
-  /**
-   * Method that converts the namespace into an appropriate episode file
-   * name that the file system accepts
-   * TODO: conventions could be better
-   */
-  public convertNamespaceToEpisodeName(String namespace) { 
-    def episodeName = namespace.replace("http://", "")
-    episodeName = episodeName.replace(":", "-")
-    episodeName = episodeName.replace("/", "-")
-    log.info("converted namespace '{}' to episode name '{}'", namespace,
-	     episodeName)
-    return  episodeName
+    def jaxbConfig = project.configurations[JaxbPlugin.JAXB_CONFIGURATION_NAME]
+    getXjc().execute(ant, project.jaxb.xjc, jaxbConfig.asPath, project.files(xsds),
+		     getBindings(), project.files(episodes), episodeFile)
   }
 }
