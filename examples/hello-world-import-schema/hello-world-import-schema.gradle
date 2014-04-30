@@ -1,5 +1,5 @@
 version = "0.1"
 
 jaxb { 
-  xsdDirectoryForGraph = "${project.rootDir}/schema/Import"
+  xsdDir = "schema/Import"
 }

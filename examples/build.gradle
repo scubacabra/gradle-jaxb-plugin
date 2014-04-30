@@ -1,5 +1,24 @@
 buildscript {
-  repositories { 
+  // uncomment for local testing  
+  //**********************************************************
+  // repositories {
+  //   flatDir { dirs '../build/libs' }
+  //   mavenCentral()
+  //   maven {
+  //     url 'http://dl.bintray.com/content/djmijares/gradle-plugins/'
+  //   }
+  // }
+
+  // dependencies {
+  //   classpath ':gradle-jaxb-plugin-1.1'
+  //   classpath 'com.google.inject:guice:3.0'
+  //   classpath 'org.gradle.jacobo:gradle-xsd-wsdl-slurping:1.0.3'
+  // }
+  //**********************************************************
+
+  // use artifacts from bintray
+  //******************************************************
+  repositories {
     maven { 
       url 'http://dl.bintray.com/content/djmijares/gradle-plugins' 
     }
