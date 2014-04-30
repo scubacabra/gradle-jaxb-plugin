@@ -1,5 +1,6 @@
 package org.gradle.jacobo.plugins.resolver
 
+import com.google.inject.Inject
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 
@@ -11,10 +12,9 @@ class ExternalDependencyResolver {
   static final Logger log = Logging.getLogger(ExternalDependencyResolver.class)
 
   DocumentFactory docFactory
-
   Map<File, BaseSchemaDocument> resolvedHistory = [:]
 
-  // TODO GUICE
+  @Inject
   public ExternalDependencyResolver(DocumentFactory docFactory) {
     this.docFactory = docFactory
   }

@@ -1,5 +1,6 @@
 package org.gradle.jacobo.plugins.factory
 
+import com.google.inject.Inject
 import org.gradle.api.logging.Logging
 import org.gradle.api.logging.Logger
 
@@ -11,7 +12,8 @@ class XsdDependencyTreeFactory {
   static final Logger log = Logging.getLogger(XsdDependencyTreeFactory.class)
 
   TreeManager treeManager
-  
+
+  @Inject
   public XsdDependencyTreeFactory(TreeManager treeManager) {
     this.treeManager = treeManager
   }

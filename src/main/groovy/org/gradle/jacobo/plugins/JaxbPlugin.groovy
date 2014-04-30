@@ -1,5 +1,8 @@
 package org.gradle.jacobo.plugins
 
+import com.google.inject.Guice
+import com.google.inject.Injector
+
 import org.gradle.api.Project
 import org.gradle.api.Plugin
 
@@ -12,6 +15,17 @@ import org.gradle.api.logging.Logger
 import org.gradle.jacobo.plugins.task.JaxbNamespaceTask
 import org.gradle.jacobo.plugins.task.JaxbXJCTask
 import org.gradle.jacobo.plugins.JaxbExtension
+import org.gradle.jacobo.plugins.guice.JaxbPluginModule
+import org.gradle.jacobo.schema.guice.DocSlurperModule
+
+import org.gradle.jacobo.plugins.factory.XsdDependencyTreeFactory
+import org.gradle.jacobo.plugins.resolver.ExternalDependencyResolver
+import org.gradle.jacobo.plugins.resolver.NamespaceResolver
+import org.gradle.jacobo.schema.factory.DocumentFactory
+import org.gradle.jacobo.plugins.ant.AntXjc
+import org.gradle.jacobo.plugins.converter.NamespaceToEpisodeConverter
+import org.gradle.jacobo.plugins.resolver.XjcResolver
+import org.gradle.jacobo.plugins.resolver.EpisodeDependencyResolver
 
 /**
  * A plugin used for taking a whole folder full of .xsd files and enabling
@@ -46,10 +60,11 @@ class JaxbPlugin implements Plugin<Project> {
 
   void apply (Project project) {
     project.plugins.apply(JavaPlugin)
+    Injector injector = Guice.createInjector([new JaxbPluginModule(), new DocSlurperModule()])
     configureJaxbExtension(project)
     configureJaxbConfiguration(project)
-    JaxbNamespaceTask jnt = configureJaxbDependencyTree(project, extension)
-    configureJaxbXjc(project, extension, jnt)
+    JaxbNamespaceTask jnt = configureJaxbDependencyTree(project, extension, injector)
+    configureJaxbXjc(project, extension, jnt, injector)
   }
   
   private void configureJaxbExtension(final Project project) { 
@@ -100,7 +115,8 @@ class JaxbPlugin implements Plugin<Project> {
   }
 
   private JaxbNamespaceTask configureJaxbDependencyTree(final Project project,
-							JaxbExtension jaxb) {
+							JaxbExtension jaxb,
+						        def injector) {
     JaxbNamespaceTask jnt = project.tasks.create(JAXB_XSD_DEPENDENCY_TREE_TASK,
 						 JaxbNamespaceTask)
     jnt.description = "go through the folder ${jaxb.xsdDir} folder " +
@@ -109,7 +125,20 @@ class JaxbPlugin implements Plugin<Project> {
     jnt.group = JAXB_TASK_GROUP
     jnt.conventionMapping.xsds = { project.fileTree( dir:
 	new File(project.rootDir,
-		 project.jaxb.xsdDir), include: '**/*.xsd') }
+		 project.jaxb.xsdDir), include: '**/*.xsd')
+    }
+    jnt.conventionMapping.docFactory = {
+      injector.getInstance(DocumentFactory.class)
+    }
+    jnt.conventionMapping.namespaceResolver = {
+      injector.getInstance(NamespaceResolver.class)
+    }
+    jnt.conventionMapping.externalDependencyResolver = {
+      injector.getInstance(ExternalDependencyResolver.class)
+    }
+    jnt.conventionMapping.dependencyTreeFactory = {
+      injector.getInstance(XsdDependencyTreeFactory.class)
+    }
     // dependencies on projects with config jaxb, adds their xjc task to this
     // tasks dependencies
     addDependsOnTaskInOtherProjects(jnt, true, JAXB_XJC_TASK,
@@ -118,15 +147,14 @@ class JaxbPlugin implements Plugin<Project> {
   }
 
   private void configureJaxbXjc(final Project project, JaxbExtension jaxb,
-				JaxbNamespaceTask jnt) {
+				JaxbNamespaceTask jnt, def injector) {
     JaxbXJCTask xjc = project.tasks.create(JAXB_XJC_TASK, JaxbXJCTask)
     xjc.description = "run through the Directory Graph for " +
       "${jaxb.xsdDir} and parse all schemas in order generating" +
       " episode files to ${jaxb.episodesDir}"
     xjc.group = JAXB_TASK_GROUP
     xjc.dependsOn(jnt)
-    xjc.conventionMapping.manager = {
-      new File(project.rootDir, project.jaxb.dependencyGraph) }
+    xjc.conventionMapping.manager = { project.jaxb.dependencyGraph }
     xjc.conventionMapping.episodeDirectory = {
       new File(project.rootDir, project.jaxb.episodesDir) }
     xjc.conventionMapping.bindings = {
@@ -143,5 +171,13 @@ class JaxbPlugin implements Plugin<Project> {
       new File(project.projectDir, project.jaxb.xjc.destinationDir) }
     xjc.conventionMapping.schemasDirectory = {
       new File(project.rootDir, project.jaxb.xsdDir) }
+    xjc.conventionMapping.xjc = { injector.getInstance(AntXjc.class) }
+    xjc.conventionMapping.episodeConverter = {
+      injector.getInstance(NamespaceToEpisodeConverter.class)
+    }
+    xjc.conventionMapping.xjcResolver = { injector.getInstance(XjcResolver.class) }
+    xjc.conventionMapping.dependencyResolver = {
+      injector.getInstance(EpisodeDependencyResolver.class)
+    }
   }
 }
