@@ -1,4 +1,4 @@
-package org.gradle.jacobo.plugins.model
+package org.gradle.jacobo.plugins.tree
 
 import spock.lang.Unroll
 import org.gradle.jacobo.plugins.fixtures.TreeFixture

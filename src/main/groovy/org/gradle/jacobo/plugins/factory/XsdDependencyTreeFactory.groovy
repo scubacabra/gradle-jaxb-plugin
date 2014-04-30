@@ -5,7 +5,7 @@ import org.gradle.api.logging.Logging
 import org.gradle.api.logging.Logger
 
 import org.gradle.jacobo.schema.BaseSchemaDocument
-import org.gradle.jacobo.plugins.model.TreeManager
+import org.gradle.jacobo.plugins.tree.TreeManager
 import org.gradle.jacobo.plugins.xsd.XsdNamespace
 
 class XsdDependencyTreeFactory {

@@ -12,8 +12,8 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.jacobo.plugins.JaxbPlugin
 import org.gradle.jacobo.plugins.ant.AntExecutor
 import org.gradle.jacobo.plugins.converter.NamespaceToEpisodeConverter
-import org.gradle.jacobo.plugins.model.TreeManager
-import org.gradle.jacobo.plugins.model.TreeNode
+import org.gradle.jacobo.plugins.tree.TreeManager
+import org.gradle.jacobo.plugins.tree.TreeNode
 import org.gradle.jacobo.plugins.resolver.EpisodeDependencyResolver
 import org.gradle.jacobo.plugins.resolver.XjcResolver
 import org.gradle.jacobo.plugins.xsd.XsdNamespace

@@ -2,8 +2,8 @@ package org.gradle.jacobo.plugins.factory
 
 import org.gradle.jacobo.plugins.fixtures.NamespaceFixture
 import org.gradle.jacobo.plugins.xsd.XsdNamespace
-import org.gradle.jacobo.plugins.model.TreeNode
-import org.gradle.jacobo.plugins.model.TreeManager
+import org.gradle.jacobo.plugins.tree.TreeNode
+import org.gradle.jacobo.plugins.tree.TreeManager
 
 import spock.lang.Unroll
 

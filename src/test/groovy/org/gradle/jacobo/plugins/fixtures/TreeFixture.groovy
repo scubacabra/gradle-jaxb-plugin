@@ -1,7 +1,7 @@
 package org.gradle.jacobo.plugins.fixtures
 
 import org.gradle.jacobo.plugins.fixtures.NamespaceFixture
-import org.gradle.jacobo.plugins.model.TreeNode
+import org.gradle.jacobo.plugins.tree.TreeNode
 
 class TreeFixture extends NamespaceFixture {
 

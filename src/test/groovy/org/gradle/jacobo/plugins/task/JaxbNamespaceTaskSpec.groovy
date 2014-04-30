@@ -4,7 +4,7 @@ import org.gradle.jacobo.schema.factory.DocumentFactory
 import org.gradle.jacobo.plugins.JaxbPlugin
 import org.gradle.jacobo.plugins.factory.XsdDependencyTreeFactory
 import org.gradle.jacobo.plugins.ProjectTaskSpecification
-import org.gradle.jacobo.plugins.model.TreeManager
+import org.gradle.jacobo.plugins.tree.TreeManager
 import org.gradle.jacobo.plugins.resolver.NamespaceResolver
 import org.gradle.jacobo.plugins.resolver.ExternalDependencyResolver
 

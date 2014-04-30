@@ -4,7 +4,7 @@ import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 
 import org.gradle.jacobo.plugins.converter.NamespaceToEpisodeConverter
-import org.gradle.jacobo.plugins.model.TreeNode
+import org.gradle.jacobo.plugins.tree.TreeNode
 import org.gradle.jacobo.plugins.xsd.XsdNamespace
 
 class EpisodeDependencyResolver {

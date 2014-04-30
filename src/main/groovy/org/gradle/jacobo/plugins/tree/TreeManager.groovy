@@ -1,4 +1,4 @@
-package org.gradle.jacobo.plugins.model
+package org.gradle.jacobo.plugins.tree
 
 import java.io.Serializable
 

@@ -11,7 +11,7 @@ import org.gradle.jacobo.plugins.resolver.EpisodeDependencyResolver
 import org.gradle.jacobo.plugins.resolver.ExternalDependencyResolver
 import org.gradle.jacobo.plugins.resolver.NamespaceResolver
 import org.gradle.jacobo.plugins.resolver.XjcResolver
-import org.gradle.jacobo.plugins.model.TreeManager
+import org.gradle.jacobo.plugins.tree.TreeManager
 
 class JaxbPluginModule extends AbstractModule {
   

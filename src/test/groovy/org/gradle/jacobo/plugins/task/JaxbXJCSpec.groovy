@@ -7,7 +7,7 @@ import org.gradle.jacobo.plugins.JaxbPlugin
 import org.gradle.jacobo.plugins.ProjectTaskSpecification
 import org.gradle.jacobo.plugins.ant.AntXjc
 import org.gradle.jacobo.plugins.converter.NamespaceToEpisodeConverter
-import org.gradle.jacobo.plugins.model.TreeManager
+import org.gradle.jacobo.plugins.tree.TreeManager
 import org.gradle.jacobo.plugins.resolver.EpisodeDependencyResolver
 import org.gradle.jacobo.plugins.resolver.XjcResolver
 
