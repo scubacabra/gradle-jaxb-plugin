@@ -7,7 +7,7 @@ import org.gradle.api.logging.Logger
 
 import org.gradle.jacobo.plugins.structures.NamespaceData
 
-class TreeManager implements Serializable {
+class TreeManager {
   static final Logger log = Logging.getLogger(TreeManager.class)
 
   // managed set of Nodes (list of nodes already laid out on graph)
