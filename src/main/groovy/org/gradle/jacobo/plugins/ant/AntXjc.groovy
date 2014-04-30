@@ -1,6 +1,6 @@
 package org.gradle.jacobo.plugins.ant
 
-import org.gradle.api.file.FileCollection.AntType
+import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 
@@ -23,7 +23,7 @@ class AntXjc implements AntExecutor {
 		 classname : 'com.sun.tools.xjc.XJCTask',
 		 classpath : classpath)
 
-    ant.xjc(destdir	    : extension.destinaionDir,
+    ant.xjc(destdir	    : extension.destinationDir,
 	    extension	    : extension.extension,
 	    removeOldOutput : extension.removeOldOutput,
 	    header	    : extension.header)
