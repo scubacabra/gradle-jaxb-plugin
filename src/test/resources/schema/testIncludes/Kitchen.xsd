@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<xsd:schema targetNamespace="http://www.example.org/Kitchen"
-	    xmlns:tns="http://www.example.org/Kitchen"
-	    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-
-  <xsd:include schemaLocation="./KitchenSubset.xsd"/>
-
-</xsd:schema>

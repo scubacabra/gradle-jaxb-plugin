@@ -1,7 +1,0 @@
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-            xmlns="http://example.org/include"
-            targetNamespace="http://example.org/include">
-  <xs:simpleType name="OrderNumType">
-    <xs:restriction base="xs:string"/>
-  </xs:simpleType>
-</xs:schema>
