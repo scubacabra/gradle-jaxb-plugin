@@ -1,0 +1,25 @@
+apply plugin: 'maven-publish'
+apply plugin: 'bintray'
+
+publishing {
+  publications {
+    plugin(MavenPublication) {
+      from components.java
+    }
+  }
+}
+
+bintray {
+  user = bintray_username
+  key = bintray_api_key
+  publications = ['plugin'] // When uploading Maven-based publication files
+  pkg {
+    repo = 'gradle-plugins'
+    name = 'gradle-jaxb-plugin'
+    desc = """Jaxb plugin for gradle, using the xjc ant task, dynamic dependency tree generation and episode binding per unique namespace -- keeping
+duplicated generated files out of your hair and de-coupling xsd dependencies"""
+    licenses = ['GPL-2.0']
+    labels = ['xsd', 'gradle', 'plugins', 'gradle plugins']
+  }
+  dryRun = false // whether to run this as dry-run, without deploying
+}
