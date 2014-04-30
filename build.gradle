@@ -57,5 +57,5 @@ task uninstallPlugin (type: Delete) {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '1.6'
+    gradleVersion = '1.11'
 }
