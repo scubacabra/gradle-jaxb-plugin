@@ -23,8 +23,8 @@ import org.gradle.jacobo.plugins.xsd.XsdNamespace
  * Created: Tue Dec 04 09:01:34 EST 2012
  */
 
-class JaxbXJCTask extends DefaultTask {
-  static final Logger log = Logging.getLogger(JaxbXJCTask.class)
+class JaxbXjc extends DefaultTask {
+  static final Logger log = Logging.getLogger(JaxbXjc.class)
 
   TreeManager manager
 

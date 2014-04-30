@@ -5,8 +5,8 @@ import org.gradle.api.plugins.JavaPlugin
 import org.gradle.jacobo.plugins.JaxbPlugin
 import org.gradle.testfixtures.ProjectBuilder
 import org.gradle.api.internal.project.DefaultProject
-import org.gradle.jacobo.plugins.task.JaxbNamespaceTask
-import org.gradle.jacobo.plugins.task.JaxbXJCTask
+import org.gradle.jacobo.plugins.task.JaxbDependencyTree
+import org.gradle.jacobo.plugins.task.JaxbXjc
 
 class JaxbPluginSpec extends ProjectTaskSpecification {
 
@@ -59,8 +59,8 @@ class JaxbPluginSpec extends ProjectTaskSpecification {
 
     then:
     [xjcTask, dependencyTask]*.group == ["parse", "parse"]
-    dependencyTask instanceof JaxbNamespaceTask
-    xjcTask instanceof JaxbXJCTask
+    dependencyTask instanceof JaxbDependencyTree
+    xjcTask instanceof JaxbXjc
     xjcTask.taskDependencies.getDependencies(xjcTask)*.path as Set ==
       [':xsd-dependency-tree'] as Set
   }

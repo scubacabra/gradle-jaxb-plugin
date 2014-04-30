@@ -4,7 +4,7 @@ import org.gradle.jacobo.plugins.ProjectIntegrationSpec
 
 import org.gradle.jacobo.plugins.ant.AntXjc
 
-class JaxbXjcTaskSpec extends ProjectIntegrationSpec {
+class JaxbXjcSpec extends ProjectIntegrationSpec {
 
   def xjc = Mock(AntXjc)
 

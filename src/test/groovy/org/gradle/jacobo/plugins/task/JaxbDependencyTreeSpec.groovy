@@ -8,7 +8,7 @@ import org.gradle.jacobo.plugins.tree.TreeManager
 import org.gradle.jacobo.plugins.resolver.NamespaceResolver
 import org.gradle.jacobo.plugins.resolver.ExternalDependencyResolver
 
-class JaxbNamespaceTaskSpec extends ProjectTaskSpecification {
+class JaxbDependencyTreeSpec extends ProjectTaskSpecification {
 
   def documentFactory = Mock(DocumentFactory)
   def nsResolver = Mock(NamespaceResolver)
@@ -17,7 +17,7 @@ class JaxbNamespaceTaskSpec extends ProjectTaskSpecification {
   def manager = new TreeManager()
 
   def setup() {
-    task = project.tasks[JaxbPlugin.JAXB_XSD_DEPENDENCY_TREE_TASK] as JaxbNamespaceTask
+    task = project.tasks[JaxbPlugin.JAXB_XSD_DEPENDENCY_TREE_TASK] as JaxbDependencyTree
     task.with {
       xsds = project.files(documents.documentFile)
       docFactory = documentFactory

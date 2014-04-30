@@ -12,8 +12,8 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.logging.Logging
 import org.gradle.api.logging.Logger
 
-import org.gradle.jacobo.plugins.task.JaxbNamespaceTask
-import org.gradle.jacobo.plugins.task.JaxbXJCTask
+import org.gradle.jacobo.plugins.task.JaxbDependencyTree
+import org.gradle.jacobo.plugins.task.JaxbXjc
 import org.gradle.jacobo.plugins.extension.JaxbExtension
 import org.gradle.jacobo.plugins.extension.XjcExtension
 import org.gradle.jacobo.plugins.guice.JaxbPluginModule
@@ -64,7 +64,7 @@ class JaxbPlugin implements Plugin<Project> {
     Injector injector = Guice.createInjector([new JaxbPluginModule(), new DocSlurperModule()])
     configureJaxbExtension(project)
     configureJaxbConfiguration(project)
-    JaxbNamespaceTask jnt = configureJaxbDependencyTree(project, extension, injector)
+    JaxbDependencyTree jnt = configureJaxbDependencyTree(project, extension, injector)
     configureJaxbXjc(project, extension, jnt, injector)
   }
   
@@ -115,11 +115,11 @@ class JaxbPlugin implements Plugin<Project> {
 		     useDependedOn,otherProjectTaskName))
   }
 
-  private JaxbNamespaceTask configureJaxbDependencyTree(final Project project,
+  private JaxbDependencyTree configureJaxbDependencyTree(final Project project,
 							JaxbExtension jaxb,
 						        def injector) {
-    JaxbNamespaceTask jnt = project.tasks.create(JAXB_XSD_DEPENDENCY_TREE_TASK,
-						 JaxbNamespaceTask)
+    JaxbDependencyTree jnt = project.tasks.create(JAXB_XSD_DEPENDENCY_TREE_TASK,
+						 JaxbDependencyTree)
     jnt.description = "go through the folder ${jaxb.xsdDir} folder " +
       "and find all unique namespaces, create a namespace graph and parse in " +
       "the graph order with jaxb"
@@ -148,8 +148,8 @@ class JaxbPlugin implements Plugin<Project> {
   }
 
   private void configureJaxbXjc(final Project project, JaxbExtension jaxb,
-				JaxbNamespaceTask jnt, def injector) {
-    JaxbXJCTask xjc = project.tasks.create(JAXB_XJC_TASK, JaxbXJCTask)
+				JaxbDependencyTree jnt, def injector) {
+    JaxbXjc xjc = project.tasks.create(JAXB_XJC_TASK, JaxbXjc)
     xjc.description = "run through the Directory Graph for " +
       "${jaxb.xsdDir} and parse all schemas in order generating" +
       " episode files to ${jaxb.episodesDir}"

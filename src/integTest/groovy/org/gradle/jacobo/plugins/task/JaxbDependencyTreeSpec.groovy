@@ -2,7 +2,7 @@ package org.gradle.jacobo.plugins.task
 
 import org.gradle.jacobo.plugins.ProjectIntegrationSpec
 
-class JaxbNamespaceTaskSpec extends ProjectIntegrationSpec {
+class JaxbDependencyTreeSpec extends ProjectIntegrationSpec {
 
   def setup() {
     def rootDir = getFileFromResourcePath("/test-jaxb-plugin")

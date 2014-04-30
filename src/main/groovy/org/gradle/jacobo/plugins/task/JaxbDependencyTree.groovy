@@ -17,9 +17,9 @@ import org.gradle.jacobo.plugins.resolver.ExternalDependencyResolver
  * Created: Tue Dec 04 09:01:34 EST 2012
  */
 
-class JaxbNamespaceTask extends DefaultTask { 
+class JaxbDependencyTree extends DefaultTask { 
   
-  static final Logger log = Logging.getLogger(JaxbNamespaceTask.class)
+  static final Logger log = Logging.getLogger(JaxbDependencyTree.class)
   
   @InputFiles
   FileCollection xsds

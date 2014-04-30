@@ -11,7 +11,7 @@ import org.gradle.jacobo.plugins.tree.TreeManager
 import org.gradle.jacobo.plugins.resolver.EpisodeDependencyResolver
 import org.gradle.jacobo.plugins.resolver.XjcResolver
 
-class JaxbXJCSpec extends ProjectTaskSpecification {
+class JaxbXjcSpec extends ProjectTaskSpecification {
 
   def treeManager = Mock(TreeManager)
   def episodeResolver = Mock(EpisodeDependencyResolver)
@@ -20,7 +20,7 @@ class JaxbXJCSpec extends ProjectTaskSpecification {
   def executor = Mock(AntXjc)
 
   def setup() {
-    task = project.tasks[JaxbPlugin.JAXB_XJC_TASK] as JaxbXJCTask
+    task = project.tasks[JaxbPlugin.JAXB_XJC_TASK] as JaxbXjc
     task.with {
       bindings = project.files()
       manager = treeManager

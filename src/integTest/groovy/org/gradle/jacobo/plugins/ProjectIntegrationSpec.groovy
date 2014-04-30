@@ -3,8 +3,8 @@ package org.gradle.jacobo.plugins
 import org.gradle.testfixtures.ProjectBuilder
 import org.gradle.jacobo.plugins.JaxbPlugin
 import org.gradle.jacobo.plugins.ProjectTaskSpecification
-import org.gradle.jacobo.plugins.task.JaxbNamespaceTask
-import org.gradle.jacobo.plugins.task.JaxbXJCTask
+import org.gradle.jacobo.plugins.task.JaxbDependencyTree
+import org.gradle.jacobo.plugins.task.JaxbXjc
 
 class ProjectIntegrationSpec extends ProjectTaskSpecification {
   // Task names
@@ -28,7 +28,7 @@ class ProjectIntegrationSpec extends ProjectTaskSpecification {
   }
 
   def setupProjectTasks() {
-    dependencyTreeTask = project.tasks[dependenyTreeTaskName] as JaxbNamespaceTask
-    xjcTask = project.tasks[xjcTaskName] as JaxbXJCTask
+    dependencyTreeTask = project.tasks[dependenyTreeTaskName] as JaxbDependencyTree
+    xjcTask = project.tasks[xjcTaskName] as JaxbXjc
   }
 }
