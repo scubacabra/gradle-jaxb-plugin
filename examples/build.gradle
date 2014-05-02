@@ -22,10 +22,11 @@ buildscript {
     maven { 
       url 'http://dl.bintray.com/content/djmijares/gradle-plugins' 
     }
+    mavenCentral()
   }
 
   dependencies {
-    classpath 'com.jacobo.gradle.plugins:gradle-jaxb-plugin:1.1'
+    classpath 'org.gradle.jacobo.plugins:gradle-jaxb-plugin:1.3'
   }
 }
 
