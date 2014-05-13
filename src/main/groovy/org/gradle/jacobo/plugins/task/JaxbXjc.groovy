@@ -19,49 +19,67 @@ import org.gradle.jacobo.plugins.resolver.XjcResolver
 import org.gradle.jacobo.plugins.xsd.XsdNamespace
 
 /**
- * @author jacobono
- * Created: Tue Dec 04 09:01:34 EST 2012
+ * Plugin's task to run xsd files through ant {@code xjc} task.
  */
-
 class JaxbXjc extends DefaultTask {
   static final Logger log = Logging.getLogger(JaxbXjc.class)
 
+  /**
+   * Contains and manages the xsd dependency tree.
+   */
   TreeManager manager
 
   /**
-   * If an xsd namespace has dependencies, references episode files from
-   * this directory. Must write own episode file to this directory
+   * Directory where all episode files are located.
    */
   @OutputDirectory
   File episodeDirectory
 
   /**
-   * directory where the generated java files from xjc would go
-   * Usually <pre><project-root>/src/main/java</pre>
+   * Directory where the generated java files from xjc would go
+   * Usually {@code <project-root>/src/main/java}
    */
   @OutputDirectory
   File generatedFilesDirectory
 
   /**
-   * All schemas to be parsed are under this directory
+   * Directory containing all the xsds to be parsed.
    */
   @InputDirectory
   File schemasDirectory
 
   /**
-   * jaxb custom binding files to bind with
+   * User defined custom bindings to bind in ant task.
    */
   @InputFiles
   FileCollection bindings
 
+  /**
+   * Executes the ant {@code xjc} task.
+   */
   AntExecutor xjc
 
+  /**
+   * Converts xsd namespaces to episode file names.
+   */
   NamespaceToEpisodeConverter episodeConverter
 
+  /**
+   * Resolves the input files for the ant task to parse.
+   */
   XjcResolver xjcResolver
 
+  /**
+   * Resolves a node's dependencies to episode files to bind in ant task.
+   */
   EpisodeDependencyResolver dependencyResolver
 
+  /**
+   * Executes this task.
+   * Starts at dependency tree root (no dependencies) and parses each node's
+   * information to pass to the ant task until there are no more nodes left to
+   * parse.
+   */
   @TaskAction
   void start() {
     def manager = getManager()
@@ -75,6 +93,11 @@ class JaxbXjc extends DefaultTask {
     }
   }
 
+  /**
+   * Parses a {@code TreeNode} and passes data through to ant task.
+   * 
+   * @param node  tree node to run through ant task
+   */
   def parseNode(TreeNode<XsdNamespace> node) {
     log.info("resolving necessary information for node '{}'", node)
     def episodes = getDependencyResolver().resolve(node, getEpisodeConverter(),

@@ -7,19 +7,48 @@ import org.gradle.api.logging.Logger
 
 import org.gradle.jacobo.plugins.xsd.XsdNamespace
 
+/**
+ * Manages a depenency tree.  Can add children to the tree, point to tree's "rows"
+ * such as the root row or the current row.
+ * <p>
+ * This is necessary because the tree can have many parents and many children
+ * in the same tree.  This leads to basically, every node with 0 dependencies
+ * having its own tree in a tree, with nodes being shared across trees.
+ * Children need to be added to many parents, and the reverse relationship of
+ * children need to handled as well.
+ * <p>
+ * The manager keeps track of managed Nodes so that nodes do not get duplicated, keeps
+ * pointers to the current Row of nodes, and to the root (row with no dependencies).
+ * This allows future tasks delegate to this manager to traverse through all the
+ * tree's rows.
+ */
 class TreeManager {
   static final Logger log = Logging.getLogger(TreeManager.class)
 
-  // managed set of Nodes (list of nodes already laid out on graph)
+  /**
+   * Tree nodes that are already manager by this manager.
+   */
   def managedNodes = [] as Set
 
-  // the current row in the tree of laid out Node
+  /**
+   * Current row of the dependency tree.
+   */
   def currentTreeRow = []
 
-  // List of base namespaces that each compose their own tree
-  // shares node objects if necessary
+  /**
+   * Tree nodes that contain 0 dependencies.  Each node has its own mini
+   * dependency tree. With nodes being shared to create the actual dependency
+   * tree.
+   */
   def treeRoot = [] as LinkedList
 
+  /**
+   * Creates the root row of this dependency tree.
+   * New nodes are created, one for each namespace passed in.
+   * this#currentTreeRow is set with this operation.
+   * 
+   * @param baseNamespaces  list of namespaces with 0 dependencies
+   */
   def createTreeRoot(List<XsdNamespace> baseNamespaces) {
     log.info("creating baseNamespaces '{}' as tree nodes", baseNamespaces.size)
     baseNamespaces.each { namespace ->
@@ -30,6 +59,12 @@ class TreeManager {
     currentTreeRow = treeRoot
   }
 
+  /**
+   * Adds children namespaces to this dependency tree.
+   *
+   * @param children  map of namespace objects and dependency strings to add to
+   *        this dependency tree. Children to add are the keys of the map passed in.
+   */
   def addChildren(Map<XsdNamespace, Set<String>> children) {
     def addedNodes = []
     children.each { child, dependencies ->
@@ -59,8 +94,14 @@ class TreeManager {
     currentTreeRow = addedNodes
   }
 
-  // return nodes in next row, based on nodes in current row
-  // children nodes can be duplicated, therefore put in set
+  /**
+   * Returns the next descendants in the tree from the passed in nodes.
+   * Input is assumed to be the a row of nodes in the dependency tree.
+   *
+   * @param currentNodes  the current row of nodes being worked on
+   * @return a set of the next nodes in the tree (if any).  If no more nodes
+   *         {@code null} is returned
+   */
   def Set<TreeNode<XsdNamespace>> getNextDescendants(
     Collection<TreeNode<XsdNamespace>> currentNodes) {
     def descendants  = [] as Set

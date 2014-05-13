@@ -13,25 +13,41 @@ import org.gradle.jacobo.plugins.resolver.NamespaceResolver
 import org.gradle.jacobo.plugins.resolver.ExternalDependencyResolver
 
 /**
- * @author jacobono
- * Created: Tue Dec 04 09:01:34 EST 2012
+ * Plugin's task to generate an xsd dependency tree.
  */
-
 class JaxbDependencyTree extends DefaultTask { 
   
   static final Logger log = Logging.getLogger(JaxbDependencyTree.class)
   
+  /**
+   * Xsd's under defined {@code xsdDir}.
+   */
   @InputFiles
   FileCollection xsds
 
+  /**
+   * Generates {@code BaseSchemaDocument}'s.
+   */
   DocumentFactory docFactory
 
+  /**
+   * Resolves xsds files into namespace containers.
+   */
   NamespaceResolver namespaceResolver
 
+  /**
+   * Resolves and slurps external dependencies.
+   */
   ExternalDependencyResolver externalDependencyResolver
 
+  /**
+   * Generates the xsd dependency tree.
+   */
   XsdDependencyTreeFactory dependencyTreeFactory
 
+  /**
+   * Executes this task.
+   */
   @TaskAction
   void start() {
     log.lifecycle("jaxb: starting Namespace Task")

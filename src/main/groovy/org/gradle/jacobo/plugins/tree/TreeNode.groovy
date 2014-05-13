@@ -3,16 +3,31 @@ package org.gradle.jacobo.plugins.tree
 import org.gradle.api.logging.Logging
 import org.gradle.api.logging.Logger
 
+/**
+ * Tree Node for a type T.
+ */
 class TreeNode<T> {
   static final Logger log = Logging.getLogger(TreeNode.class)
 
+  /**
+   * Node's data.
+   */
   T data
+
   // TECHNICALLY, order of these don't matter. could convert to Set.
+  /**
+   * Nodes parents.
+   */
   LinkedList<TreeNode<T>> parents
+
+  /**
+   * Nodes children.
+   */
   LinkedList<TreeNode<T>> children
 
   /**
-   * Construct a TreeNode with 0 parents and 0 children
+   * Constructs a TreeNode with 0 parents and 0 children.
+   * 
    * @param data data for TreeNode
    */
   public TreeNode(T data) {
@@ -22,9 +37,10 @@ class TreeNode<T> {
   }
 
   /**
-   * Construct a TreeNode with parents and 0 children
-   * set this tree node as the child of all parents to make a
-   * dual sided relationship
+   * Constructs a TreeNode with parents and 0 children.
+   * Sets this tree node as the child of all parents to make a
+   * dual sided relationship.
+   * 
    * @param data contents for TreeNode
    * @param parents parents of the node-to-be
    */
@@ -38,9 +54,10 @@ class TreeNode<T> {
   }
 
   /**
-   * Construct a TreeNode with 1 parent and 0 children
-   * set this tree node as the parent's child to make a
-   * dual sided relationship
+   * Constructs a TreeNode with 1 parent and 0 children.
+   * Set this tree node as the parent's child to make a
+   * dual sided relationship.
+   * 
    * @param data contents for TreeNode
    * @param parents parents of the node-to-be
    */
@@ -51,6 +68,19 @@ class TreeNode<T> {
     parent.addChild(this, false)
   }
 
+  /**
+   * Adds a child to the current node.
+   * If a two way relationship is desired, child references this node as a
+   * parent, and parent has as reference to this child.  {@code true} creates
+   * this dual relationship, false creates a one sided relationship.
+   * <p>
+   * This comes in handy when a node depends on ancestors of the parent, the child needs to
+   * reference the ancestor as a parent, but the reverse would allow the node to
+   * be parsed far too early.
+   *
+   * @param child  child to add to this node
+   * @param twoWayRelationship  create a dual sided (two way) relationship
+   */
   public void addChild(TreeNode<T> child, boolean twoWayRelationship) {
     log.debug("Adding a child '{}' to node '{}'", child.data, this.data)
     this.children.add(child)
@@ -61,6 +91,19 @@ class TreeNode<T> {
     }
   }
 
+  /**
+   * Adds a parent to the current node.
+   * If a two way relationship is desired, this node references the parent and
+   * the parent has a reference to this node as a child. {@code true} creates
+   * this dual relationship, false creates a one sided relationship.
+   * <p>
+   * This comes in handy when a node depends on ancestors of the parent, the child needs to
+   * reference the ancestor as a parent, but the reverse would allow the node to
+   * be parsed far too early.
+   *
+   * @param parent  parent to add to this node
+   * @param twoWayRelationship  create a dual sided (two way) relationship
+   */
   public void addParent(TreeNode<T> parent, boolean twoWayRelationship) {
     log.debug("Adding a parent '{}' to node '{}'", parent.data, this.data)
     this.parents.add(parent)
@@ -72,8 +115,10 @@ class TreeNode<T> {
   }
 
   /**
-   * Get ancestors, depth first.  Returns Set of Nodes, as ancestors
-   * could be duplicates depending on path
+   * Get ancestors, depth first.
+   * Nodes could be duplicates depending on the ancestry path -- a set is necessary.
+   *
+   * @return node ancestors of current node
    */
   public Set<TreeNode<T>> getAncestors() {
     def ancestors = [] as Set
@@ -89,6 +134,14 @@ class TreeNode<T> {
     return ancestors
   }
 
+  /**
+   * Compares this node to another node.
+   * Need to compare children AND parents.  But not delve into them.  Just
+   * checking their size is sufficient.  If they are traversed, it leads to
+   * an infinite loop in this comparison.
+   *
+   * @param other node to compare against this one
+   */
   public boolean equals(Object other) {
     log.debug("'{}' == '{}' ??", this, other)
     if(!(other instanceof TreeNode)) return false
@@ -157,6 +210,11 @@ class TreeNode<T> {
     return true
   }
 
+  /**
+   * Generates the hash code for this node.
+   *
+   * @return this node's hash cod
+   */
   public int hashCode() {
     int hash = 1
     hash = hash*17 + data.hashCode()
@@ -172,7 +230,6 @@ class TreeNode<T> {
       childHash += child.data.hashCode()
     }
     hash = hash*11 + children.size() + childHash
-    println hash
     return hash
   }
 

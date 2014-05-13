@@ -33,6 +33,14 @@ test {
     }
 }
 
+groovydoc {
+  docTitle = "Gradle XSD Plugin"
+  link("http://groovy.codehaus.org/gapi/", "groovy.", "org.codehaus.groovy.")
+  link("http://doc.oracle.com/javase/7/docs/api/", "java.")
+  link("http://google-guice.googlecode.com/svn/trunk/javadoc/", "com.google.")
+  link("http://www.gradle.org/docs/current/javadoc/", "org.gradle.", "org.gradle.api.")
+}
+
 task unversionedJar (type: Jar, dependsOn: 'jar') {
 	version = null
 	from sourceSets.main.output

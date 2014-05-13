@@ -7,17 +7,25 @@ import org.gradle.jacobo.plugins.converter.NamespaceToEpisodeConverter
 import org.gradle.jacobo.plugins.tree.TreeNode
 import org.gradle.jacobo.plugins.xsd.XsdNamespace
 
+/**
+ * Resolves a {@code TreeNode}'s dependencies to their corresponding episode
+ * files in the {@code episodesDir} configured through the {@code JaxbExtension}.
+ */
 class EpisodeDependencyResolver {
   static final Logger log = Logging.getLogger(EpisodeDependencyResolver.class)  
 
   /**
-   * @param Tree Node with XsdNamespace as a data object
-   * @return List of episode names to bind with.
-   * Based off of the current Node looking to parse.  Node's parents
-   * form the core episode bindings, but the node, along with each
-   * one of its parents can depend on external namespaces, and these
-   * can be duplicated, so a Set of dependentNamespaces is constructed
-   * and then each namespace is converted to it episode file name.
+   * Resolves the nodes dependencies into episode files.
+   * External dependencies are also resolved.
+   * <p>
+   * Gets a {@code TreeNode}'s ancestors and converts them to episode Files.
+   * Gets nodes external dependencies and gets its ancestors external
+   * dependencies as well.  Episode Files are not checked for existence.
+   * 
+   * @param node  tree node to operate on
+   * @param converter  converts namespace to an episode name
+   * @param episodesDir  the directory where to find episode files
+   * @return set of episode Files to bind during the {@code xjc} task
    */
   public Set<File> resolve(TreeNode<XsdNamespace> node,
 			   NamespaceToEpisodeConverter converter,

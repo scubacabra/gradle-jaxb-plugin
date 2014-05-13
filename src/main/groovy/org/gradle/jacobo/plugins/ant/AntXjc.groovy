@@ -6,10 +6,34 @@ import org.gradle.api.logging.Logging
 
 import org.gradle.jacobo.plugins.ant.AntExecutor
 
+/**
+ * Defines and executes the {@code xjc} ant task.
+ */
 class AntXjc implements AntExecutor {
   static final Logger log = Logging.getLogger(AntXjc.class)
 
-  // public void execute(AntBuilder ant, Map<String, Object> arguments) {
+  /**
+   * Defines and executes the {@code xjc} ant task.
+   * A variable list of arguments is passed in containing data to configure
+   * this task.  In order, they are:
+   * <ul>
+   * <li> {@code extension} => the {@code XjcExtenstion} for task configuration
+   * <li> {@code classpath} => string of classpath to set up via this plugins
+   *      configuration dependencies
+   * <li> {@code xsds} => {@code FileCollection} of xsds to run through this task
+   * <li> {@code bindings} => {@code FileCollection} of user defined bindings
+   *      for this task
+   * <li> {@code episodes} => {@code FileCollection} of episode bindings for
+   *      this task
+   * <li> {@code episodeFile} => episode File to generate for these xsd's run
+   *      through the xjc task
+   * </ul>
+   *
+   * @param ant  ant builder to configure and execute
+   * @param arguments  variable arguments to configure this {@code xjc} task
+   * @see org.gradle.api.file.FileCollection
+   * @see org.gradle.jacobo.plugins.extension.XjcExtension
+   */
   public void execute(AntBuilder ant, Object... arguments) {
     def extension = arguments[0]
     def classpath = arguments[1]

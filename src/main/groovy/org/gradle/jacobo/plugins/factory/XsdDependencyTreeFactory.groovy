@@ -8,16 +8,45 @@ import org.gradle.jacobo.schema.BaseSchemaDocument
 import org.gradle.jacobo.plugins.tree.TreeManager
 import org.gradle.jacobo.plugins.xsd.XsdNamespace
 
+/**
+ * Generates an XSD Dependency Tree.
+ */
 class XsdDependencyTreeFactory {
   static final Logger log = Logging.getLogger(XsdDependencyTreeFactory.class)
 
+  /**
+   * Holds and manages the xsd dependency tree.
+   */
   TreeManager treeManager
 
+  /**
+   * Creates this factory.
+   *
+   * @param treeManager  holds and manages the xsd dependency tree
+   */
   @Inject
   public XsdDependencyTreeFactory(TreeManager treeManager) {
     this.treeManager = treeManager
   }
 
+  /**
+   * Creates the xsd dependency tree.
+   * Hierarchy from 0 dependencies, to many dependencies.
+   * Namespaces with 0 dependencies are put in tree first, followed by namespaces
+   * that meet the following criteria:
+   * <ul>
+   * <li> At <i>least</i> one dependency is on immediate parents
+   * <li> All dependencies for a namespace should be managed already
+   * </ul>
+   * <p>
+   * This allows for a namespace to depend on ancestors, but this keeps the hierarchy
+   * intact, as a namespace will always get parsed after all of its dependencies have
+   * been resolved prior.
+   * 
+   * @param namespaces  the namespaces to move into a tree structure
+   * @param documents  the documents of all xsds (searched for immediate dependencies)
+   * @return the dependency tree's manager
+   */
   public TreeManager createDependencyTree(List<XsdNamespace> namespaces,
 					  List<BaseSchemaDocument> documents) {
     log.lifecycle("jaxb: generating xsd namespace dependency tree")
@@ -43,6 +72,20 @@ class XsdDependencyTreeFactory {
     return treeManager
   }
 
+  /**
+   * Resolves dependencies of documents in namespaces that have dependencies.
+   * Find all documents that belong to namespaces that have dependencies, then
+   * goes through them to find their (immediate) dependencies.
+   * <p>
+   * External Dependencies (dependencies on xsds that are not located in the
+   * user defined xsdDir) are not included in this resolution.  That data need
+   * not be present to correctly place the namespace in its dependency tree.
+   *
+   * @param namesapces  namespaces with dependencies
+   * @param documents  schema documents from all xsds being operated on
+   * @return map with object key to value of a string of namespaces the object
+   *         depends on
+   */
   def Map<XsdNamespace, Set<String>> resolveDependentNamespaces(
     List<XsdNamespace> namespaces, List<BaseSchemaDocument> documents) {
     def namespaceDependencies = [:]

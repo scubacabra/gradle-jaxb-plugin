@@ -10,15 +10,43 @@ import org.gradle.jacobo.schema.factory.DocumentFactory
 
 class ExternalDependencyResolver {
   static final Logger log = Logging.getLogger(ExternalDependencyResolver.class)
-
+  
+  /**
+   * Generates {@code BaseSchemaDocument}'s
+   */
   DocumentFactory docFactory
+
+  /**
+   * History of files in a file system to their corresponding
+   * {@code BaseSchemaDocument}.
+   */
   Map<File, BaseSchemaDocument> resolvedHistory = [:]
 
+  /**
+   * Creates this resolver.
+   *
+   * @param docFactory  generates {@code BaseSchemaDocument}'s
+   */
   @Inject
   public ExternalDependencyResolver(DocumentFactory docFactory) {
     this.docFactory = docFactory
   }
 
+  /**
+   * Resolves the external dependencies for xsds.
+   * An external dependency is a dependency an xsd has that is contained in a
+   * different parent folder than the xsd.  This check is done by seeing if a
+   * dependency is in the set of xsds found recursively from the {@code xsdDir}
+   * defined in {@code JaxbExtension}.
+   * <p>
+   * This method returns nothing, but the flag {@code hasDependencies} is set
+   * on an {@code XsdNamespace} if a namespace contains <b>only</b> internal (not
+   * external) dependencies or if a namespaces total dependencies do not equal its
+   * total external dependencies.
+   *
+   * @param xsds  all xsds under {@code xsdDir}
+   * @param namespaces  list of namespaces xsds are grouped by
+   */
   public void resolve(Set<File> xsds, List<XsdNamespace> namespaces) {
     log.info("resolving external dependencies for namespaces '{}'", namespaces)
     namespaces.each { namespace ->
@@ -48,6 +76,15 @@ class ExternalDependencyResolver {
     }
   }
 
+  /**
+   * Resolves dependencies of an external dependency.
+   * Recursively slurps and searches for a files dependencies, until there are
+   * none left to search for.
+   *
+   * @param document  external xsd file that needs to be process and slurped 
+   * @return set of documents to add as external namespaces for an
+   * {@code XsdNamespace}
+   */
   public Set<BaseSchemaDocument> resolveDependencies(File document) {
     log.info("resolving dependencies on xsd '{}'", document)
     // dependencies INCLUDING input document

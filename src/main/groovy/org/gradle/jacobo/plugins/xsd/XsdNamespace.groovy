@@ -6,39 +6,63 @@ import org.gradle.api.logging.Logging
 import org.gradle.api.logging.Logger
 
 /**
- * Model that contains a particular set of unique data for a Namespace for jaxb generation
- * @author jacobono
- * @date 12/19/12
+ * Container to hold documents that contain the same namespace definition.
+ * Makes certain data available based on these documents like if this namespace
+ * has dependencies, or which external dependencies (by namespace depended on)
+ * are defined in these documents.
  */
 class XsdNamespace { 
   static final Logger log = Logging.getLogger(XsdNamespace.class)
 
   /**
-   * the namespace for this group of file(s)
+   * Namespace defined by {@code targetNamespace} common to all documents.
    */
   def namespace
 
-  // list of Documents with this namespace
+  /**
+   * List of documents all containing the same namepsace.
+   */
   def documents
 
+  /**
+   * Flags this object as having dependencies.
+   */
   boolean hasDependencies = false
 
+  /**
+   * Set of namespaces defined by {@code targetNamespace} in xsd files that are
+   * not found in current common parent directory.
+   */
   def externalDependencies = [] as Set
 
+  /**
+   * Creates this container.
+   */
   public XsdNamespace() { }
   
+  /**
+   * Creates this container.
+   *
+   * @param namespace  namespace for this container
+   */
   public XsdNamespace(String namespace) {
     this.namespace = namespace
   }
 
   /**
-   * basic constructor, need a namespace and a list of slurped documents
+   * Creates this container.
+   *
+   * @param namespace  namespace for this container
+   * @param documents  documents that contain the same unique namespace
    */
   public XsdNamespace(String namespace, List<BaseSchemaDocument> documents) {
     this.namespace = namespace
     this.documents = documents
   }
   
+  /**
+   * Converts this object to human readable string.
+   */
   def String toString() { 
     return namespace
   }

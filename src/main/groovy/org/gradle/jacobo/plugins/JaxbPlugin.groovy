@@ -29,25 +29,7 @@ import org.gradle.jacobo.plugins.resolver.XjcResolver
 import org.gradle.jacobo.plugins.resolver.EpisodeDependencyResolver
 
 /**
- * A plugin used for taking a whole folder full of .xsd files and enabling
- * separate compilation parsing the xsd files for @targetNamespace
- * information, grouping unique namespaces and generating an
- * @see OrderGraph
- * that is then run through the jaxb xjc task for each namespace and associated
- * @see XsdNamespaces data
- * <p>
- * Declares a <tt>jaxb</tt> configuration which needs to be configured with the
- * jaxb libraries to be used.
- * <p>
- * Declares a <tt>xjc</tt> task to be executed in gradle.  
- * <p>
- * Each XsdNamespaces data runs through the task <tt>xjc</tt> and generates an
- * episode file, all namespaces dependent on other namespaces re-use episode
- * files, so that projects depending on different schema set can be grouped
- * accordingly with no duplicate regeneration.
- * @author Daniel Mijares
- * Created: Tue Dec 04 09:01:34 EST 2012
- * @see JaxbExtension
+ * Defines the Jaxb Plugin.
  */
 class JaxbPlugin implements Plugin<Project> {
   static final String JAXB_TASK_GROUP = 'parse'
@@ -59,6 +41,11 @@ class JaxbPlugin implements Plugin<Project> {
 
   private JaxbExtension extension
 
+  /**
+   * Entry point for plugin.
+   *
+   * @param project  This plugins gradle project
+   */
   void apply (Project project) {
     project.plugins.apply(JavaPlugin)
     Injector injector = Guice.createInjector([new JaxbPluginModule(), new DocSlurperModule()])
@@ -68,6 +55,13 @@ class JaxbPlugin implements Plugin<Project> {
     configureJaxbXjc(project, extension, jnt, injector)
   }
   
+  /**
+   * Configures {@code JaxbExtension} and {@code XjcExtenstion} to sensible defaults.
+   *
+   * @param project  This plugins gradle project
+   * @see org.gradle.jacobo.plugins.extension.JaxbExtension
+   * @see org.gradle.jacobo.plugins.extension.XjcExtension
+   */
   private void configureJaxbExtension(final Project project) { 
     extension = project.extensions.create("jaxb", JaxbExtension, project)
     extension.with { 
@@ -86,6 +80,11 @@ class JaxbPlugin implements Plugin<Project> {
     }
   }
 
+  /**
+   * Configures this plugins {@code jaxb} configuration.
+   *
+   * @param project  This plugins gradle project
+   */
   private void configureJaxbConfiguration(final Project project) {
     project.configurations.create(JAXB_CONFIGURATION_NAME) { 
       visible = true
@@ -115,6 +114,15 @@ class JaxbPlugin implements Plugin<Project> {
 		     useDependedOn,otherProjectTaskName))
   }
 
+  /**
+   * Configures this plugins {@code xsd-dependency-tree} task.
+   *
+   * @param project  This plugins gradle project
+   * @param jaxb  This plugins extension
+   * @param injector  This pluings Guice injector
+   * @return  this plugins dependency tree task, configured
+   * @see org.gradle.jacobo.plugins.task.JaxbDependencyTree
+   */
   private JaxbDependencyTree configureJaxbDependencyTree(final Project project,
 							JaxbExtension jaxb,
 						        def injector) {
@@ -147,6 +155,16 @@ class JaxbPlugin implements Plugin<Project> {
     return jnt
   }
 
+  /**
+   * Configures this plugins {@code xjc} task.
+   *
+   * @param project  This plugins gradle project
+   * @param jaxb  This plugins extension
+   * @param jnt  This plugins {@code xsd-dependency-tree} task (dependended upon)
+   * @param injector  This pluings Guice injector
+   * @return  this plugins xjc tree task, configured
+   * @see org.gradle.jacobo.plugins.task.JaxbXjc
+   */
   private void configureJaxbXjc(final Project project, JaxbExtension jaxb,
 				JaxbDependencyTree jnt, def injector) {
     JaxbXjc xjc = project.tasks.create(JAXB_XJC_TASK, JaxbXjc)
