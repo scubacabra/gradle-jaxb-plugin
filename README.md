@@ -1,78 +1,188 @@
 gradle-jaxb-plugin
-================================
+==================
 
-gradle-jaxb-plugin is a plugin for aiding with separate compilation of all xsd's in a particular folder. Then to generate a namespace dependency graph to parse those namespace files first, generate episode files and use them in binding so everything is done clean and fast for you without all the fuss
+[![Build Status](https://drone.io/github.com/djmijares/gradle-jaxb-plugin/status.png)]
+(https://drone.io/github.com/djmijares/gradle-jaxb-plugin/latest)
 
-using the plugin
-----------
+Gradle plugin that defines some conventions for xsd projects and
+provides some processing to ease some of the maintenance of these
+projects by:
+
+      * Hooking in ant tasks to parse the xsd with the `xjc` task.
+	  * Generates code from xsds per unique namespace.
+	  * Generates an xsd dependency tree, to parse namespaces in their
+        order of dependencies, from the base namespaces up.
+	  * Generating an episode file for every unique namespace in a set
+        of xsd files
+      * Defining a convention to place generated episode files
+	  * Ability to define xsd projects to depend on one another, so
+        that when parsing, what a project depends on is also parsed
+
+Using The Plugin
+================
+
 ```groovy
 buildscript {
-  repositories { 
-    ivy { 
+  repositories {
+    maven { 
       url 'http://dl.bintray.com/content/djmijares/gradle-plugins' 
     }
+    mavenCentral()
   }
 
   dependencies {
-    classpath 'com.jacobo.gradle.plugins:gradle-jaxb-plugin:1.0'
+    classpath 'com.jacobo.gradle.plugins:gradle-jaxb-plugin:1.3.1'
   }
 }
 
 apply plugin: 'jaxb'
 ```
-# Possible configurable Properties #
+
+Setting Up The JAXB Configurations
+==================================
+
+You *need* the jaxb configuration to run the `xjc` task, but that is the
+only task that has an external dependency.
+
+Any version of jaxb that you care to use will work.  I try to stay with the latest releases.
+
 ```groovy
-String jaxbSchemaDirectory
-String jaxbEpisodeDirectory
-String jaxbBindingDirectory
-String jaxbSchemaDestinationDirectory
-String jaxbProducesDirectory
-
-String xsdDirectoryForGraph
-
-String extension
-String removeOldOutput
-boolean header
-
-List bindingIncludes = []
+    dependencies { 
+      jaxb 'com.sun.xml.bind:jaxb-xjc:2.2.7-b41'
+      jaxb 'com.sun.xml.bind:jaxb-impl:2.2.7-b41'
+      jaxb 'javax.xml.bind:jaxb-api:2.2.7'
+    }
 ```
 
-## Default Properties ##
+Plugin Tasks
+============
+
+There are only two tasks.
+
+* `xjc`
+	- runs xjc ant task on each of the xsds in the dependency tree.
+	- needs to be run manually.
+* `xsd-dependency-tree`
+	- Builds a dependency tree from all the xsd files configured to be
+      parsed.
+	- Finds each unique namespace and groups files containing that
+      namespace
+	- Analyzes xsd dependencies and places them in the correct place
+      in the dependency tree so that the namespaces can be parsed in
+      order using their generated episode files to bind, allowing
+      other projects to use the episode files generated from the
+      namespace in the tree.
+	      - This keeps all namespaces decoupled and prevents a big
+            episode blob containing everything that was parsed.
+
+`xjc` depends on `xsd-dependency-tree` so you don't need to run the
+tree task at all.
+
+Plugin Conventions
+==================
+
+There are two conventions that can be overridden and one is nested in
+the other.
+
+The `jaxb` convention defines the conventions for the whole plugin,
+and the `xjc` convention defines the conventions for the `xjc` ant
+task.
+
+You can change these defaults with a closure in your build
+script.
+
 ```groovy
-jaxbSchemaDirectory = "${project.rootDir}/schema"
-jaxbEpisodeDirectory = "${project.rootDir}/schema/episodes" 
-jaxbBindingDirectory = "${project.rootDir}/schema/bindings"
-jaxbSchemaDestinationDirectory = "src/main/java"
-extension = 'true'
-removeOldOutput = 'yes'
+    jaxb {
+	  ...
+      xjc {
+	    ...
+	  }
+    }
 ```
 
-If you stick with the default settings, the only thing you have to configure is the `jaxbSchemaDirectory` for every sub project
+## JAXB Plugin Convention ##
+
+There are 4 overridable defaults for this JAXB Plugin.
+These defaults are changed via the `jaxb` closure.
+
+    * xsdDir
+	    * **ALWAYS** relative to `project.rootDir
+		* Defined **by each** project to tell the plugin where to find the
+          xsds to parse
+    * episodesDir
+	    * **ALWAYS** relative to `project.rootDir
+		* i.e. "episodes", "schema/episodes", "xsd/episodes",
+          "XMLSchema/episodes"
+		* All generated episode files go directly under here, no subfolders.
+    * bindingsDir
+	    * **ALWAYS** relative to `project.rootDir
+		* i.e. "bindings", "schema/bindings", "xsd/bindings",
+          "XMLSchema/bindings"
+	    * User defined binding files to pass in to the `xjc` task
+		* All files are directly under this folder, no subfolders.
+
+## XJC Convention ##
+
+These defaults are changed via the nested `xjc` closure.
+Several boolean sensible defaults are defined to be passed into the
+wsimport task:
+
+	 * extension
+	 * removeOldOutput
+	 * header
+
+And a few other String defaults
+
+	 * destinationDir
+	 * producesDir
+
+`destinationDir` is relative to `project.projectDir`.  It is
+defaulted to `src/main/java`, but can be set to anywhere in the
+`project.projectDir`.
+
+`producesDir` is not currently used in the plugin.  But it was meant
+to be in there so that if no xsd changes have happened, then no
+code generation would take place.  Hasn't worked yet.
+
+## Default Conventions
+
+These are the current default conventions:
 
 ```groovy
 jaxb {
-  jaxbSchemaDirectory = "path/to/schema/folder"
+  xsdDir			= "schema"
+  episodesDir		= "schema/episodes"
+  bindingsDir		= "schema/bindings"
+  bindings			= []
+  xjc {
+     destinationDir		= "src/main/java"
+	 producesDir		= "src/main/java"
+	 extension			= 'true'
+	 removeOldOutput	= 'yes'
+	 header				= true
+  }
 }
 ```
 
-If you need to configure the default folders because you already have something going, you can do it in the root Directory build.gradle file
+If the default conventions aren't changed, the only thing to configure
+_(per project)_ is the `xsdDir`.
 
 ```groovy
 jaxb {
-   jaxbSchemaDirectory = "${project.rootDir}/XMLSchema"
-   jaxbEpisodeDirectory = "${project.rootDir}/XMLSchema/Episodes" 
-   jaxbBindingDirectory = "${project.rootDir}/XMLSchema/Bindings"
+  xsdDir = "schema/folder1"
 }
 ```
 
-# Configurations for the parsing #
-The task `xjc` needs the jaxb tools on its classpath, whichever version should work fine. 
+Defining The Plugin For All Projects
+====================================
+
+I like to create a convention for xsd projects to have a suffix of
+`-schema`.  I find it easy to then write:
 
 ```groovy
 subproject { project ->
   if(project.name.endsWith("-schema")) { 
-    apply plugin: 'jaxb-namespace'
-    apply plugin: 'java'
+    apply plugin: 'jaxb'
 
     dependencies { 
       jaxb 'com.sun.xml.bind:jaxb-xjc:2.2.7-b41'
@@ -83,35 +193,35 @@ subproject { project ->
 }
 ```
 
-This is what I tend to do for my multi project builds, I like filtering on the project name
+applying the plugin to all schema projects.
 
-# Tasks #
-There are only two tasks.
+Other Features
+==============
 
-1. `jaxb-generate-dependency-graph`
+## Depend On Another Project
 
-2. `xjc`
+This lets gradle know that the xjc task of a project is dependent on
+the xjc task of another project.  This can be achieved with:
 
+```groovy
+dependencies {
+  jaxb project(path: ':common', configuration: 'jaxb')
+}
+```
 
-`xjc` depends on `jaxb-generate-dependency-graph` so you don't need to run it at all. 
+I like how this expresses that xsd's definitely depend on other xsd's
+outside of their parent folder `xsdDir`.
 
-## jaxb-generate-dependency-graph ##
+This will run the xjc task on `common` before running the xjc task of
+of the project this is defined in.
 
-This task starts it's processing in the `jaxbSchemaDirectory` folder.  It finds all the xsd's in this folder and finds all the unique namespaces that are defined by the xsd `targetNamespace` attribute found at the root (`schema`) element. 
+Examples
+========
 
-It then generates a dependency graph starting with the base schemas that don't import any other schemas, and find the next group of namespaces that depend on the base but on no more than the base, and so on etc. until the graph is full.  
+You can find some examples in the [examples folder](examples)
 
-Then the each namespace "level" is looped over and parsed with the `xjc` task.  Each namespace generates it's own episode file, and when a schema imports a certain namespace, it binds to the episode file.  
+Improvements
+============
 
-Each episode is named based after it's namespace.  it is really just the full namespace minus some illegal characters. 
-
-This allows you to:
-* group schema documents based on what the schema is modeling, and you can have all the unique namespaces you want.  
-* Minimizes duplicate schema generation.
-  - i.e if folder `schema/Kitchen/` has imports from `schema/LivingRoom` you can parse `schema/LivingRoom` in a subproject, and then when you parse `schema/Kitchen` it will automatically resolve "external namespace" i.e. namespace not present in the folder `jaxbSchemaDirectory` and will parse for dependencies and bind with the appropriate episode files.  Not more regeneration, which always irked me a little bit too much.  
-
-## xjc ##
-This is just the ant xjc task.  
-
-The `dependency` task gives it a list of namespaces to parse and it goes through one by one until it has parsed all the namespaces and all the files in those namespaces
-  
+If you think this plugin could be better, please fork it! If you have an idea
+that would make something a little easier, I'd love to hear about it.
