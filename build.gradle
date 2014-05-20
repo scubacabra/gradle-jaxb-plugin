@@ -41,6 +41,11 @@ groovydoc {
   link("http://www.gradle.org/docs/current/javadoc/", "org.gradle.", "org.gradle.api.")
 }
 
+task groovyDocJar(type: Jar, dependsOn: groovydoc) {
+  classifier = 'groovydoc'
+  from groovydoc.destinationDir
+}
+
 task unversionedJar (type: Jar, dependsOn: 'jar') {
 	version = null
 	from sourceSets.main.output
@@ -62,6 +67,10 @@ task uninstallPlugin (type: Delete) {
 	group = 'installation'
 	description = 'Removes the plugin from your gradle distribution.'
 	delete("/${gradleInstallDir}/lib/plugins/${unversionedJar.archiveName}")
+}
+
+artifacts {
+  archives jar, groovyDocJar
 }
 
 task wrapper(type: Wrapper) {
