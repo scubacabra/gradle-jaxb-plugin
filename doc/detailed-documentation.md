@@ -65,3 +65,6 @@ The only important parts are the `schemaLocation`'s. :)
 # Class Diagrams
 
 Class diagrams showing their relationships.
+
+[![class-diagram](./img/class-diagram-small.png "wsdl
+processing")](./img/class-diagram.png)

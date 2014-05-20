@@ -1,8 +1,11 @@
 gradle-jaxb-plugin
 ==================
 
-[![Build Status](https://drone.io/github.com/djmijares/gradle-jaxb-plugin/status.png)]
-(https://drone.io/github.com/djmijares/gradle-jaxb-plugin/latest)
+[![Build Status](https://drone.io/github.com/jacobono/gradle-jaxb-plugin/status.png)
+](https://drone.io/github.com/jacobono/gradle-jaxb-plugin/latest)
+
+[ ![Download](https://api.bintray.com/packages/djmijares/gradle-plugins/gradle-jaxb-plugin/images/download.png)
+](https://bintray.com/djmijares/gradle-plugins/gradle-jaxb-plugin/_latestVersion)
 
 Gradle plugin that defines some conventions for xsd projects and
 provides some processing to ease some of the maintenance of these
