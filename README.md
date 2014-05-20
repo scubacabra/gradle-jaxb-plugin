@@ -11,15 +11,15 @@ Gradle plugin that defines some conventions for xsd projects and
 provides some processing to ease some of the maintenance of these
 projects by:
 
-      * Hooking in ant tasks to parse the xsd with the `xjc` task.
-	  * Generates code from xsds per unique namespace.
-	  * Generates an xsd dependency tree, to parse namespaces in their
-        order of dependencies, from the base namespaces up.
-	  * Generating an episode file for every unique namespace in a set
-        of xsd files
-      * Defining a convention to place generated episode files
-	  * Ability to define xsd projects to depend on one another, so
-        that when parsing, what a project depends on is also parsed
+* Hooking in ant tasks to parse the xsd with the `xjc` task.
+* Generates code from xsds per unique namespace.
+* Generates an xsd dependency tree, to parse namespaces in their
+  order of dependencies, from the base namespaces up.
+* Generating an episode file for every unique namespace in a set
+  of xsd files
+* Defining a convention to place generated episode files
+* Ability to define xsd projects to depend on one another, so
+  that when parsing, what a project depends on is also parsed
 
 Using The Plugin
 ================
@@ -108,21 +108,21 @@ script.
 There are 4 overridable defaults for this JAXB Plugin.
 These defaults are changed via the `jaxb` closure.
 
-    * xsdDir
-	    * **ALWAYS** relative to `project.rootDir
-		* Defined **by each** project to tell the plugin where to find the
-          xsds to parse
-    * episodesDir
-	    * **ALWAYS** relative to `project.rootDir
-		* i.e. "episodes", "schema/episodes", "xsd/episodes",
-          "XMLSchema/episodes"
-		* All generated episode files go directly under here, no subfolders.
-    * bindingsDir
-	    * **ALWAYS** relative to `project.rootDir
-		* i.e. "bindings", "schema/bindings", "xsd/bindings",
-          "XMLSchema/bindings"
-	    * User defined binding files to pass in to the `xjc` task
-		* All files are directly under this folder, no subfolders.
+* xsdDir
+  * **ALWAYS** relative to `project.rootDir
+	* Defined **by each** project to tell the plugin where to find the
+      xsds to parse
+* episodesDir
+  * **ALWAYS** relative to `project.rootDir
+	* i.e. "episodes", "schema/episodes", "xsd/episodes",
+      "XMLSchema/episodes"
+	* All generated episode files go directly under here, no subfolders.
+* bindingsDir
+  * **ALWAYS** relative to `project.rootDir
+	* i.e. "bindings", "schema/bindings", "xsd/bindings",
+      "XMLSchema/bindings"
+    * User defined binding files to pass in to the `xjc` task
+	* All files are directly under this folder, no subfolders.
 
 ## XJC Convention ##
 
@@ -130,14 +130,14 @@ These defaults are changed via the nested `xjc` closure.
 Several boolean sensible defaults are defined to be passed into the
 wsimport task:
 
-	 * extension
-	 * removeOldOutput
-	 * header
+* extension
+* removeOldOutput
+* header
 
 And a few other String defaults
 
-	 * destinationDir
-	 * producesDir
+* destinationDir
+* producesDir
 
 `destinationDir` is relative to `project.projectDir`.  It is
 defaulted to `src/main/java`, but can be set to anywhere in the
