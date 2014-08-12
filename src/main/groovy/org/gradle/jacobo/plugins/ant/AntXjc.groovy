@@ -1,10 +1,8 @@
 package org.gradle.jacobo.plugins.ant
-
 import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
-
-import org.gradle.jacobo.plugins.ant.AntExecutor
+import org.gradle.jacobo.plugins.extension.XjcExtension
 
 /**
  * Defines and executes the {@code xjc} ant task.
@@ -35,7 +33,7 @@ class AntXjc implements AntExecutor {
    * @see org.gradle.jacobo.plugins.extension.XjcExtension
    */
   public void execute(AntBuilder ant, Object... arguments) {
-    def extension = arguments[0]
+    XjcExtension extension = arguments[0]
     def classpath = arguments[1]
     def xsds = arguments[2]
     def bindings = arguments[3]
@@ -44,13 +42,14 @@ class AntXjc implements AntExecutor {
 
     log.info("xjc task is being passed these arguments: '{}'", arguments)
     ant.taskdef (name : 'xjc',
-		 classname : 'com.sun.tools.xjc.XJCTask',
+		 classname : extension.taskClassname,
 		 classpath : classpath)
 
     ant.xjc(destdir	    : extension.destinationDir,
 	    extension	    : extension.extension,
 	    removeOldOutput : extension.removeOldOutput,
-	    header	    : extension.header)
+	    header	    : extension.header,
+      package     : extension.generatePackage)
     {
       //TODO maybe should put the produces in there?
       //produces (dir : destinationDirectory)
@@ -58,9 +57,15 @@ class AntXjc implements AntExecutor {
       bindings.addToAntBuilder(ant, 'binding', FileCollection.AntType.FileSet)
       episodes.addToAntBuilder(ant, 'binding', FileCollection.AntType.FileSet)
       arg(line : "-episode $episodeFile")
-      // TODO add fields for verbosity or does gradle handle it with --debug?
-      // arg(value : '-verbose')
-      // arg(value : '-npa')
+      for (String val : extension.args) {
+        arg(value: val)
+      }
+      if (log.isDebugEnabled()) {
+        arg(value: '-debug')
+      }
+      if (log.isInfoEnabled()) {
+        arg(value: '-verbose')
+      }
     }
   }
 }
