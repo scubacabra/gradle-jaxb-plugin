@@ -34,7 +34,7 @@ buildscript {
   }
 
   dependencies {
-    classpath 'com.jacobo.gradle.plugins:gradle-jaxb-plugin:1.3.1'
+    classpath 'org.gradle.jacobo.plugins:gradle-jaxb-plugin:1.3.1'
   }
 }
 
