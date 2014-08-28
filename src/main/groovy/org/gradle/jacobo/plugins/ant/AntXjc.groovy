@@ -45,12 +45,15 @@ class AntXjc implements AntExecutor {
 		 classname : extension.taskClassname,
 		 classpath : classpath)
 
-    ant.xjc(destdir	    : extension.destinationDir,
-	    extension	    : extension.extension,
-	    removeOldOutput : extension.removeOldOutput,
-	    header	    : extension.header,
-      package     : extension.generatePackage)
-    {
+    def args = [destdir	        : extension.destinationDir,
+                extension	      : extension.extension,
+                removeOldOutput : extension.removeOldOutput,
+                header	        : extension.header]
+    if (extension.generatePackage) {
+      args << [package : extension.generatePackage]
+    }
+    log.info("xjc ant task is being passed these arguments: '{}'", args)
+    ant.xjc(args) {
       //TODO maybe should put the produces in there?
       //produces (dir : destinationDirectory)
       xsds.addToAntBuilder(ant, 'schema', FileCollection.AntType.FileSet)
