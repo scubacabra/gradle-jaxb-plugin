@@ -105,7 +105,7 @@ script.
 
 ## JAXB Plugin Convention ##
 
-There are 4 overridable defaults for this JAXB Plugin.
+There are 4 overrideable defaults for this JAXB Plugin.
 These defaults are changed via the `jaxb` closure.
 
 * xsdDir
@@ -133,6 +133,9 @@ wsimport task:
 * extension
 * removeOldOutput
 * header
+* taskClassname
+* generatePackage
+* extra arguments
 
 And a few other String defaults
 
@@ -146,6 +149,14 @@ defaulted to `src/main/java`, but can be set to anywhere in the
 `producesDir` is not currently used in the plugin.  But it was meant
 to be in there so that if no xsd changes have happened, then no
 code generation would take place.  Hasn't worked yet.
+
+`taskClassname` defines which extension of `com.sun.tools.xjc.XJCTask` to use; defaults to 
+`com.sun.tools.xjc.XJCTask`.
+
+`generatePackage` passes along the `package` parameters to the XJCTask.
+
+`args` passes arbitrary arguments to the `XJCTask` ant task. This is useful when activating JAXB2 plugins.
+
 
 ## Default Conventions
 
@@ -173,6 +184,36 @@ _(per project)_ is the `xsdDir`.
 ```groovy
 jaxb {
   xsdDir = "schema/folder1"
+}
+```
+
+## A more complete JAXB2 example
+
+A full example which uses JAXB2 and JAXB2 plugins, using the same `XJCTask` that
+http://mojo.codehaus.org/jaxb2-maven-plugin/xjc-mojo.html uses:
+
+```groovy
+dependencies {
+  jaxb "org.jvnet.jaxb2_commons:jaxb2-basics-ant:0.6.5"
+  jaxb "org.jvnet.jaxb2_commons:jaxb2-basics:0.6.4"
+  jaxb "org.jvnet.jaxb2_commons:jaxb2-basics-annotate:0.6.4"
+}
+
+jaxb {
+  xsdDir			= "schema"
+  episodesDir		= "schema/episodes"
+  bindingsDir		= "schema/bindings"
+  bindings			= []
+  xjc {
+     taskClassname      = "org.jvnet.jaxb2_commons.xjc.XJC2Task"
+     destinationDir		= "src/main/java"
+	 producesDir		= "src/main/java"
+	 extension			= 'true'
+	 removeOldOutput	= 'yes'
+	 header				= true
+	 generatePackage    = "com.company.example"
+     args               = ["-Xinheritance", "-Xannotate"]
+  }
 }
 ```
 
