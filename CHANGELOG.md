@@ -1,5 +1,11 @@
 # Gradle JAXB Plugin Changelog
 
+## 1.3.3
+Backwards compatibility with java 1.6
+
+## 1.3.2
+Adding additional args to plugin DSL
+
 ## 1.3.1
 
 - full groovy doc and detalied documention
