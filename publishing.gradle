@@ -1,5 +1,5 @@
 apply plugin: 'maven-publish'
-apply plugin: 'bintray'
+apply plugin: 'com.jfrog.bintray'
 
 publishing {
   publications {
@@ -23,7 +23,12 @@ bintray {
     desc = """Jaxb plugin for gradle, using the xjc ant task, dynamic dependency tree generation and episode binding per unique namespace -- keeping
 duplicated generated files out of your hair and de-coupling xsd dependencies"""
     licenses = ['GPL-2.0']
-    labels = ['xsd', 'gradle', 'plugins', 'gradle plugins']
+    publicDownloadNumbers = true
+    websiteUrl = 'https://github.com/jacobono/gradle-jaxb-plugin'
+    issueTrackerUrl = 'https://github.com/jacobono/gradle-jaxb-plugn/issues'
+    vcsUrl = 'https://github.com/jacobono/gradle-jaxb-plugn.git'
+    labels = ['xsd', 'gradle', 'plugins', 'jaxb']
   }
-  dryRun = false // whether to run this as dry-run, without deploying
+  dryRun = true // whether to run this as dry-run, without deploying
+  publish = true //If version should be auto published after an upload
 }
