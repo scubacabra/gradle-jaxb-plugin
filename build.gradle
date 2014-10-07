@@ -9,6 +9,9 @@ apply from: 'integTest.gradle'
 
 group = 'org.gradle.jacobo.plugins'
 
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+
 repositories { 
   mavenCentral()
   maven {
