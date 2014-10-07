@@ -9,6 +9,10 @@ publishing {
       artifact groovyDocJar {
 	classifier "groovydoc"
       }
+
+      artifact groovySourceJar {
+	classifier "sources"
+      }
     }
   }
 }
