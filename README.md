@@ -27,14 +27,12 @@ Using The Plugin
 ```groovy
 buildscript {
   repositories {
-    maven { 
-      url 'http://dl.bintray.com/content/djmijares/gradle-plugins' 
-    }
+    jcenter()
     mavenCentral()
   }
 
   dependencies {
-    classpath 'org.gradle.jacobo.plugins:gradle-jaxb-plugin:1.3.2'
+    classpath 'org.gradle.jacobo.plugins:gradle-jaxb-plugin:1.3.3'
   }
 }
 
@@ -146,11 +144,11 @@ Several sensible defaults are defined to be passed into the
 
 * (O) - optional argument
 * (R) - required argument
-* (NI) - not implemented / not workingn
+* (NI) - not implemented / not working
 
 For more in depth description please see
-*https://jaxb.java.net/a.b.c/docs/ch04.html#tools-xjc* where *a.b.c* is
-the version of jaxb you are using.
+https://jaxb.java.net/2.2.7/docs/ch04.html#tools-xjc-ant-task -- or
+substitute the version you are using.
 
 ### destinationDir ###
 
