@@ -1,10 +1,13 @@
 # Gradle JAXB Plugin Changelog
 
 ## 1.3.3
-Backwards compatibility with java 1.6
+
+- Backwards compatibility with java 1.6
+- now available via bintray's jcenter
 
 ## 1.3.2
-Adding additional args to plugin DSL
+
+- Adding additional args to plugin DSL
 
 ## 1.3.1
 
