@@ -7,7 +7,7 @@ class JaxbDependencyTreeSpec extends ProjectIntegrationSpec {
   def setup() {
     def rootDir = getFileFromResourcePath("/test-jaxb-plugin")
     setRootProject(rootDir)
-    setSubProject(rootProject, "multi-parent-child-schema", "jaxb")
+    setSubProject(rootProject, "multi-parent-child-schema", "com.github.jacobono.jaxb")
     setupProjectTasks()
   }  
 

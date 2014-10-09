@@ -12,6 +12,6 @@ class ProjectTaskSpecification extends TreeFixture {
 
   def setup() { 
     project = ProjectBuilder.builder().build()
-    project.apply(plugin: "jaxb")
+    project.apply(plugin: "com.github.jacobono.jaxb")
   }
 }

@@ -73,8 +73,8 @@ class JaxbPluginSpec extends ProjectTaskSpecification {
       rootProject).build()
     def lastProject = ProjectBuilder.builder().withName('last').withParent(
       rootProject).build()
-    commonProject.apply(plugin: "jaxb")
-    lastProject.apply(plugin: "jaxb")
+    commonProject.apply(plugin: "com.github.jacobono.jaxb")
+    lastProject.apply(plugin: "com.github.jacobono.jaxb")
 
     lastProject.dependencies {
       compile commonProject
