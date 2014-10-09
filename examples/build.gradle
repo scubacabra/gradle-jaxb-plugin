@@ -8,7 +8,7 @@ buildscript {
   // }
 
   // dependencies {
-  //   classpath ':gradle-jaxb-plugin-1.3.3'
+  //   classpath ':gradle-jaxb-plugin-1.3.4'
   //   classpath 'com.google.inject:guice:3.0'
   //   classpath 'org.gradle.jacobo:gradle-xsd-wsdl-slurping:1.1.1'
   // }
@@ -22,7 +22,7 @@ buildscript {
   }
 
   dependencies {
-    classpath 'org.gradle.jacobo.plugins:gradle-jaxb-plugin:1.3.3'
+    classpath 'org.gradle.jacobo.plugins:gradle-jaxb-plugin:1.3.4'
   }
 }
 
@@ -37,7 +37,7 @@ allprojects {
 subprojects { project ->
 
   if(project.name.endsWith("-schema")) { 
-    apply plugin: 'jaxb'
+    apply plugin: 'com.github.jacobono.jaxb'
 
     dependencies { 
       jaxb 'com.sun.xml.bind:jaxb-xjc:2.2.7-b41' //jaxws 2.2.6 uses jaxb 2.2.5, but can't dL 2.2.5 from maven the pom is off TODO

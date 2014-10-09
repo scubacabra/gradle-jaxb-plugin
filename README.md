@@ -32,11 +32,11 @@ buildscript {
   }
 
   dependencies {
-    classpath 'org.gradle.jacobo.plugins:gradle-jaxb-plugin:1.3.3'
+    classpath 'org.gradle.jacobo.plugins:gradle-jaxb-plugin:1.3.4'
   }
 }
 
-apply plugin: 'jaxb'
+apply plugin: 'com.github.jacobono.jaxb'
 ```
 
 Setting Up The JAXB Configurations
@@ -216,7 +216,7 @@ I like to create a convention for xsd projects to have a suffix of
 ```groovy
 subproject { project ->
   if(project.name.endsWith("-schema")) { 
-    apply plugin: 'jaxb'
+    apply plugin: 'com.github.jacobono.jaxb'
 
     dependencies { 
       jaxb 'com.sun.xml.bind:jaxb-xjc:2.2.7-b41'

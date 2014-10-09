@@ -1,5 +1,10 @@
 # Gradle JAXB Plugin Changelog
 
+## 1.3.4
+
+- Plugin id changed fram 'jaxb' to 'com.github.jacobono.jaxb'
+- Included in gradle plugin repo
+
 ## 1.3.3
 
 - Backwards compatibility with java 1.6
