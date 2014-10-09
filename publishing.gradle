@@ -32,6 +32,9 @@ duplicated generated files out of your hair and de-coupling xsd dependencies"""
     issueTrackerUrl = 'https://github.com/jacobono/gradle-jaxb-plugn/issues'
     vcsUrl = 'https://github.com/jacobono/gradle-jaxb-plugn.git'
     labels = ['xsd', 'gradle', 'plugins', 'jaxb']
+    version {
+      attributes = [ 'gradle-plugin': 'com.github.jacobono.jaxb:org.gradle.jacobo.plugins:gradle-jaxb-plugin' ]
+    }
   }
   dryRun = true // whether to run this as dry-run, without deploying
   publish = true //If version should be auto published after an upload
