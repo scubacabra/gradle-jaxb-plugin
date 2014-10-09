@@ -10,6 +10,7 @@ gradle-jaxb-plugin
 :boom: :collision:
 
 :exclamation:IMPORTANT PLUGIN ID CHANGES:exclamation:
+
 In compliance with the gradle plugin submission guidelines, this
 plugin's id is now *fully* qualified.
 
