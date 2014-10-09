@@ -8,12 +8,14 @@ gradle-jaxb-plugin
 ](https://bintray.com/djmijares/gradle-plugins/gradle-jaxb-plugin/_latestVersion)
 
 :boom: :collision:
-# IMPORTANT PLUGIN ID CHANGES:exclamation:
+
+:exclamation:IMPORTANT PLUGIN ID CHANGES:exclamation:
 In compliance with the gradle plugin submission guidelines, this
 plugin's id is now *fully* qualified.
 
 It changed from `jaxb` to `com.github.jacobono.jaxb`.  This affects
 how you apply the plugin (`apply plugin: 'com.github.jacobono.jaxb'`)
+
 :boom: :collision:
 
 Gradle plugin that defines some conventions for xsd projects and
