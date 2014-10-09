@@ -7,6 +7,15 @@ gradle-jaxb-plugin
 [ ![Download](https://api.bintray.com/packages/djmijares/gradle-plugins/gradle-jaxb-plugin/images/download.png)
 ](https://bintray.com/djmijares/gradle-plugins/gradle-jaxb-plugin/_latestVersion)
 
+:boom: :collision:
+# IMPORTANT PLUGIN ID CHANGES:exclamation:
+In compliance with the gradle plugin submission guidelines, this
+plugin's id is now *fully* qualified.
+
+It changed from `jaxb` to `com.github.jacobono.jaxb`.  This affects
+how you apply the plugin (`apply plugin: 'com.github.jacobono.jaxb'`)
+:boom: :collision:
+
 Gradle plugin that defines some conventions for xsd projects and
 provides some processing to ease some of the maintenance of these
 projects by:
