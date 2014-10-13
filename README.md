@@ -38,7 +38,7 @@ Using The Plugin
 
 :boom: :collision:
 
-Now in the [gradle plugins repo](www.plugins.gradle.org) :exclamation:
+Now in the [gradle plugins repo](http://plugins.gradle.org/) :exclamation:
 
 :boom: :collision:
 
