@@ -59,7 +59,7 @@ class AntXjc implements AntExecutor {
       xsds.addToAntBuilder(ant, 'schema', FileCollection.AntType.FileSet)
       bindings.addToAntBuilder(ant, 'binding', FileCollection.AntType.FileSet)
       episodes.addToAntBuilder(ant, 'binding', FileCollection.AntType.FileSet)
-      arg(line : "-episode $episodeFile")
+      arg(line : "-episode '$episodeFile'")
       for (String val : extension.args) {
         arg(value: val)
       }
