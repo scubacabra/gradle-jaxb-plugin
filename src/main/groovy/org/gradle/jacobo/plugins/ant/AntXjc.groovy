@@ -40,7 +40,9 @@ class AntXjc implements AntExecutor {
     def episodes = arguments[4]
     def episodeFile = arguments[5]
 
-    log.info("xjc task is being passed these arguments: '{}'", arguments)
+    log.info("xjc task is being passed these arguments: Plugin Extension '{}', classpath '{}', xsds '{}', bindings '{}', episodes '{}', episodeFile '{}'",
+             arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5])
+
     ant.taskdef (name : 'xjc',
 		 classname : extension.taskClassname,
 		 classpath : classpath)
@@ -59,7 +61,9 @@ class AntXjc implements AntExecutor {
       xsds.addToAntBuilder(ant, 'schema', FileCollection.AntType.FileSet)
       bindings.addToAntBuilder(ant, 'binding', FileCollection.AntType.FileSet)
       episodes.addToAntBuilder(ant, 'binding', FileCollection.AntType.FileSet)
-      arg(line : "-episode '$episodeFile'")
+      // ant's arg line is space delimited, won't work with spaces
+      arg(value : "-episode")
+      arg(value : "$episodeFile")
       for (String val : extension.args) {
         arg(value: val)
       }
