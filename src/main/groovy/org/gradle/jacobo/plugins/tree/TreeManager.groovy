@@ -50,7 +50,7 @@ class TreeManager {
    * @param baseNamespaces  list of namespaces with 0 dependencies
    */
   def createTreeRoot(List<XsdNamespace> baseNamespaces) {
-    log.info("creating baseNamespaces '{}' as tree nodes", baseNamespaces.size)
+    log.info("creating baseNamespaces '{}' as tree nodes", baseNamespaces.size())
     baseNamespaces.each { namespace ->
       def node = new TreeNode<XsdNamespace>(namespace)
       managedNodes << node

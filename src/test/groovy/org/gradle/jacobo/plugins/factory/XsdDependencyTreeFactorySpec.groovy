@@ -21,12 +21,12 @@ class XsdDependencyTreeFactorySpec extends NamespaceFixture {
     def result = factory.resolveDependentNamespaces(haveDependencies, documents)
 
     then:
-    result.size() == haveDependencies.size
+    result.size() == haveDependencies.size()
     ["xsd3":["xsd1"], "xsd4":["xsd2"], "xsd5":["xsd3"],"xsd6":["xsd4"]].each {
       k,v ->
 	def namespace = namespaces.find { it.namespace == k }
 	with(result[namespace]) {
-	  it.size() == v.size
+	  it.size() == v.size()
 	  it.containsAll(v as Set) == true
 	}
     }
@@ -41,13 +41,13 @@ class XsdDependencyTreeFactorySpec extends NamespaceFixture {
     def result = factory.resolveDependentNamespaces(haveDependencies, documents)
 
     then:
-    result.size() == haveDependencies.size
+    result.size() == haveDependencies.size()
     ["xsd3":["xsd1"], "xsd4":["xsd1", "xsd2"], "xsd5":["xsd2"],"xsd6":["xsd3"],
      "xsd7":["xsd3"], "xsd8":["xsd4", "xsd5"], "xsd9":["xsd5"]].each {
       k,v ->
 	def namespace = namespaces.find { it.namespace == k }
 	with(result[namespace]) {
-	  it.size() == v.size
+	  it.size() == v.size()
 	  it.containsAll(v as Set) == true
 	}
     }
@@ -62,12 +62,12 @@ class XsdDependencyTreeFactorySpec extends NamespaceFixture {
     def result = factory.resolveDependentNamespaces(haveDependencies, documents)
 
     then:
-    result.size() == haveDependencies.size
+    result.size() == haveDependencies.size()
     ["xsd3":["xsd1"], "xsd4":["xsd2"], "xsd5":["xsd3"],"xsd6":["xsd4"]].each {
       k,v ->
 	def namespace = namespaces.find { it.namespace == k }
 	with(result[namespace]) {
-	  it.size() == v.size
+	  it.size() == v.size()
 	  it.containsAll(v as Set) == true
 	}
     }

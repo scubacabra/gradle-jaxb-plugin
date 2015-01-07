@@ -19,9 +19,9 @@ class TreeManagerSpec extends NamespaceFixture {
     with(manager) {
       managedNodes.size() == rootSize
       managedNodes.data.containsAll(root)
-      currentTreeRow.size == rootSize
+      currentTreeRow.size() == rootSize
       currentTreeRow.data.containsAll(root)
-      treeRoot.size == rootSize
+      treeRoot.size() == rootSize
       treeRoot.data.containsAll(root)
     }
     
@@ -48,7 +48,7 @@ class TreeManagerSpec extends NamespaceFixture {
       managedNodes.size() == 5
       managedNodes.data.namespace.containsAll(["xsd1", "xsd2", "xsd3", "xsd4",
 					       "xsd5"])
-      currentTreeRow.size == 3
+      currentTreeRow.size() == 3
       currentTreeRow.data.namespace.containsAll(["xsd3", "xsd4", "xsd5"])
     }
 
@@ -62,7 +62,7 @@ class TreeManagerSpec extends NamespaceFixture {
       managedNodes.size() == 9
       managedNodes.data.namespace.containsAll(["xsd1", "xsd2", "xsd3", "xsd4",
 					       "xsd5", "xsd6", "xsd7", "xsd8", "xsd9"])
-      currentTreeRow.size == 4
+      currentTreeRow.size() == 4
       currentTreeRow.data.namespace.containsAll(["xsd6", "xsd7", "xsd8", "xsd9"])
     }
 
@@ -105,7 +105,7 @@ class TreeManagerSpec extends NamespaceFixture {
       managedNodes.size() == 5
       managedNodes.data.namespace.containsAll(["xsd1", "xsd2", "xsd3", "xsd4",
 					       "xsd5"])
-      currentTreeRow.size == 3
+      currentTreeRow.size() == 3
       currentTreeRow.data.namespace.containsAll(["xsd3", "xsd4", "xsd5"])
     }
 
@@ -119,7 +119,7 @@ class TreeManagerSpec extends NamespaceFixture {
       managedNodes.size() == 9
       managedNodes.data.namespace.containsAll(["xsd1", "xsd2", "xsd3", "xsd4",
 					       "xsd5", "xsd6", "xsd7", "xsd8", "xsd9"])
-      currentTreeRow.size == 4
+      currentTreeRow.size() == 4
       currentTreeRow.data.namespace.containsAll(["xsd6", "xsd7", "xsd8", "xsd9"])
     }
 

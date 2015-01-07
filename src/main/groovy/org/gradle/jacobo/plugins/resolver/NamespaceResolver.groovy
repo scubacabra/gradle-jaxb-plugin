@@ -21,7 +21,7 @@ class NamespaceResolver {
    */
   public List<XsdNamespace> resolve(def documents) {
     log.info("resolving(grouping) '{}' documents by their unique namespaces",
-	     documents.size)
+	     documents.size())
     def namespaces = []
     documents.each { document ->
       def namespace = namespaces.find { it.namespace == document.xsdNamespace }

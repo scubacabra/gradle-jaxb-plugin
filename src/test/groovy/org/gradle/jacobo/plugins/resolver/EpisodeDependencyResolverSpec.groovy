@@ -30,7 +30,7 @@ class EpisodeDependencyResolverSpec extends TreeFixture {
   }
 
   @Unroll
-  def "resolve '#namespace' for '#episodeDependencyNames.size' dependencies" () {
+  def "resolve '#namespace' for '#episodeDependencyNames.size()' dependencies" () {
     given:
     def node = nodes.find { it.data.namespace == namespace }
 
@@ -38,7 +38,7 @@ class EpisodeDependencyResolverSpec extends TreeFixture {
     def result = resolver.resolve(node, converter, episodesDir)
 
     then:
-    result.size() == episodeDependencyNames.size
+    result.size() == episodeDependencyNames.size()
     result.name.containsAll(episodeDependencyNames.collect { it + ".episode"})
     
     where:
