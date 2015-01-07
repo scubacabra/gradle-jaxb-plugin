@@ -54,7 +54,7 @@ class ExternalDependencyResolver {
       namespace.documents.each {
 	dependencies.addAll(it.findResolvedXsdImports())
       }
-      log.debug("total number of dependencies '{}'", dependencies.size)
+      log.debug("total number of dependencies '{}'", dependencies.size())
       // break to next iteration, nothing to do: hasDeps default to none
       if (dependencies.isEmpty()) return true 
       def externalDeps = dependencies.findAll { file -> !xsds.contains(file) }
@@ -65,14 +65,14 @@ class ExternalDependencyResolver {
       }
 
       log.debug("'{}' has '{}' external dependencies", namespace,
-		externalDeps.size)
+		externalDeps.size())
       externalDeps.each { externalFile ->
 	def resolved = resolveDependencies(externalFile)
 	log.debug("found '{}' dependencies, including '{}'",
 		  resolved.size(), externalFile)
 	namespace.externalDependencies.addAll(resolved.xsdNamespace)
       }
-      if (dependencies.size != externalDeps.size) namespace.hasDependencies = true
+      if (dependencies.size() != externalDeps.size()) namespace.hasDependencies = true
     }
   }
 

@@ -7,6 +7,7 @@ to `com.github.jacobono`
 - ant `xjc` task is passing in the epsiode file to generate through
   `arg value` instead of `arg line` to prevent errors when file paths
   have spaces in them.
+- changing calls from member .size to .size()
 
 ## 1.3.4
 

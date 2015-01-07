@@ -20,10 +20,10 @@ class NamespaceResolverSpec extends DocumentFixture {
     def result = resolver.resolve(documents)
 
     then:
-    result.size == uniques
+    result.size() == uniques
     result.namespace.containsAll(docInfo.values() as Set)
     multipleDocInfo.each { k,v ->
-      result.find{ it.namespace == k}.documents.size == v
+      result.find{ it.namespace == k}.documents.size() == v
     }
 
     where:
