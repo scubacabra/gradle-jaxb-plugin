@@ -1,5 +1,13 @@
 # Gradle JAXB Plugin Changelog
 
+## 1.3.5
+
+- plugin package/group name changed from `org.gradle.jacobo.plugins`
+to `com.github.jacobono`
+- ant `xjc` task is passing in the epsiode file to generate through
+  `arg value` instead of `arg line` to prevent errors when file paths
+  have spaces in them.
+
 ## 1.3.4
 
 - Plugin id changed fram 'jaxb' to 'com.github.jacobono.jaxb'

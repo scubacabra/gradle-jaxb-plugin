@@ -7,7 +7,7 @@ apply plugin: 'groovy'
 apply from: 'cobertura.gradle'
 apply from: 'integTest.gradle'
 
-group = 'org.gradle.jacobo.plugins'
+group = 'com.github.jacobono'
 
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
@@ -20,7 +20,7 @@ repositories {
 dependencies {
    compile gradleApi()
    compile localGroovy()
-   compile 'org.gradle.jacobo:gradle-xsd-wsdl-slurping:1.1.1'
+   compile 'com.github.jacobono:gradle-xsd-wsdl-slurping:1.1.2'
    compile 'com.google.inject:guice:3.0'
    testCompile "org.spockframework:spock-core:0.7-groovy-1.8"
    testCompile 'cglib:cglib-nodep:2.2'

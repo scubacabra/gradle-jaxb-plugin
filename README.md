@@ -42,10 +42,14 @@ Now in the [gradle plugins repo](http://plugins.gradle.org/) :exclamation:
 
 :boom: :collision:
 
+new group id `com.github.jacobono` matches gradle plugin id.
+
+:boom: :collision:
+
 ## Using Gradle 2.1 plugins script block
 ```groovy
 plugins {
-    id 'com.github.jacobono.jaxb' version '1.3.4'
+    id 'com.github.jacobono.jaxb' version '1.3.5'
 }
 ```
 
@@ -58,7 +62,7 @@ buildscript {
   }
 
   dependencies {
-    classpath 'org.gradle.jacobo.plugins:gradle-jaxb-plugin:1.3.4'
+    classpath 'com.github.jacobono:gradle-jaxb-plugin:1.3.5'
   }
 }
 
