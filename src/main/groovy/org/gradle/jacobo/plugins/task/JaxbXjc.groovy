@@ -73,6 +73,11 @@ class JaxbXjc extends DefaultTask {
    * Resolves a node's dependencies to episode files to bind in ant task.
    */
   EpisodeDependencyResolver dependencyResolver
+    
+  /**
+   *  
+   */
+  TaskContainer taskContainer = new TaskContainer()
 
   /**
    * Executes this task.
@@ -91,24 +96,29 @@ class JaxbXjc extends DefaultTask {
       nodes.each { node -> parseNode(node) }
       nodes = manager.getNextDescendants(nodes)
     }
-  }
 
+    def jaxbConfig = project.configurations[JaxbPlugin.JAXB_CONFIGURATION_NAME]
+    getXjc().execute(ant, project.jaxb.xjc, jaxbConfig.asPath, project.files(taskContainer.xsds),
+        getBindings(), project.files(taskContainer.episodes), taskContainer.episodeFiles[0])
+  }
+    
   /**
    * Parses a {@code TreeNode} and passes data through to ant task.
    * 
    * @param node  tree node to run through ant task
    */
-  def parseNode(TreeNode<XsdNamespace> node) {
+  def TaskContainer parseNode(TreeNode<XsdNamespace> node) {
     log.info("resolving necessary information for node '{}'", node)
     def episodes = getDependencyResolver().resolve(node, getEpisodeConverter(),
 						   getEpisodeDirectory())
     def xsds = getXjcResolver().resolve(node.data)
     def episode = getEpisodeConverter().convert(node.data.namespace)
     def episodeFile = new File(getEpisodeDirectory(), episode)
+    
 
-    log.info("running ant xjc task on node '{}'", node)
-    def jaxbConfig = project.configurations[JaxbPlugin.JAXB_CONFIGURATION_NAME]
-    getXjc().execute(ant, project.jaxb.xjc, jaxbConfig.asPath, project.files(xsds),
-		     getBindings(), project.files(episodes), episodeFile)
+    taskContainer.episodes += episodes
+    taskContainer.episodeFiles += episodeFile
+    taskContainer.xsds += xsds
+    taskContainer
   }
 }
