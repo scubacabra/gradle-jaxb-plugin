@@ -1,0 +1,13 @@
+<xsd:schema targetNamespace="urn:helloWorld/sample/ibm/TestImport"
+            xmlns:tns="urn:helloWorld/sample/ibm/TestImport"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	    elementFormDefault="qualified">
+
+
+  <xsd:complexType name="randomImportType">
+    <xsd:sequence>
+      <xsd:element name="age" nillable="true" type="xsd:int" />
+    </xsd:sequence>
+  </xsd:complexType>
+
+</xsd:schema>
