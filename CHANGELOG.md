@@ -1,5 +1,10 @@
 # Gradle JAXB Plugin Changelog
 
+## 1.3.6
+- Fix to issue #27 - when there are binding files, will not parse xjc
+  in a dependency order.  Will just use the folder and glob pattern
+  '**/*.xsd'
+
 ## 1.3.5
 
 - plugin package/group name changed from `org.gradle.jacobo.plugins`
