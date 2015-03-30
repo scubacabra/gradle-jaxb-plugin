@@ -43,6 +43,12 @@ class JaxbXjc extends DefaultTask {
   File generatedFilesDirectory
 
   /**
+   * Xsd's defined under {@code xsdDir}.
+   */
+  @InputFiles
+  FileCollection xsds
+
+  /**
    * Directory containing all the xsds to be parsed.
    */
   @InputDirectory
@@ -83,8 +89,18 @@ class JaxbXjc extends DefaultTask {
   @TaskAction
   void start() {
     def manager = getManager()
+
+    if (!getBindings().isEmpty()) {
+      // have bindings, can't use Node processing, one xjc run and exit
+      log.info("bindings are present, running ant xjc task on all xsds in '{}' and then exiting!",
+               getSchemasDirectory())
+      def namespace = manager.treeRoot.pop().data.namespace ?: "random-namespace"
+      xjc(getXsds(), [], getEpisodeFile(namespace))
+      return
+    }
+
     log.info("jaxb: attempting to parse '{}' nodes in tree, base nodes are '{}'",
-	     manager.managedNodes.size(), manager.treeRoot)
+             manager.managedNodes.size(), manager.treeRoot)
     def nodes = manager.treeRoot
     while(nodes) {
       log.info("parsing '{}' nodes '{}'", nodes.size(), nodes)
@@ -101,14 +117,22 @@ class JaxbXjc extends DefaultTask {
   def parseNode(TreeNode<XsdNamespace> node) {
     log.info("resolving necessary information for node '{}'", node)
     def episodes = getDependencyResolver().resolve(node, getEpisodeConverter(),
-						   getEpisodeDirectory())
+                                                   getEpisodeDirectory())
     def xsds = getXjcResolver().resolve(node.data)
-    def episode = getEpisodeConverter().convert(node.data.namespace)
-    def episodeFile = new File(getEpisodeDirectory(), episode)
 
     log.info("running ant xjc task on node '{}'", node)
+    xjc(xsds, episodes, getEpisodeFile(node.data.namespace))
+  }
+
+  def xjc(xsds, episodes, episodeFile) {
     def jaxbConfig = project.configurations[JaxbPlugin.JAXB_CONFIGURATION_NAME]
+    log.debug("episodes are '{}' is empty '{}'", episodes, episodes.isEmpty())
     getXjc().execute(ant, project.jaxb.xjc, jaxbConfig.asPath, project.files(xsds),
-		     getBindings(), project.files(episodes), episodeFile)
+                     getBindings(), project.files(episodes), episodeFile)
+  }
+
+  def getEpisodeFile(xsdNamespace) {
+    def episode = getEpisodeConverter().convert(xsdNamespace)
+    return new File(getEpisodeDirectory(), episode)
   }
 }

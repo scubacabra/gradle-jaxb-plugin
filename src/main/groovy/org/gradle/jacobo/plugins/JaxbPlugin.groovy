@@ -178,17 +178,22 @@ class JaxbPlugin implements Plugin<Project> {
     xjc.conventionMapping.episodeDirectory = {
       new File(project.rootDir, project.jaxb.episodesDir) }
     xjc.conventionMapping.bindings = {
-       // empty filecollection if no bindinfs listed, so that
+       // empty filecollection if no bindings listed, so that
        // files.files == empty set
        project.jaxb.bindings.isEmpty() ? project.files() :
        project.fileTree(dir:new File(project.rootDir, project.jaxb.bindingsDir),
 			include: project.jaxb.bindings)
      }
-    // these two are here so that gradle can check if anything
+    // these two (generatedFilesDirectory and schemasDirectory)
+    // are here so that gradle can check if anything
     // has changed in these folders and run this task again if so
     // they serve no other purpose than this
     xjc.conventionMapping.generatedFilesDirectory = {
       new File(project.projectDir, project.jaxb.xjc.destinationDir) }
+    // this is here in case there are bindings present, in which case a dependency tree type
+    // evaluation just won't work.
+    xjc.conventionMapping.xsds = {
+      project.fileTree(dir: new File(project.rootDir, project.jaxb.xsdDir), include: '**/*.xsd') }
     xjc.conventionMapping.schemasDirectory = {
       new File(project.rootDir, project.jaxb.xsdDir) }
     xjc.conventionMapping.xjc = { injector.getInstance(AntXjc.class) }

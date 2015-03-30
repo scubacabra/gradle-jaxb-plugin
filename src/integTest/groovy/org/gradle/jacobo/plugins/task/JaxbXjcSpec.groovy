@@ -26,4 +26,19 @@ class JaxbXjcSpec extends ProjectIntegrationSpec {
     then:
     9 * xjc.execute(*_)
   }
+
+  def "Mock xjc, have some binding files present, to trigger calling xjc once."() {
+    given: "mock ant executor and execute dependent tasks ONCE because a binding file is present."
+    xjcTask.with {
+      bindings = project.files("binding1.xjb", "binding2.xjb")
+    }
+    xjcTask.xjc = xjc
+    dependencyTreeTask.execute()
+
+    when:
+    xjcTask.execute()
+
+    then:
+    1 * xjc.execute(*_)
+  }
 }
