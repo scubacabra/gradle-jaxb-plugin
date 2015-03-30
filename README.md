@@ -49,7 +49,7 @@ new group id `com.github.jacobono` matches gradle plugin id.
 ## Using Gradle 2.1 plugins script block
 ```groovy
 plugins {
-    id 'com.github.jacobono.jaxb' version '1.3.5'
+    id 'com.github.jacobono.jaxb' version '1.3.6'
 }
 ```
 
@@ -62,7 +62,7 @@ buildscript {
   }
 
   dependencies {
-    classpath 'com.github.jacobono:gradle-jaxb-plugin:1.3.5'
+    classpath 'com.github.jacobono:gradle-jaxb-plugin:1.3.6'
   }
 }
 
@@ -154,6 +154,9 @@ These defaults are changed via the `jaxb` closure.
 * `bindings`
   * customization files to bind with
   * file name List of strings found in `bindingsDir`
+  * if there are bindings present, xjc will be called once with the
+    glob pattern `**/*.xsd` to snag everything under `xsdDir`.  Fixes
+    #27.
 
 ## XJC Convention ##
 
