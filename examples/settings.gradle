@@ -1,4 +1,5 @@
-include 'hello-world-schema', 'hello-world-import-schema', 'hello-world-spaces-dir-schema'
+include 'hello-world-schema', 'hello-world-import-schema',
+        'hello-world-spaces-dir-schema', 'hello-world-bindings-schema'
 
 rootProject.children.each { project ->
     project.buildFileName = "${project.name}.gradle"
