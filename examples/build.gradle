@@ -27,16 +27,13 @@ buildscript {
 }
 
 allprojects { 
-
-  repositories { 
+  repositories {
     mavenCentral()
   }
-
 }
 
 subprojects { project ->
-
-  if(project.name.endsWith("-schema")) { 
+  if(project.name.endsWith("-schema")) {
     apply plugin: 'com.github.jacobono.jaxb'
 
     dependencies { 
