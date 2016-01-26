@@ -46,3 +46,8 @@ subprojects { project ->
     }
   }
 }
+
+task xjc {
+  // This is needed for Java 8.
+  System.setProperty('javax.xml.accessExternalSchema', 'file')
+}
