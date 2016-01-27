@@ -33,7 +33,8 @@ allprojects {
 }
 
 subprojects { project ->
-  if(project.name.endsWith("-schema")) {
+  if(project.name.endsWith("-schema") ||
+          Boolean.valueOf(project.getProperties().getOrDefault('doJAXB', 'false'))) {
     apply plugin: 'com.github.jacobono.jaxb'
 
     dependencies { 

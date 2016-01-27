@@ -262,6 +262,23 @@ subproject { project ->
 
 applying the plugin to all schema projects.
 
+Another way to do this is by adding a boolean property to the
+`gradle.properties` file in the sub-projects. You can then use it this way:
+  
+```groovy
+subproject { project ->
+  if(Boolean.valueOf(project.getProperties().getOrDefault('doJAXB', 'false'))) { 
+    apply plugin: 'com.github.jacobono.jaxb'
+
+    dependencies { 
+      jaxb 'com.sun.xml.bind:jaxb-xjc:2.2.7-b41'
+      jaxb 'com.sun.xml.bind:jaxb-impl:2.2.7-b41'
+      jaxb 'javax.xml.bind:jaxb-api:2.2.7'
+    }
+  }
+}
+```
+
 Other Features
 ==============
 
