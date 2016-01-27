@@ -65,16 +65,16 @@ class JaxbPlugin implements Plugin<Project> {
   private void configureJaxbExtension(final Project project) { 
     extension = project.extensions.create("jaxb", JaxbExtension, project)
     extension.with { 
-      xsdDir = "schema"
-      episodesDir = "schema/episodes"
-      bindingsDir = "schema/bindings"
+      xsdDir = "src/main/resources/schema"
+      episodesDir = "build/generated-resources/episodes"
+      bindingsDir = "src/main/resources/schema"
       bindings = []
     }
     def xjcExtension = project.jaxb.extensions.create("xjc", XjcExtension)
     xjcExtension.with {
       taskClassname = 'com.sun.tools.xjc.XJCTask'
-      destinationDir = "src/main/java"
-      producesDir = "src/main/java"
+      destinationDir = "build/generated-sources/xjc"
+      producesDir = "build/generated-sources/xjc"
       extension = true
       removeOldOutput = 'yes'
       header = true

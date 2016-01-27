@@ -27,13 +27,13 @@ class JaxbPluginSpec extends ProjectTaskSpecification {
     project.plugins.getPlugin("java") instanceof JavaPlugin
     with(project.jaxb) {
       it instanceof JaxbExtension
-      xsdDir == "schema"
-      episodesDir == "schema/episodes"
-      bindingsDir == "schema/bindings"
+      xsdDir == "src/main/resources/schema"
+      episodesDir == "build/generated-resources/episodes"
+      bindingsDir == "src/main/resources/schema"
       bindings == []
       with(xjc) {
-      	destinationDir == "src/main/java"
-      	producesDir == "src/main/java"
+      	destinationDir == "build/generated-sources/xjc"
+      	producesDir == "build/generated-sources/xjc"
 	extension == 'true'
       	removeOldOutput == 'yes'
 	header == true
