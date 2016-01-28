@@ -1,0 +1,946 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions targetNamespace="http://services.external.dmh.ibm.com"
+                  xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:apachesoap="http://xml.apache.org/xml-soap"
+                  xmlns:impl="http://services.external.dmh.ibm.com" xmlns:intf="http://services.external.dmh.ibm.com"
+                  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+	<!-- fake wsdl import I added on top of IBM sample-->
+	<wsdl:import namespace="some-abstract-namespace"
+	             location="./abstract.wsdl"
+	             importType="wsdl"/>
+	<wsdl:types>
+		<schema elementFormDefault="qualified" targetNamespace="http://services.external.dmh.ibm.com"
+		        xmlns="http://www.w3.org/2001/XMLSchema" xmlns:apachesoap="http://xml.apache.org/xml-soap"
+		        xmlns:impl="http://services.external.dmh.ibm.com" xmlns:intf="http://services.external.dmh.ibm.com"
+		        xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+
+			<!-- fake xsd dependencies I added on top of IBM sample-->
+			<xsd:import namespace="imported-namespace"
+			            schemaLocation="../schema/some-schema.xsd"/>
+			<xsd:import namespace="other-imported-namespace"
+			            schemaLocation="../schema/other-schema.xsd"/>
+			<xsd:include schemaLocation="../schema/some-include.xsd"/>
+			<xsd:include schemaLocation="../schema/some-other-include.xsd"/>
+
+			<complexType name="WsaaAuthToken">
+				<sequence>
+					<element name="authToken" nillable="true" type="xsd:string"/>
+				</sequence>
+			</complexType>
+			<element name="getRelatedAssets">
+				<complexType>
+					<sequence>
+						<element name="token" nillable="true" type="impl:WsaaAuthToken"/>
+						<element name="anchorAsset" nillable="true" type="impl:WsaaAssetKey"/>
+						<element name="relationshipName" nillable="true" type="xsd:string"/>
+					</sequence>
+				</complexType>
+			</element>
+			<complexType name="WsaaAssetKey">
+				<sequence>
+					<element name="id" nillable="true" type="xsd:string"/>
+					<element name="typeName" nillable="true" type="xsd:string"/>
+				</sequence>
+			</complexType>
+			<element name="getRelatedAssetsResponse">
+				<complexType>
+					<sequence>
+						<element maxOccurs="unbounded" name="getRelatedAssetsReturn" type="impl:WsaaAssetKey"/>
+					</sequence>
+				</complexType>
+			</element>
+			<complexType name="WsaaExternalException">
+				<sequence>
+					<element name="detail" nillable="true" type="xsd:string"/>
+					<element name="enclosedException" nillable="true" type="xsd:string"/>
+				</sequence>
+			</complexType>
+			<element name="WsaaExternalException" nillable="true" type="impl:WsaaExternalException"/>
+			<element name="login">
+				<complexType>
+					<sequence>
+						<element name="pUserId" nillable="true" type="xsd:string"/>
+						<element name="pPassword" nillable="true" type="xsd:string"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="loginResponse">
+				<complexType>
+					<sequence>
+						<element name="loginReturn" nillable="true" type="impl:WsaaAuthToken"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="getAssetType">
+				<complexType>
+					<sequence>
+						<element name="token" nillable="true" type="impl:WsaaAuthToken"/>
+						<element name="typeName" nillable="true" type="xsd:string"/>
+					</sequence>
+				</complexType>
+			</element>
+			<complexType name="WsaaAssetType">
+				<sequence>
+					<element name="name" nillable="true" type="xsd:string"/>
+					<element name="description" nillable="true" type="xsd:string"/>
+					<element maxOccurs="unbounded" name="attributeNames" nillable="true" type="xsd:string"/>
+					<element maxOccurs="unbounded" name="relationshipNames" nillable="true" type="xsd:string"/>
+				</sequence>
+			</complexType>
+			<element name="getAssetTypeResponse">
+				<complexType>
+					<sequence>
+						<element name="getAssetTypeReturn" nillable="true" type="impl:WsaaAssetType"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="getAsset">
+				<complexType>
+					<sequence>
+						<element name="pToken" nillable="true" type="impl:WsaaAuthToken"/>
+						<element name="pKey" nillable="true" type="impl:WsaaAssetKey"/>
+					</sequence>
+				</complexType>
+			</element>
+			<complexType name="WsaaAsset">
+				<sequence>
+					<element maxOccurs="unbounded" name="attributeValues" nillable="true" type="impl:WsaaAssetAttributeValue"/>
+					<element name="key" nillable="true" type="impl:WsaaAssetKey"/>
+				</sequence>
+			</complexType>
+			<complexType name="WsaaAssetAttributeValue">
+				<sequence>
+					<element name="name" nillable="true" type="xsd:string"/>
+					<element name="value" nillable="true" type="xsd:string"/>
+				</sequence>
+			</complexType>
+			<element name="getAssetResponse">
+				<complexType>
+					<sequence>
+						<element name="getAssetReturn" nillable="true" type="impl:WsaaAsset"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="getAssets">
+				<complexType>
+					<sequence>
+						<element name="token" nillable="true" type="impl:WsaaAuthToken"/>
+						<element name="query" nillable="true" type="impl:WsaaQuery"/>
+						<element name="pData" nillable="true" type="impl:WsaaPagingData"/>
+					</sequence>
+				</complexType>
+			</element>
+			<complexType name="WsaaQuery">
+				<sequence>
+					<element name="namePattern" nillable="true" type="xsd:string"/>
+					<element name="containerNamePattern" nillable="true" type="xsd:string"/>
+					<element name="assetTypeName" nillable="true" type="xsd:string"/>
+					<element maxOccurs="unbounded" name="requestedAttributeNames" nillable="true" type="xsd:string"/>
+					<element name="application" nillable="true" type="impl:WsaaAssetKey"/>
+					<element name="project" nillable="true" type="impl:WsaaAssetKey"/>
+					<element name="site" nillable="true" type="impl:WsaaAssetKey"/>
+				</sequence>
+			</complexType>
+			<complexType name="WsaaPagingData">
+				<sequence>
+					<element name="pageNumber" type="xsd:int"/>
+					<element name="pageSize" type="xsd:int"/>
+				</sequence>
+			</complexType>
+			<element name="getAssetsResponse">
+				<complexType>
+					<sequence>
+						<element maxOccurs="unbounded" name="getAssetsReturn" type="impl:WsaaAsset"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="analyze">
+				<complexType>
+					<sequence>
+						<element name="token" nillable="true" type="impl:WsaaAuthToken"/>
+						<element name="containerName" nillable="true" type="xsd:string"/>
+						<element name="FileName" nillable="true" type="xsd:string"/>
+						<element name="resourceManagerName" nillable="true" type="xsd:string"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="analyzeResponse">
+				<complexType>
+					<sequence>
+						<element name="analyzeReturn" type="xsd:boolean"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="impactAnalysis">
+				<complexType>
+					<sequence>
+						<element name="token" nillable="true" type="impl:WsaaAuthToken"/>
+						<element maxOccurs="unbounded" name="dataElements" type="impl:WsaaAssetKey"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="impactAnalysisResponse">
+				<complexType>
+					<sequence>
+						<element name="impactAnalysisReturn" nillable="true" type="impl:WsaaAssetKey"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="getVersion">
+				<complexType>
+					<sequence/>
+				</complexType>
+			</element>
+			<element name="getVersionResponse">
+				<complexType>
+					<sequence>
+						<element name="getVersionReturn" nillable="true" type="xsd:string"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="delete">
+				<complexType>
+					<sequence>
+						<element name="token" nillable="true" type="impl:WsaaAuthToken"/>
+						<element name="assetKeyToDelete" nillable="true" type="impl:WsaaAssetKey"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="deleteResponse">
+				<complexType>
+					<sequence/>
+				</complexType>
+			</element>
+			<element name="setAttributeValue">
+				<complexType>
+					<sequence>
+						<element name="authToken" nillable="true" type="impl:WsaaAuthToken"/>
+						<element name="key" nillable="true" type="impl:WsaaAssetKey"/>
+						<element name="attributeName" nillable="true" type="xsd:string"/>
+						<element name="attributeValue" nillable="true" type="xsd:string"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="setAttributeValueResponse">
+				<complexType>
+					<sequence/>
+				</complexType>
+			</element>
+			<element name="getAnalysisStatus">
+				<complexType>
+					<sequence>
+						<element name="token" nillable="true" type="impl:WsaaAuthToken"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="getAnalysisStatusResponse">
+				<complexType>
+					<sequence>
+						<element name="getAnalysisStatusReturn" nillable="true" type="xsd:string"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="getAllAssetTypes">
+				<complexType>
+					<sequence>
+						<element name="token" nillable="true" type="impl:WsaaAuthToken"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="getAllAssetTypesResponse">
+				<complexType>
+					<sequence>
+						<element maxOccurs="unbounded" name="getAllAssetTypesReturn" type="impl:WsaaAssetType"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="getAssetCount">
+				<complexType>
+					<sequence>
+						<element name="token" nillable="true" type="impl:WsaaAuthToken"/>
+						<element name="query" nillable="true" type="impl:WsaaQuery"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="getAssetCountResponse">
+				<complexType>
+					<sequence>
+						<element name="getAssetCountReturn" type="xsd:int"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="getAttributeValue">
+				<complexType>
+					<sequence>
+						<element name="pToken" nillable="true" type="impl:WsaaAuthToken"/>
+						<element name="pKey" nillable="true" type="impl:WsaaAssetKey"/>
+						<element name="pAttributeName" nillable="true" type="xsd:string"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="getAttributeValueResponse">
+				<complexType>
+					<sequence>
+						<element name="getAttributeValueReturn" nillable="true" type="xsd:string"/>
+					</sequence>
+				</complexType>
+			</element>
+		</schema>
+	</wsdl:types>
+
+	<wsdl:message name="getRelatedAssetsRequest">
+
+		<wsdl:part element="intf:getRelatedAssets" name="parameters"/>
+
+	</wsdl:message>
+
+	<wsdl:message name="getAnalysisStatusRequest">
+
+		<wsdl:part element="intf:getAnalysisStatus" name="parameters"/>
+
+	</wsdl:message>
+
+	<wsdl:message name="getAnalysisStatusResponse">
+
+		<wsdl:part element="intf:getAnalysisStatusResponse" name="parameters"/>
+
+	</wsdl:message>
+
+	<wsdl:message name="getAttributeValueResponse">
+
+		<wsdl:part element="intf:getAttributeValueResponse" name="parameters"/>
+
+	</wsdl:message>
+
+	<wsdl:message name="deleteRequest">
+
+		<wsdl:part element="intf:delete" name="parameters"/>
+
+	</wsdl:message>
+
+	<wsdl:message name="analyzeRequest">
+
+		<wsdl:part element="intf:analyze" name="parameters"/>
+
+	</wsdl:message>
+
+	<wsdl:message name="loginResponse">
+
+		<wsdl:part element="intf:loginResponse" name="parameters"/>
+
+	</wsdl:message>
+
+	<wsdl:message name="getAssetCountRequest">
+
+		<wsdl:part element="intf:getAssetCount" name="parameters"/>
+
+	</wsdl:message>
+
+	<wsdl:message name="impactAnalysisResponse">
+
+		<wsdl:part element="intf:impactAnalysisResponse" name="parameters"/>
+
+	</wsdl:message>
+
+	<wsdl:message name="impactAnalysisRequest">
+
+		<wsdl:part element="intf:impactAnalysis" name="parameters"/>
+
+	</wsdl:message>
+
+	<wsdl:message name="getAssetCountResponse">
+
+		<wsdl:part element="intf:getAssetCountResponse" name="parameters"/>
+
+	</wsdl:message>
+
+	<wsdl:message name="setAttributeValueRequest">
+
+		<wsdl:part element="intf:setAttributeValue" name="parameters"/>
+
+	</wsdl:message>
+
+	<wsdl:message name="getVersionResponse">
+
+		<wsdl:part element="intf:getVersionResponse" name="parameters"/>
+
+	</wsdl:message>
+
+	<wsdl:message name="getAllAssetTypesResponse">
+
+		<wsdl:part element="intf:getAllAssetTypesResponse" name="parameters"/>
+
+	</wsdl:message>
+
+	<wsdl:message name="loginRequest">
+
+		<wsdl:part element="intf:login" name="parameters"/>
+
+	</wsdl:message>
+
+	<wsdl:message name="getAllAssetTypesRequest">
+
+		<wsdl:part element="intf:getAllAssetTypes" name="parameters"/>
+
+	</wsdl:message>
+
+	<wsdl:message name="getAssetResponse">
+
+		<wsdl:part element="intf:getAssetResponse" name="parameters"/>
+
+	</wsdl:message>
+
+	<wsdl:message name="getAssetsRequest">
+
+		<wsdl:part element="intf:getAssets" name="parameters"/>
+
+	</wsdl:message>
+
+	<wsdl:message name="getAssetTypeRequest">
+
+		<wsdl:part element="intf:getAssetType" name="parameters"/>
+
+	</wsdl:message>
+
+	<wsdl:message name="getVersionRequest">
+
+		<wsdl:part element="intf:getVersion" name="parameters"/>
+
+	</wsdl:message>
+
+	<wsdl:message name="setAttributeValueResponse">
+
+		<wsdl:part element="intf:setAttributeValueResponse" name="parameters"/>
+
+	</wsdl:message>
+
+	<wsdl:message name="deleteResponse">
+
+		<wsdl:part element="intf:deleteResponse" name="parameters"/>
+
+	</wsdl:message>
+
+	<wsdl:message name="WsaaExternalException">
+
+		<wsdl:part element="intf:WsaaExternalException" name="fault"/>
+
+	</wsdl:message>
+
+	<wsdl:message name="getRelatedAssetsResponse">
+
+		<wsdl:part element="intf:getRelatedAssetsResponse" name="parameters"/>
+
+	</wsdl:message>
+
+	<wsdl:message name="getAssetsResponse">
+
+		<wsdl:part element="intf:getAssetsResponse" name="parameters"/>
+
+	</wsdl:message>
+
+	<wsdl:message name="getAssetRequest">
+
+		<wsdl:part element="intf:getAsset" name="parameters"/>
+
+	</wsdl:message>
+
+	<wsdl:message name="getAssetTypeResponse">
+
+		<wsdl:part element="intf:getAssetTypeResponse" name="parameters"/>
+
+	</wsdl:message>
+
+	<wsdl:message name="getAttributeValueRequest">
+
+		<wsdl:part element="intf:getAttributeValue" name="parameters"/>
+
+	</wsdl:message>
+
+	<wsdl:message name="analyzeResponse">
+
+		<wsdl:part element="intf:analyzeResponse" name="parameters"/>
+
+	</wsdl:message>
+
+	<wsdl:portType name="WsaaService">
+
+		<wsdl:operation name="getRelatedAssets">
+
+			<wsdl:input message="intf:getRelatedAssetsRequest" name="getRelatedAssetsRequest"/>
+
+			<wsdl:output message="intf:getRelatedAssetsResponse" name="getRelatedAssetsResponse"/>
+
+			<wsdl:fault message="intf:WsaaExternalException" name="WsaaExternalException"/>
+
+		</wsdl:operation>
+
+		<wsdl:operation name="login">
+
+			<wsdl:input message="intf:loginRequest" name="loginRequest"/>
+
+			<wsdl:output message="intf:loginResponse" name="loginResponse"/>
+
+			<wsdl:fault message="intf:WsaaExternalException" name="WsaaExternalException"/>
+
+		</wsdl:operation>
+
+		<wsdl:operation name="getAssetType">
+
+			<wsdl:input message="intf:getAssetTypeRequest" name="getAssetTypeRequest"/>
+
+			<wsdl:output message="intf:getAssetTypeResponse" name="getAssetTypeResponse"/>
+
+		</wsdl:operation>
+
+		<wsdl:operation name="getAsset">
+
+			<wsdl:input message="intf:getAssetRequest" name="getAssetRequest"/>
+
+			<wsdl:output message="intf:getAssetResponse" name="getAssetResponse"/>
+
+			<wsdl:fault message="intf:WsaaExternalException" name="WsaaExternalException"/>
+
+		</wsdl:operation>
+
+		<wsdl:operation name="getAssets">
+
+			<wsdl:input message="intf:getAssetsRequest" name="getAssetsRequest"/>
+
+			<wsdl:output message="intf:getAssetsResponse" name="getAssetsResponse"/>
+
+			<wsdl:fault message="intf:WsaaExternalException" name="WsaaExternalException"/>
+
+		</wsdl:operation>
+
+		<wsdl:operation name="analyze">
+
+			<wsdl:input message="intf:analyzeRequest" name="analyzeRequest"/>
+
+			<wsdl:output message="intf:analyzeResponse" name="analyzeResponse"/>
+
+			<wsdl:fault message="intf:WsaaExternalException" name="WsaaExternalException"/>
+
+		</wsdl:operation>
+
+		<wsdl:operation name="impactAnalysis">
+
+			<wsdl:input message="intf:impactAnalysisRequest" name="impactAnalysisRequest"/>
+
+			<wsdl:output message="intf:impactAnalysisResponse" name="impactAnalysisResponse"/>
+
+			<wsdl:fault message="intf:WsaaExternalException" name="WsaaExternalException"/>
+
+		</wsdl:operation>
+
+		<wsdl:operation name="getVersion">
+
+			<wsdl:input message="intf:getVersionRequest" name="getVersionRequest"/>
+
+			<wsdl:output message="intf:getVersionResponse" name="getVersionResponse"/>
+
+		</wsdl:operation>
+
+		<wsdl:operation name="delete">
+
+			<wsdl:input message="intf:deleteRequest" name="deleteRequest"/>
+
+			<wsdl:output message="intf:deleteResponse" name="deleteResponse"/>
+
+			<wsdl:fault message="intf:WsaaExternalException" name="WsaaExternalException"/>
+
+		</wsdl:operation>
+
+		<wsdl:operation name="setAttributeValue">
+
+			<wsdl:input message="intf:setAttributeValueRequest" name="setAttributeValueRequest"/>
+
+			<wsdl:output message="intf:setAttributeValueResponse" name="setAttributeValueResponse"/>
+
+			<wsdl:fault message="intf:WsaaExternalException" name="WsaaExternalException"/>
+
+		</wsdl:operation>
+
+		<wsdl:operation name="getAnalysisStatus">
+
+			<wsdl:input message="intf:getAnalysisStatusRequest" name="getAnalysisStatusRequest"/>
+
+			<wsdl:output message="intf:getAnalysisStatusResponse" name="getAnalysisStatusResponse"/>
+
+			<wsdl:fault message="intf:WsaaExternalException" name="WsaaExternalException"/>
+
+		</wsdl:operation>
+
+		<wsdl:operation name="getAllAssetTypes">
+
+			<wsdl:input message="intf:getAllAssetTypesRequest" name="getAllAssetTypesRequest"/>
+
+			<wsdl:output message="intf:getAllAssetTypesResponse" name="getAllAssetTypesResponse"/>
+
+			<wsdl:fault message="intf:WsaaExternalException" name="WsaaExternalException"/>
+
+		</wsdl:operation>
+
+		<wsdl:operation name="getAssetCount">
+
+			<wsdl:input message="intf:getAssetCountRequest" name="getAssetCountRequest"/>
+
+			<wsdl:output message="intf:getAssetCountResponse" name="getAssetCountResponse"/>
+
+			<wsdl:fault message="intf:WsaaExternalException" name="WsaaExternalException"/>
+
+		</wsdl:operation>
+
+		<wsdl:operation name="getAttributeValue">
+
+			<wsdl:input message="intf:getAttributeValueRequest" name="getAttributeValueRequest"/>
+
+			<wsdl:output message="intf:getAttributeValueResponse" name="getAttributeValueResponse"/>
+
+			<wsdl:fault message="intf:WsaaExternalException" name="WsaaExternalException"/>
+
+		</wsdl:operation>
+
+	</wsdl:portType>
+
+	<wsdl:binding name="WsaaServiceSoapBinding" type="intf:WsaaService">
+
+		<wsdlsoap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+		<wsdl:operation name="getRelatedAssets">
+
+			<wsdlsoap:operation soapAction=""/>
+
+			<wsdl:input name="getRelatedAssetsRequest">
+
+				<wsdlsoap:body use="literal"/>
+
+			</wsdl:input>
+
+			<wsdl:output name="getRelatedAssetsResponse">
+
+				<wsdlsoap:body use="literal"/>
+
+			</wsdl:output>
+
+			<wsdl:fault name="WsaaExternalException">
+
+				<wsdlsoap:fault name="WsaaExternalException" use="literal"/>
+
+			</wsdl:fault>
+
+		</wsdl:operation>
+
+		<wsdl:operation name="login">
+
+			<wsdlsoap:operation soapAction=""/>
+
+			<wsdl:input name="loginRequest">
+
+				<wsdlsoap:body use="literal"/>
+
+			</wsdl:input>
+
+			<wsdl:output name="loginResponse">
+
+				<wsdlsoap:body use="literal"/>
+
+			</wsdl:output>
+
+			<wsdl:fault name="WsaaExternalException">
+
+				<wsdlsoap:fault name="WsaaExternalException" use="literal"/>
+
+			</wsdl:fault>
+
+		</wsdl:operation>
+
+		<wsdl:operation name="getAssetType">
+
+			<wsdlsoap:operation soapAction=""/>
+
+			<wsdl:input name="getAssetTypeRequest">
+
+				<wsdlsoap:body use="literal"/>
+
+			</wsdl:input>
+
+			<wsdl:output name="getAssetTypeResponse">
+
+				<wsdlsoap:body use="literal"/>
+
+			</wsdl:output>
+
+		</wsdl:operation>
+
+		<wsdl:operation name="getAsset">
+
+			<wsdlsoap:operation soapAction=""/>
+
+			<wsdl:input name="getAssetRequest">
+
+				<wsdlsoap:body use="literal"/>
+
+			</wsdl:input>
+
+			<wsdl:output name="getAssetResponse">
+
+				<wsdlsoap:body use="literal"/>
+
+			</wsdl:output>
+
+			<wsdl:fault name="WsaaExternalException">
+
+				<wsdlsoap:fault name="WsaaExternalException" use="literal"/>
+
+			</wsdl:fault>
+
+		</wsdl:operation>
+
+		<wsdl:operation name="getAssets">
+
+			<wsdlsoap:operation soapAction=""/>
+
+			<wsdl:input name="getAssetsRequest">
+
+				<wsdlsoap:body use="literal"/>
+
+			</wsdl:input>
+
+			<wsdl:output name="getAssetsResponse">
+
+				<wsdlsoap:body use="literal"/>
+
+			</wsdl:output>
+
+			<wsdl:fault name="WsaaExternalException">
+
+				<wsdlsoap:fault name="WsaaExternalException" use="literal"/>
+
+			</wsdl:fault>
+
+		</wsdl:operation>
+
+		<wsdl:operation name="analyze">
+
+			<wsdlsoap:operation soapAction=""/>
+
+			<wsdl:input name="analyzeRequest">
+
+				<wsdlsoap:body use="literal"/>
+
+			</wsdl:input>
+
+			<wsdl:output name="analyzeResponse">
+
+				<wsdlsoap:body use="literal"/>
+
+			</wsdl:output>
+
+			<wsdl:fault name="WsaaExternalException">
+
+				<wsdlsoap:fault name="WsaaExternalException" use="literal"/>
+
+			</wsdl:fault>
+
+		</wsdl:operation>
+
+		<wsdl:operation name="impactAnalysis">
+
+			<wsdlsoap:operation soapAction=""/>
+
+			<wsdl:input name="impactAnalysisRequest">
+
+				<wsdlsoap:body use="literal"/>
+
+			</wsdl:input>
+
+			<wsdl:output name="impactAnalysisResponse">
+
+				<wsdlsoap:body use="literal"/>
+
+			</wsdl:output>
+
+			<wsdl:fault name="WsaaExternalException">
+
+				<wsdlsoap:fault name="WsaaExternalException" use="literal"/>
+
+			</wsdl:fault>
+
+		</wsdl:operation>
+
+		<wsdl:operation name="getVersion">
+
+			<wsdlsoap:operation soapAction=""/>
+
+			<wsdl:input name="getVersionRequest">
+
+				<wsdlsoap:body use="literal"/>
+
+			</wsdl:input>
+
+			<wsdl:output name="getVersionResponse">
+
+				<wsdlsoap:body use="literal"/>
+
+			</wsdl:output>
+
+		</wsdl:operation>
+
+		<wsdl:operation name="delete">
+
+			<wsdlsoap:operation soapAction=""/>
+
+			<wsdl:input name="deleteRequest">
+
+				<wsdlsoap:body use="literal"/>
+
+			</wsdl:input>
+
+			<wsdl:output name="deleteResponse">
+
+				<wsdlsoap:body use="literal"/>
+
+			</wsdl:output>
+
+			<wsdl:fault name="WsaaExternalException">
+
+				<wsdlsoap:fault name="WsaaExternalException" use="literal"/>
+
+			</wsdl:fault>
+
+		</wsdl:operation>
+
+		<wsdl:operation name="setAttributeValue">
+
+			<wsdlsoap:operation soapAction=""/>
+
+			<wsdl:input name="setAttributeValueRequest">
+
+				<wsdlsoap:body use="literal"/>
+
+			</wsdl:input>
+
+			<wsdl:output name="setAttributeValueResponse">
+
+				<wsdlsoap:body use="literal"/>
+
+			</wsdl:output>
+
+			<wsdl:fault name="WsaaExternalException">
+
+				<wsdlsoap:fault name="WsaaExternalException" use="literal"/>
+
+			</wsdl:fault>
+
+		</wsdl:operation>
+
+		<wsdl:operation name="getAnalysisStatus">
+
+			<wsdlsoap:operation soapAction=""/>
+
+			<wsdl:input name="getAnalysisStatusRequest">
+
+				<wsdlsoap:body use="literal"/>
+
+			</wsdl:input>
+
+			<wsdl:output name="getAnalysisStatusResponse">
+
+				<wsdlsoap:body use="literal"/>
+
+			</wsdl:output>
+
+			<wsdl:fault name="WsaaExternalException">
+
+				<wsdlsoap:fault name="WsaaExternalException" use="literal"/>
+
+			</wsdl:fault>
+
+		</wsdl:operation>
+
+		<wsdl:operation name="getAllAssetTypes">
+
+			<wsdlsoap:operation soapAction=""/>
+
+			<wsdl:input name="getAllAssetTypesRequest">
+
+				<wsdlsoap:body use="literal"/>
+
+			</wsdl:input>
+
+			<wsdl:output name="getAllAssetTypesResponse">
+
+				<wsdlsoap:body use="literal"/>
+
+			</wsdl:output>
+
+			<wsdl:fault name="WsaaExternalException">
+
+				<wsdlsoap:fault name="WsaaExternalException" use="literal"/>
+
+			</wsdl:fault>
+
+		</wsdl:operation>
+
+		<wsdl:operation name="getAssetCount">
+
+			<wsdlsoap:operation soapAction=""/>
+
+			<wsdl:input name="getAssetCountRequest">
+
+				<wsdlsoap:body use="literal"/>
+
+			</wsdl:input>
+
+			<wsdl:output name="getAssetCountResponse">
+
+				<wsdlsoap:body use="literal"/>
+
+			</wsdl:output>
+
+			<wsdl:fault name="WsaaExternalException">
+
+				<wsdlsoap:fault name="WsaaExternalException" use="literal"/>
+
+			</wsdl:fault>
+
+		</wsdl:operation>
+
+		<wsdl:operation name="getAttributeValue">
+
+			<wsdlsoap:operation soapAction=""/>
+
+			<wsdl:input name="getAttributeValueRequest">
+
+				<wsdlsoap:body use="literal"/>
+
+			</wsdl:input>
+
+			<wsdl:output name="getAttributeValueResponse">
+
+				<wsdlsoap:body use="literal"/>
+
+			</wsdl:output>
+
+			<wsdl:fault name="WsaaExternalException">
+
+				<wsdlsoap:fault name="WsaaExternalException" use="literal"/>
+
+			</wsdl:fault>
+
+		</wsdl:operation>
+
+	</wsdl:binding>
+
+	<wsdl:service name="WsaaServiceService">
+
+		<wsdl:port binding="intf:WsaaServiceSoapBinding" name="WsaaService">
+
+			<wsdlsoap:address location="http://localhost:9080/dmhws/services/WsaaService"/>
+
+		</wsdl:port>
+
+	</wsdl:service>
+
+</wsdl:definitions>
