@@ -142,12 +142,12 @@ These defaults are changed via the `jaxb` closure.
       `.xsd` files to parse
 * `episodesDir`
   * **ALWAYS** relative to `project.rootDir`
-	* i.e. _"episodes"_, _"schema/episodes"_, _"xsd/episodes"_,
+	* i.e. _"build/generated-resources/episodes"_, _"episodes"_, _"schema/episodes"_, _"xsd/episodes"_,
       _"XMLSchema/episodes"_
 	* **All** generated episode files go directly under here, no subfolders.
 * `bindingsDir`
   * **ALWAYS** relative to `project.rootDir`
-	* i.e. "bindings", "schema/bindings", "xsd/bindings",
+	* i.e. "src/main/resources/schema", "bindings", "schema/bindings", "xsd/bindings",
       "XMLSchema/bindings"
     * User defined binding files to pass in to the `xjc` task
 	* **All** files are directly under this folder, _no subfolders_.
@@ -164,14 +164,14 @@ These defaults are changed via the nested `xjc` closure.
 Several sensible defaults are defined to be passed into the
 `wsimport` task:
 
-| parameter				 | Description									    | default		  | type	  |
-| :---					 | :---:										    | :---:			  | ---:	  |
-|`destinationDir` _(R)_	 | generated code will be written to this directory | `src/main/java` | `String`  |
-|`extension` _(O)_		 | Run XJC compiler in extension mode			    | `true`		  | `boolean` |
-|`header` _(O)_			 | generates a header in each generated file	    | `true`		  | `boolean` |
-|`producesDir` _(O)(NI)_ | aids with XJC up-to-date check				    | `src/main/java` | `String`  |
-|`generatePackage` _(O)_ | specify a package to generate to				    | **none**		  | `String`  |
-|`args` _(O)_ | List of strings for extra arguments to pass that aren't listed | **none** | `List<String>` |
+| parameter				 | Description									    | default		                | type	  |
+| :---					 | :---:										    | :---:			                | ---:	  |
+|`destinationDir` _(R)_	 | generated code will be written to this directory | `build/generated-sources/xjc` | `String`  |
+|`extension` _(O)_		 | Run XJC compiler in extension mode			    | `true`		                | `boolean` |
+|`header` _(O)_			 | generates a header in each generated file	    | `true`		                | `boolean` |
+|`producesDir` _(O)(NI)_ | aids with XJC up-to-date check				    | `build/generated-sources/xjc` | `String`  |
+|`generatePackage` _(O)_ | specify a package to generate to				    | **none**		                | `String`  |
+|`args` _(O)_ | List of strings for extra arguments to pass that aren't listed | **none**                   | `List<String>` |
 |`removeOldOutput` _(O)_ | Only used with nested `<produces>` elements, when _'yes'_ all files are deleted before XJC is run | _'yes'_ | `String` |
 |`taskClassname` _(O)_ | Enables a custom task classname if using something other than jaxb | `com.sun.tools.xjc.XJCTask` | `String` |
 
@@ -186,7 +186,7 @@ substitute the version you are using.
 ### destinationDir ###
 
 `destinationDir` is relative to `project.projectDir`.  It is
-defaulted to `src/main/java`, but can be set to anywhere in
+defaulted to `build/generated-sources/xjc`, but can be set to anywhere in
 `project.projectDir`.
 
 ### producesDir ###
@@ -261,6 +261,23 @@ subproject { project ->
 ```
 
 applying the plugin to all schema projects.
+
+Another way to do this is by adding a boolean property to the
+`gradle.properties` file in the sub-projects. You can then use it this way:
+  
+```groovy
+subproject { project ->
+  if(Boolean.valueOf(project.getProperties().getOrDefault('doJAXB', 'false'))) { 
+    apply plugin: 'com.github.jacobono.jaxb'
+
+    dependencies { 
+      jaxb 'com.sun.xml.bind:jaxb-xjc:2.2.7-b41'
+      jaxb 'com.sun.xml.bind:jaxb-impl:2.2.7-b41'
+      jaxb 'javax.xml.bind:jaxb-api:2.2.7'
+    }
+  }
+}
+```
 
 Other Features
 ==============

@@ -1,0 +1,21 @@
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                  name="NoXsd"
+                  targetNamespace="some-namespace">
+
+	<wsdl:import namespace="some-abstract-namespace"
+	             location="./abstract.wsdl"
+	             importType="wsdl"/>
+
+	<wsdl:types>
+		<xsd:schema xmlns="http://www.w3.org/2001/XMLSchema"
+		            targetNamespace="some-namespace"> 
+			<xsd:import namespace="imported-namespace"
+			            schemaLocation="../schema/some-schema.xsd"/>
+			<xsd:import namespace="other-imported-namespace"
+			            schemaLocation="../schema/other-schema.xsd"/>
+			<xsd:include schemaLocation="../schema/some-include.xsd"/>
+			<xsd:include schemaLocation="../schema/some-other-include.xsd"/>
+		</xsd:schema>
+	</wsdl:types>
+</wsdl:definitions>
