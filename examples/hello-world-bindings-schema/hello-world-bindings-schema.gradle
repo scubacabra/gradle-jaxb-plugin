@@ -9,6 +9,7 @@ jaxb {
   xsdDir = "schema/multiple"
   bindingsDir = "schema/multiple/xjb"
   bindings = ["xsd-bindings.xjb"]
+  episodesDir = "${project.name}/build/generated-resources/schema/episodes"
   xjc {
     taskClassname = "org.jvnet.jaxb2_commons.xjc.XJC2Task"
     args = ["-Xannotate"]
