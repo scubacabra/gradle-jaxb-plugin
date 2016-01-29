@@ -1,83 +1,83 @@
-buildscript{ 
-  apply from: 'buildscript.gradle'
-}
+group = 'org.openrepose'
+version = '2.0.0-SNAPSHOT'
 
-apply from: 'publishing.gradle'
-apply plugin: 'groovy'
-apply from: 'cobertura.gradle'
-apply from: 'integTest.gradle'
-
-group = 'com.github.jacobono'
-
-sourceCompatibility = 1.6
-targetCompatibility = 1.6
-
-repositories { 
-  mavenCentral()
-  jcenter()
-}
-
-dependencies {
-   compile gradleApi()
-   compile localGroovy()
-   compile 'com.github.jacobono:gradle-xsd-wsdl-slurping:1.1.2'
-   compile 'com.google.inject:guice:3.0'
-   testCompile "org.spockframework:spock-core:0.7-groovy-1.8"
-   testCompile 'cglib:cglib-nodep:2.2'
-   testCompile 'org.objenesis:objenesis:1.2'
-}
-
-test {
-    testLogging {
-        events "passed", "skipped", "failed"
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
     }
 }
 
-groovydoc {
-  docTitle = "Gradle XSD Plugin"
-  link("http://groovy.codehaus.org/gapi/", "groovy.", "org.codehaus.groovy.")
-  link("http://doc.oracle.com/javase/7/docs/api/", "java.")
-  link("http://google-guice.googlecode.com/svn/trunk/javadoc/", "com.google.")
-  link("http://www.gradle.org/docs/current/javadoc/", "org.gradle.", "org.gradle.api.")
+apply plugin: 'groovy'
+apply plugin: 'maven-publish'
+
+repositories {
+    mavenCentral()
 }
 
-task groovyDocJar(type: Jar, dependsOn: groovydoc) {
-  classifier = 'groovydoc'
-  from groovydoc.destinationDir
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+dependencies {
+    compile gradleApi()
+    compile localGroovy()
+    compile 'org.codehaus.groovy:groovy-all:2.4.4'
+    compile 'org.slf4j:slf4j-api:1.7.6'
+    compile 'com.google.inject:guice:3.0'
+    compile 'com.google.inject.extensions:guice-assistedinject:3.0'
+    //testCompile 'org.spockframework:spock-core:0.7-groovy-1.8' // v1.12
+    //testCompile 'org.spockframework:spock-core:1.0-groovy-2.3' // v2.0 - v2.7
+    testCompile 'org.spockframework:spock-core:1.0-groovy-2.4' // v2.8 - v2.10
+    testCompile 'cglib:cglib-nodep:2.2'
+    testCompile 'org.objenesis:objenesis:1.2'
 }
 
-task groovySourceJar(type: Jar, dependsOn: 'jar') {
-  classifier = 'sources'
-  from sourceSets.main.allSource
+publishing {
+    publications {
+        mavenJar(MavenPublication) {
+            artifactId 'gradle-jaxb-plugin'
+            artifact source: jar, extension: 'jar'
+        }
+    }
+
+    repositories {
+        maven {
+            name 'releases.maven.research.rackspace.com'
+            url 'https://maven.research.rackspacecloud.com/content/repositories/releases'
+            credentials {
+                // NOTE: These properties should be in your ~/.gradle/gradle.properties
+                username property('maven.repo.username')
+                password property('maven.repo.password')
+            }
+        }
+    }
 }
 
-task unversionedJar (type: Jar, dependsOn: 'jar') {
-	version = null
-	from sourceSets.main.output
+task('tagVersion', description: 'Tag the repository with the current version.', group: 'release') << {
+    scmFactory.create().tag(version)
 }
 
-task installPlugin (type: Copy, dependsOn: 'unversionedJar') {
-	def gradleInstallDir = gradle.gradleHomeDir
-	group = 'installation'
-	description = 'Installs the plugin jar in your gradle distribution.'
-	from "${buildDir}/libs/${unversionedJar.archiveName}"
-	into "/${gradleInstallDir}/lib/plugins"
-	doLast { 
-	  println "Installed in: ${gradleInstallDir}/lib/plugins as: ${unversionedJar.archiveName}"
-	}
+task('release', description: 'Release the project and publish to all repos.', group: 'release', dependsOn: [publish, tagVersion])
+
+task unversionedJar(type: Jar, dependsOn: 'jar') {
+    version = null
+    from sourceSets.main.output
 }
 
-task uninstallPlugin (type: Delete) {
-	def gradleInstallDir = gradle.gradleHomeDir
-	group = 'installation'
-	description = 'Removes the plugin from your gradle distribution.'
-	delete("/${gradleInstallDir}/lib/plugins/${unversionedJar.archiveName}")
+task installPlugin(type: Copy, dependsOn: 'unversionedJar') {
+    def gradleInstallDir = gradle.gradleHomeDir
+    group = 'installation'
+    description = 'Installs the plugin jar in your gradle distribution.'
+    from "${buildDir}/libs/${unversionedJar.archiveName}"
+    into "/${gradleInstallDir}/lib/plugins"
+    doLast {
+        println "Installed in: ${gradleInstallDir}/lib/plugins as: ${unversionedJar.archiveName}"
+    }
 }
 
-artifacts {
-  archives jar, groovyDocJar
-}
-
-task wrapper(type: Wrapper) {
-    gradleVersion = '1.11'
+task uninstallPlugin(type: Delete) {
+    def gradleInstallDir = gradle.gradleHomeDir
+    group = 'installation'
+    description = 'Removes the plugin from your gradle distribution.'
+    delete("/${gradleInstallDir}/lib/plugins/${unversionedJar.archiveName}")
 }
