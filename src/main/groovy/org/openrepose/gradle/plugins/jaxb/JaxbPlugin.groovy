@@ -64,11 +64,11 @@ class JaxbPlugin implements Plugin<Project> {
   private void configureJaxbExtension(final Project project) {
     jaxbExtension = project.extensions.create('jaxb', JaxbExtension, project)
     jaxbExtension.with {
-      bindings = []
       xsdDir = "${project.projectDir}/src/main/resources/schema"
       xsdIncludes = ['**/*.xsd']
       episodesDir = "${project.projectDir}/build/generated-resources/episodes"
       bindingsDir = "${project.projectDir}/src/main/resources/schema"
+      bindings = ['**/*.xjb']
     }
     def xjcExtension = project.jaxb.extensions.create('xjc', XjcExtension)
     xjcExtension.with {

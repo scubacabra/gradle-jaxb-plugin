@@ -155,9 +155,7 @@ These defaults are changed via the `jaxb` closure.
 * `bindings`
   * customization files to bind with
   * file name List of strings found in `bindingsDir`
-  * if there are bindings present, xjc will be called once with the
-    glob pattern `**/*.xsd` to snag everything under `xsdDir`.  Fixes
-    #27.
+  * The default glob pattern is `**/*.xjb`
 
 ## XJC Convention ##
 
