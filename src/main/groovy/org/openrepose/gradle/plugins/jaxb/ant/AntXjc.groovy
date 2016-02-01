@@ -48,13 +48,18 @@ class AntXjc implements AntExecutor {
 		 classpath : classpath)
 
     def args = [destdir	        : extension.destinationDir,
-                extension	      : extension.extension,
+                extension	    : extension.extension,
                 removeOldOutput : extension.removeOldOutput,
                 header	        : extension.header]
     if (extension.generatePackage) {
       args << [package : extension.generatePackage]
     }
     log.info("xjc ant task is being passed these arguments: '{}'", args)
+    if(extension.accessExternalSchema == null) {
+      System.clearProperty('javax.xml.accessExternalSchema')
+    } else {
+      System.setProperty('javax.xml.accessExternalSchema', extension.accessExternalSchema)
+    }
     ant.xjc(args) {
       //TODO maybe should put the produces in there?
       //produces (dir : destinationDirectory)

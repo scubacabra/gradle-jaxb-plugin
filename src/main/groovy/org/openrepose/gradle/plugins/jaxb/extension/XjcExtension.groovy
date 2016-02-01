@@ -56,4 +56,9 @@ class XjcExtension {
    */
   List<String> args = []
 
+  /**
+   * The value to be used for the JVM System property {@code javax.xml.accessExternalSchema}
+   * See <a href="http://docs.oracle.com/javase/tutorial/jaxp/properties/properties.html">JAXP Properties</a>
+   */
+  String accessExternalSchema
 }
