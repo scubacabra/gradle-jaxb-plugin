@@ -62,10 +62,11 @@ class JaxbPlugin implements Plugin<Project> {
    * @see XjcExtension
    */
   private void configureJaxbExtension(final Project project) {
-    jaxbExtension = project.extensions.create("jaxb", JaxbExtension, project)
+    jaxbExtension = project.extensions.create('jaxb', JaxbExtension, project)
     jaxbExtension.with {
       bindings = []
       xsdDir = "${project.projectDir}/src/main/resources/schema"
+      xsdIncludes = ['**/*.xsd']
       episodesDir = "${project.projectDir}/build/generated-resources/episodes"
       bindingsDir = "${project.projectDir}/src/main/resources/schema"
     }
@@ -135,7 +136,7 @@ class JaxbPlugin implements Plugin<Project> {
     jnt.conventionMapping.xsds = {
       project.fileTree(
               dir: new File((String)project.jaxb.xsdDir),
-              include: '**/*.xsd'
+              include: project.jaxb.xsdIncludes
       )
     }
     jnt.conventionMapping.docFactory = {
