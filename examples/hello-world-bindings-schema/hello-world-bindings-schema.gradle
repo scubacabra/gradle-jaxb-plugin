@@ -1,17 +1,16 @@
 version = "0.1"
 
 dependencies {
-  jaxb "org.jvnet.jaxb2_commons:jaxb2-basics-ant:0.6.5"
-  jaxb "org.jvnet.jaxb2_commons:jaxb2-basics-annotate:0.6.5"
+  jaxb 'org.jvnet.jaxb2_commons:jaxb2-basics-ant:0.6.5'
+  jaxb 'org.jvnet.jaxb2_commons:jaxb2-basics-annotate:0.6.5'
 }
 
 jaxb {
-  xsdDir = "schema/multiple"
-  bindingsDir = "schema/multiple/xjb"
-  bindings = ["xsd-bindings.xjb"]
-  episodesDir = "${project.name}/build/generated-resources/schema/episodes"
+  xsdDir = "${project.rootDir}/schema/multiple"
+  bindingsDir = "${project.rootDir}/schema/multiple/xjb"
+  episodesDir = "${project.projectDir}/build/generated-resources/schema/episodes"
   xjc {
-    taskClassname = "org.jvnet.jaxb2_commons.xjc.XJC2Task"
-    args = ["-Xannotate"]
+    taskClassname = 'org.jvnet.jaxb2_commons.xjc.XJC2Task'
+    args = ['-Xannotate']
   }
 }

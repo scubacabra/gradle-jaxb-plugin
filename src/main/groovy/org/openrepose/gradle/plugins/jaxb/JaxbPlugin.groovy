@@ -64,16 +64,16 @@ class JaxbPlugin implements Plugin<Project> {
   private void configureJaxbExtension(final Project project) {
     jaxbExtension = project.extensions.create("jaxb", JaxbExtension, project)
     jaxbExtension.with {
-      xsdDir = "src/main/resources/schema"
-      episodesDir = "build/generated-resources/episodes"
-      bindingsDir = "src/main/resources/schema"
       bindings = []
+      xsdDir = "${project.projectDir}/src/main/resources/schema"
+      episodesDir = "${project.projectDir}/build/generated-resources/episodes"
+      bindingsDir = "${project.projectDir}/src/main/resources/schema"
     }
-    def xjcExtension = project.jaxb.extensions.create("xjc", XjcExtension)
+    def xjcExtension = project.jaxb.extensions.create('xjc', XjcExtension)
     xjcExtension.with {
       taskClassname = 'com.sun.tools.xjc.XJCTask'
-      destinationDir = "build/generated-sources/xjc"
-      producesDir = "build/generated-sources/xjc"
+      destinationDir = "${project.projectDir}/build/generated-sources/xjc"
+      producesDir = "${project.projectDir}/build/generated-sources/xjc"
       extension = true
       removeOldOutput = 'yes'
       header = true
@@ -132,9 +132,11 @@ class JaxbPlugin implements Plugin<Project> {
       "and find all unique namespaces, create a namespace graph and parse in " +
       "the graph order with jaxb"
     jnt.group = JAXB_TASK_GROUP
-    jnt.conventionMapping.xsds = { project.fileTree( dir:
-	new File(project.rootDir,
-		 project.jaxb.xsdDir), include: '**/*.xsd')
+    jnt.conventionMapping.xsds = {
+      project.fileTree(
+              dir: new File((String)project.jaxb.xsdDir),
+              include: '**/*.xsd'
+      )
     }
     jnt.conventionMapping.docFactory = {
       injector.getInstance(DocumentFactory.class)
@@ -160,7 +162,7 @@ class JaxbPlugin implements Plugin<Project> {
    *
    * @param project  This plugins gradle project
    * @param jaxb  This plugins extension
-   * @param jnt  This plugins {@code xsd-dependency-tree} task (dependended upon)
+   * @param jnt  This plugins {@code xsd-dependency-tree} task (depended upon)
    * @param injector  This pluings Guice injector
    * @return  this plugins xjc tree task, configured
    * @see JaxbXjc
@@ -175,26 +177,33 @@ class JaxbPlugin implements Plugin<Project> {
     xjc.dependsOn(jnt)
     xjc.conventionMapping.manager = { project.jaxb.dependencyGraph }
     xjc.conventionMapping.episodeDirectory = {
-      new File(project.rootDir, project.jaxb.episodesDir) }
+      new File((String)project.jaxb.episodesDir)
+    }
     xjc.conventionMapping.bindings = {
        // empty filecollection if no bindings listed, so that
        // files.files == empty set
        project.jaxb.bindings.isEmpty() ? project.files() :
-       project.fileTree(dir:new File(project.rootDir, project.jaxb.bindingsDir),
-			include: project.jaxb.bindings)
+       project.fileTree(
+               dir:new File((String)project.jaxb.bindingsDir),
+               include: project.jaxb.bindings
+       )
      }
     // these two (generatedFilesDirectory and schemasDirectory)
     // are here so that gradle can check if anything
     // has changed in these folders and run this task again if so
     // they serve no other purpose than this
     xjc.conventionMapping.generatedFilesDirectory = {
-      new File(project.projectDir, project.jaxb.xjc.destinationDir) }
+      new File((String)project.jaxb.xjc.destinationDir)
+    }
     // this is here in case there are bindings present, in which case a dependency tree type
     // evaluation just won't work.
     xjc.conventionMapping.xsds = {
-      project.fileTree(dir: new File(project.rootDir, project.jaxb.xsdDir), include: '**/*.xsd') }
-    xjc.conventionMapping.schemasDirectory = {
-      new File(project.rootDir, project.jaxb.xsdDir) }
+      project.fileTree(
+              dir: new File((String)project.jaxb.xsdDir),
+              include: project.jaxb.xsdIncludes
+      )
+    }
+    xjc.conventionMapping.schemasDirectory = { new File((String)project.jaxb.xsdDir) }
     xjc.conventionMapping.xjc = { injector.getInstance(AntXjc.class) }
     xjc.conventionMapping.episodeConverter = {
       injector.getInstance(NamespaceToEpisodeConverter.class)

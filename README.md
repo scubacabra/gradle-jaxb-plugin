@@ -137,16 +137,13 @@ There are 4 overrideable defaults for this JAXB Plugin.
 These defaults are changed via the `jaxb` closure.
 
 * `xsdDir`
-  * **ALWAYS** relative to `project.rootDir`
 	* Defined **by each** project to tell the plugin where to find the
       `.xsd` files to parse
 * `episodesDir`
-  * **ALWAYS** relative to `project.rootDir`
 	* i.e. _"build/generated-resources/episodes"_, _"episodes"_, _"schema/episodes"_, _"xsd/episodes"_,
       _"XMLSchema/episodes"_
 	* **All** generated episode files go directly under here, no subfolders.
 * `bindingsDir`
-  * **ALWAYS** relative to `project.rootDir`
 	* i.e. "src/main/resources/schema", "bindings", "schema/bindings", "xsd/bindings",
       "XMLSchema/bindings"
     * User defined binding files to pass in to the `xjc` task
@@ -166,10 +163,10 @@ Several sensible defaults are defined to be passed into the
 
 | parameter				 | Description									    | default		                | type	  |
 | :---					 | :---:										    | :---:			                | ---:	  |
-|`destinationDir` _(R)_	 | generated code will be written to this directory | `build/generated-sources/xjc` | `String`  |
+|`destinationDir` _(R)_	 | generated code will be written to this directory | `${project.projectDir}/build/generated-sources/xjc` | `String`  |
 |`extension` _(O)_		 | Run XJC compiler in extension mode			    | `true`		                | `boolean` |
 |`header` _(O)_			 | generates a header in each generated file	    | `true`		                | `boolean` |
-|`producesDir` _(O)(NI)_ | aids with XJC up-to-date check				    | `build/generated-sources/xjc` | `String`  |
+|`producesDir` _(O)(NI)_ | aids with XJC up-to-date check				    | `${project.projectDir}/build/generated-sources/xjc` | `String`  |
 |`generatePackage` _(O)_ | specify a package to generate to				    | **none**		                | `String`  |
 |`args` _(O)_ | List of strings for extra arguments to pass that aren't listed | **none**                   | `List<String>` |
 |`removeOldOutput` _(O)_ | Only used with nested `<produces>` elements, when _'yes'_ all files are deleted before XJC is run | _'yes'_ | `String` |
@@ -185,9 +182,8 @@ substitute the version you are using.
 
 ### destinationDir ###
 
-`destinationDir` is relative to `project.projectDir`.  It is
-defaulted to `build/generated-sources/xjc`, but can be set to anywhere in
-`project.projectDir`.
+`destinationDir` is relative to `project.rootDir`.  It is defaulted to
+`${project.projectDir}/build/generated-sources/xjc`, but can be set to anywhere.
 
 ### producesDir ###
 
@@ -213,7 +209,7 @@ _(per project)_ is the `xsdDir`, and jaxb dependencies as described above.
 
 ```groovy
 jaxb {
-  xsdDir = "schema/folder1"
+  xsdDir = "${project.projectDir}/schema/folder1"
 }
 ```
 
@@ -231,7 +227,7 @@ dependencies {
 }
 
 jaxb {
-  xsdDir = "some/folder"
+  xsdDir = "${project.projectDir}/some/folder"
   xjc {
      taskClassname      = "org.jvnet.jaxb2_commons.xjc.XJC2Task"
 	 generatePackage    = "com.company.example"

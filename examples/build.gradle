@@ -5,8 +5,8 @@ buildscript {
     repositories {
         flatDir { dirs '../build/libs' }                          // gradle unversionedJar
         //flatDir { dirs "/${gradle.gradleHomeDir}/lib/plugins" } // gradle installPlugin
-        mavenCentral()
         jcenter()
+        mavenCentral()
     }
 
     dependencies {
@@ -48,8 +48,7 @@ subprojects { project ->
             jaxb 'javax.xml.bind:jaxb-api:2.2.7'
         }
 
-        File generatedDir = new File('build/generated-sources/xjc')
-        generatedDir.mkdirs()
+        def generatedDir = "${project.projectDir}/build/generated-sources/xjc"
 
         jaxb {
             xjc {
