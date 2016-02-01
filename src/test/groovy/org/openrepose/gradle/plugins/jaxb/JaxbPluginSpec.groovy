@@ -8,38 +8,38 @@ import org.openrepose.gradle.plugins.jaxb.task.JaxbXjc
 
 class JaxbPluginSpec extends ProjectTaskSpecification {
 
-  def rootFolder = getFileFromResourcePath("/test-project")
+  def rootFolder = getFileFromResourcePath('/test-project')
   def setupSpec() {
-    def resourcesRoot = getFileFromResourcePath("/")
-    def rootFolder = new File(resourcesRoot, "test-project")
+    def resourcesRoot = getFileFromResourcePath('/')
+    def rootFolder = new File(resourcesRoot, 'test-project')
     rootFolder.mkdir()
   }
 
   def cleanupSpec() {
-    def rootFolder = getFileFromResourcePath("/test-project")
+    def rootFolder = getFileFromResourcePath('/test-project')
     rootFolder.delete()
   }
 
   def "applies Java plugin and adds extension object"() {
     expect:
-    project.plugins.getPlugin("java") instanceof JavaPlugin
+    project.plugins.getPlugin('java') instanceof JavaPlugin
     with(project.jaxb) {
       it instanceof JaxbExtension
-      xsdDir == "src/main/resources/schema"
-      episodesDir == "build/generated-resources/episodes"
-      bindingsDir == "src/main/resources/schema"
       bindings == []
+      xsdDir == 'src/main/resources/schema'
+      episodesDir == 'build/generated-resources/episodes'
+      bindingsDir == 'src/main/resources/schema'
       with(xjc) {
-      	destinationDir == "build/generated-sources/xjc"
-      	producesDir == "build/generated-sources/xjc"
-	extension == 'true'
+      	destinationDir == 'build/generated-sources/xjc'
+      	producesDir == 'build/generated-sources/xjc'
+	    extension == 'true'
       	removeOldOutput == 'yes'
-	header == true
+	    header == true
       }
     }
   }
 
-  def "adds confiugration to this project"() {
+  def "adds configuration to this project"() {
     when:
     def jaxb = project.configurations.getByName(
       JaxbPlugin.JAXB_CONFIGURATION_NAME)
@@ -47,7 +47,7 @@ class JaxbPluginSpec extends ProjectTaskSpecification {
     then:
     jaxb.visible == true
     jaxb.transitive == true
-    jaxb.description == "The JAXB XJC libraries to be used for this project."
+    jaxb.description == 'The JAXB XJC libraries to be used for this project.'
   }
 
   def "contains 2 tasks, xjc task depends on tree graph task"() {
@@ -56,7 +56,7 @@ class JaxbPluginSpec extends ProjectTaskSpecification {
     def dependencyTask = project.tasks['xsd-dependency-tree']
 
     then:
-    [xjcTask, dependencyTask]*.group == ["parse", "parse"]
+    [xjcTask, dependencyTask]*.group == ['parse', 'parse']
     dependencyTask instanceof JaxbDependencyTree
     xjcTask instanceof JaxbXjc
     xjcTask.taskDependencies.getDependencies(xjcTask)*.path as Set ==
@@ -71,8 +71,8 @@ class JaxbPluginSpec extends ProjectTaskSpecification {
       rootProject).build()
     def lastProject = ProjectBuilder.builder().withName('last').withParent(
       rootProject).build()
-    commonProject.apply(plugin: "org.openrepose.gradle.plugins.jaxb")
-    lastProject.apply(plugin: "org.openrepose.gradle.plugins.jaxb")
+    commonProject.apply(plugin: 'org.openrepose.gradle.plugins.jaxb')
+    lastProject.apply(plugin: 'org.openrepose.gradle.plugins.jaxb')
 
     lastProject.dependencies {
       compile commonProject
