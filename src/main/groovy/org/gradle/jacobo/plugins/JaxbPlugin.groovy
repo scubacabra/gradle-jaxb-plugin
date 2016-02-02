@@ -161,7 +161,7 @@ class JaxbPlugin implements Plugin<Project> {
    *
    * @param project  This plugins gradle project
    * @param jaxb  This plugins extension
-   * @param jnt  This plugins {@code xsd-dependency-tree} task (dependended upon)
+   * @param jnt  This plugins {@code xsd-dependency-tree} task (depended upon)
    * @param injector  This pluings Guice injector
    * @return  this plugins xjc tree task, configured
    * @see org.gradle.jacobo.plugins.task.JaxbXjc

@@ -37,7 +37,7 @@ class JaxbXjc extends DefaultTask {
 
   /**
    * Directory where the generated java files from xjc would go
-   * Usually {@code <project-root>/src/main/java}
+   * Usually {@code <project-root>/build/generated-sources/xjc}
    */
   @OutputDirectory
   File generatedFilesDirectory
