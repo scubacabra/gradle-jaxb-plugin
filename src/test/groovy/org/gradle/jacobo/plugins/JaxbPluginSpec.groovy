@@ -28,6 +28,7 @@ class JaxbPluginSpec extends ProjectTaskSpecification {
     with(project.jaxb) {
       it instanceof JaxbExtension
       xsdDir == "${project.projectDir}/src/main/resources/schema"
+      xsdIncludes == ['**/*.xsd']
       episodesDir == "${project.projectDir}/build/generated-resources/episodes"
       bindingsDir == "${project.projectDir}/src/main/resources/schema"
       bindings == ['**/*.xjb']
