@@ -75,6 +75,7 @@ class JaxbPlugin implements Plugin<Project> {
       extension = true
       removeOldOutput = 'yes'
       header = true
+      accessExternalSchema = 'file'
     }
   }
 
