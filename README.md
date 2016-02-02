@@ -139,6 +139,10 @@ These defaults are changed via the `jaxb` closure.
 * `xsdDir`
 	* Defined **by each** project to tell the plugin where to find the
       `.xsd` files to parse
+* `xsdIncludes`
+  * the schemas to compile
+  * file name List of strings found in `xsdDir`
+  * The default glob pattern is `**/*.xsd`
 * `episodesDir`
 	* i.e. _"build/generated-resources/episodes"_, _"episodes"_, _"schema/episodes"_, _"xsd/episodes"_,
       _"XMLSchema/episodes"_

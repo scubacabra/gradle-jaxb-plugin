@@ -62,9 +62,10 @@ class JaxbPlugin implements Plugin<Project> {
     extension = project.extensions.create('jaxb', JaxbExtension, project)
     extension.with {
       xsdDir = "${project.projectDir}/src/main/resources/schema"
+      xsdIncludes = ['**/*.xsd']
       episodesDir = "${project.projectDir}/build/generated-resources/episodes"
       bindingsDir = "${project.projectDir}/src/main/resources/schema"
-      bindings = []
+      bindings = ['**/*.xjb']
     }
     def xjcExtension = project.jaxb.extensions.create('xjc', XjcExtension)
     xjcExtension.with {
@@ -132,7 +133,7 @@ class JaxbPlugin implements Plugin<Project> {
     jnt.conventionMapping.xsds = {
       project.fileTree(
               dir: new File((String)project.jaxb.xsdDir),
-              include: '**/*.xsd'
+              include: project.jaxb.xsdIncludes
       )
     }
     jnt.conventionMapping.docFactory = {
@@ -197,7 +198,7 @@ class JaxbPlugin implements Plugin<Project> {
     xjc.conventionMapping.xsds = {
       project.fileTree(
               dir: new File((String)project.jaxb.xsdDir),
-              include: '**/*.xsd'
+              include: project.jaxb.xsdIncludes
       )
     }
     xjc.conventionMapping.schemasDirectory = { new File((String)project.jaxb.xsdDir) }
