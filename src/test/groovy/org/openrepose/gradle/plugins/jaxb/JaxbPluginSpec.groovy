@@ -25,16 +25,18 @@ class JaxbPluginSpec extends ProjectTaskSpecification {
     project.plugins.getPlugin('java') instanceof JavaPlugin
     with(project.jaxb) {
       it instanceof JaxbExtension
-      xsdDir == 'src/main/resources/schema'
-      episodesDir == 'build/generated-resources/episodes'
-      bindingsDir == 'src/main/resources/schema'
+      xsdDir == "${project.projectDir}/src/main/resources/schema"
+      xsdIncludes == ['**/*.xsd']
+      episodesDir == "${project.projectDir}/build/generated-resources/episodes"
+      bindingsDir == "${project.projectDir}/src/main/resources/schema"
       bindings == ['**/*.xjb']
       with(xjc) {
-      	destinationDir == 'build/generated-sources/xjc'
-      	producesDir == 'build/generated-sources/xjc'
-	    extension == 'true'
-      	removeOldOutput == 'yes'
-	    header == true
+        destinationDir == "${project.projectDir}/build/generated-sources/xjc"
+        producesDir == "${project.projectDir}/build/generated-sources/xjc"
+        extension == 'true'
+        removeOldOutput == 'yes'
+        header == true
+        accessExternalSchema == 'file'
       }
     }
   }
