@@ -35,7 +35,7 @@ class JaxbPlugin implements Plugin<Project> {
 
   static final Logger log = Logging.getLogger(JaxbPlugin.class)
 
-  private JaxbExtension extension
+  private JaxbExtension jaxbExtension
 
   /**
    * Entry point for plugin.
@@ -47,8 +47,8 @@ class JaxbPlugin implements Plugin<Project> {
     Injector injector = Guice.createInjector([new JaxbPluginModule(), new DocSlurperModule()])
     configureJaxbExtension(project)
     configureJaxbConfiguration(project)
-    JaxbDependencyTree jnt = configureJaxbDependencyTree(project, extension, injector)
-    configureJaxbXjc(project, extension, jnt, injector)
+    JaxbDependencyTree jnt = configureJaxbDependencyTree(project, jaxbExtension, injector)
+    configureJaxbXjc(project, jaxbExtension, jnt, injector)
   }
   
   /**
@@ -59,8 +59,8 @@ class JaxbPlugin implements Plugin<Project> {
    * @see org.gradle.jacobo.plugins.extension.XjcExtension
    */
   private void configureJaxbExtension(final Project project) {
-    extension = project.extensions.create('jaxb', JaxbExtension, project)
-    extension.with {
+    jaxbExtension = project.extensions.create('jaxb', JaxbExtension, project)
+    jaxbExtension.with {
       xsdDir = "${project.projectDir}/src/main/resources/schema"
       xsdIncludes = ['**/*.xsd']
       episodesDir = "${project.projectDir}/build/generated-resources/episodes"
