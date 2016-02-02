@@ -1,5 +1,8 @@
 version = "0.1"
 
 jaxb { 
-  xsdDir = "schema/HelloWorld"
+  xsdDir = "${project.rootDir}/schema/HelloWorld"
+  xjc {
+    destinationDir = "${project.projectDir}/build/generated-sources/xjc"
+  }
 }

@@ -6,11 +6,12 @@ dependencies {
 }
 
 jaxb {
-  xsdDir = "schema/multiple"
-  bindingsDir = "schema/multiple/xjb"
+  xsdDir = "${project.rootDir}/schema/multiple"
+  bindingsDir = "${project.rootDir}/schema/multiple/xjb"
   bindings = ["xsd-bindings.xjb"]
   xjc {
     taskClassname = "org.jvnet.jaxb2_commons.xjc.XJC2Task"
     args = ["-Xannotate"]
+    destinationDir = "${project.projectDir}/build/generated-sources/xjc"
   }
 }
