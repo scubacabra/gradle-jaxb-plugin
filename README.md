@@ -247,7 +247,7 @@ I like to create a convention for xsd projects to have a suffix of
 ```groovy
 subproject { project ->
   if(project.name.endsWith("-schema")) { 
-    apply plugin: 'com.github.jacobono.jaxb'
+    apply plugin: 'org.openrepose.gradle.plugins.jaxb'
 
     dependencies { 
       jaxb 'com.sun.xml.bind:jaxb-xjc:2.2.7-b41'
