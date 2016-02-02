@@ -2,31 +2,31 @@ buildscript {
   //********************************************************************************
   // uncomment for local testing
   //--------------------------------------------------------------------------------
-  //repositories {
-  //  flatDir { dirs '../build/libs' }                          // gradle unversionedJar
-  //  //flatDir { dirs "/${gradle.gradleHomeDir}/lib/plugins" } // gradle installPlugin
-  //  jcenter()
-  //  mavenCentral()
-  //}
-  //
-  //dependencies {
-  //  classpath ':gradle-jaxb-plugin'
-  //  classpath 'com.google.inject:guice:3.0'
-  //  classpath 'com.github.jacobono:gradle-xsd-wsdl-slurping:1.1.2'
-  //}
-  //********************************************************************************
-
-  //********************************************************************************
-  // use artifacts from bintray
-  //--------------------------------------------------------------------------------
   repositories {
+    flatDir { dirs '../build/libs' }                          // gradle unversionedJar
+    //flatDir { dirs "/${gradle.gradleHomeDir}/lib/plugins" } // gradle installPlugin
     jcenter()
     mavenCentral()
   }
 
   dependencies {
-    classpath 'com.github.jacobono.plugins:gradle-jaxb-plugin:1.3.6'
+    classpath ':gradle-jaxb-plugin'
+    classpath 'com.google.inject:guice:3.0'
+    classpath 'com.github.jacobono:gradle-xsd-wsdl-slurping:1.1.2'
   }
+  //********************************************************************************
+
+  //********************************************************************************
+  // use artifacts from bintray
+  //--------------------------------------------------------------------------------
+  //repositories {
+  //  jcenter()
+  //  mavenCentral()
+  //}
+  //
+  //dependencies {
+  //  classpath 'com.github.jacobono:gradle-jaxb-plugin:1.3.6'
+  //}
   //********************************************************************************
 }
 
