@@ -63,15 +63,15 @@ class JaxbPlugin implements Plugin<Project> {
     jaxbExtension.with {
       xsdDir = "${project.projectDir}/src/main/resources/schema"
       xsdIncludes = ['**/*.xsd']
-      episodesDir = "${project.projectDir}/build/generated-resources/episodes"
+      episodesDir = "${project.buildDir}/generated-resources/episodes"
       bindingsDir = "${project.projectDir}/src/main/resources/schema"
       bindings = ['**/*.xjb']
     }
     def xjcExtension = project.jaxb.extensions.create('xjc', XjcExtension)
     xjcExtension.with {
       taskClassname = 'com.sun.tools.xjc.XJCTask'
-      destinationDir = "${project.projectDir}/build/generated-sources/xjc"
-      producesDir = "${project.projectDir}/build/generated-sources/xjc"
+      destinationDir = "${project.buildDir}/generated-sources/xjc"
+      producesDir = "${project.buildDir}/generated-sources/xjc"
       extension = true
       removeOldOutput = 'yes'
       header = true

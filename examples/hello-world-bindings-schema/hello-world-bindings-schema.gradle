@@ -12,6 +12,6 @@ jaxb {
   xjc {
     taskClassname = "org.jvnet.jaxb2_commons.xjc.XJC2Task"
     args = ["-Xannotate"]
-    destinationDir = "${project.projectDir}/build/generated-sources/xjc"
+    destinationDir = "${project.buildDir}/generated-sources/xjc"
   }
 }

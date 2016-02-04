@@ -2,8 +2,8 @@ version = "0.1"
 
 jaxb {
   xsdDir = "${project.rootDir}/schema/HelloWorld"
-  episodesDir = "${project.projectDir}/build/generated-resources/schema/space episodes"
+  episodesDir = "${project.buildDir}/generated-resources/schema/space episodes"
   xjc {
-    destinationDir = "${project.projectDir}/build/generated-sources/xjc"
+    destinationDir = "${project.buildDir}/generated-sources/xjc"
   }
 }
