@@ -165,10 +165,10 @@ Several sensible defaults are defined to be passed into the
 
 | parameter				 | Description									    | default		                | type	  |
 | :---					 | :---:										    | :---:			                | ---:	  |
-|`destinationDir` _(R)_	 | generated code will be written to this directory | `${project.projectDir}/build/generated-sources/xjc` | `String`  |
+|`destinationDir` _(R)_	 | generated code will be written to this directory | `${project.buildDir}/generated-sources/xjc` | `String`  |
 |`extension` _(O)_		 | Run XJC compiler in extension mode			    | `true`		                | `boolean` |
 |`header` _(O)_			 | generates a header in each generated file	    | `true`		                | `boolean` |
-|`producesDir` _(O)(NI)_ | aids with XJC up-to-date check				    | `${project.projectDir}/build/generated-sources/xjc` | `String`  |
+|`producesDir` _(O)(NI)_ | aids with XJC up-to-date check				    | `${project.buildDir}/generated-sources/xjc` | `String`  |
 |`generatePackage` _(O)_ | specify a package to generate to				    | **none**		                | `String`  |
 |`args` _(O)_ | List of strings for extra arguments to pass that aren't listed | **none**                   | `List<String>` |
 |`removeOldOutput` _(O)_ | Only used with nested `<produces>` elements, when _'yes'_ all files are deleted before XJC is run | _'yes'_ | `String` |
@@ -185,7 +185,7 @@ substitute the version you are using.
 ### destinationDir ###
 
 `destinationDir` is relative to `project.rootDir`.  It is defaulted to
-`${project.projectDir}/build/generated-sources/xjc`, but can be set to anywhere.
+`${project.buildDir}/generated-sources/xjc`, but can be set to anywhere.
 
 ### producesDir ###
 

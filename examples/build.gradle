@@ -48,7 +48,7 @@ subprojects { project ->
             jaxb 'javax.xml.bind:jaxb-api:2.2.7'
         }
 
-        def generatedDir = "${project.projectDir}/build/generated-sources/xjc"
+        def generatedDir = "${project.buildDir}/generated-sources/xjc"
 
         jaxb {
             xjc {

@@ -2,5 +2,5 @@ version = "0.1"
 
 jaxb { 
   xsdDir = "${project.rootDir}/schema/Import"
-  episodesDir = "${project.projectDir}/build/generated-resources/schema/episodes"
+  episodesDir = "${project.buildDir}/generated-resources/schema/episodes"
 }

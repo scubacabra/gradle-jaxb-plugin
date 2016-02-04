@@ -27,12 +27,12 @@ class JaxbPluginSpec extends ProjectTaskSpecification {
       it instanceof JaxbExtension
       xsdDir == "${project.projectDir}/src/main/resources/schema"
       xsdIncludes == ['**/*.xsd']
-      episodesDir == "${project.projectDir}/build/generated-resources/episodes"
+      episodesDir == "${project.buildDir}/generated-resources/episodes"
       bindingsDir == "${project.projectDir}/src/main/resources/schema"
       bindings == ['**/*.xjb']
       with(xjc) {
-        destinationDir == "${project.projectDir}/build/generated-sources/xjc"
-        producesDir == "${project.projectDir}/build/generated-sources/xjc"
+        destinationDir == "${project.buildDir}/generated-sources/xjc"
+        producesDir == "${project.buildDir}/generated-sources/xjc"
         extension == 'true'
         removeOldOutput == 'yes'
         header == true
