@@ -78,7 +78,7 @@ class XsdDependencyTreeFactorySpec extends NamespaceFixture {
     
     and: "get expecations for tree root and addChildren"
     def noDeps = getBaseNamespaces(baseNamespaces)
-    def expectations = addChildrenExpectations(addChildrenExpectations)
+    def expectations = addChildrenExpectations(addChildrenExpectationValues)
 
     and: "stub out manager getter calls"
     stubManagerGetCurrentRow(currentRows)
@@ -108,7 +108,7 @@ class XsdDependencyTreeFactorySpec extends NamespaceFixture {
       "RelatedAncestorDependencyScheme",
       "UnRelatedAncestorDependencyScheme"]
     baseNamespaces = ["xsd1", "xsd2"]
-    addChildrenExpectations << [
+    addChildrenExpectationValues << [
       [["xsd3":["xsd1"],"xsd4":["xsd2"]], ["xsd5":["xsd3"],"xsd6":["xsd4"]]],
       [["xsd3":["xsd1"], "xsd4":["xsd1", "xsd2"], "xsd5":["xsd2"]],
        ["xsd6":["xsd3"], "xsd7":["xsd3"], "xsd8":["xsd4", "xsd5"],
