@@ -1,5 +1,5 @@
 group = 'org.openrepose'
-version = '2.0.0'
+version = '2.0.1'
 
 buildscript {
     repositories {
@@ -38,8 +38,7 @@ dependencies {
 publishing {
     publications {
         mavenJar(MavenPublication) {
-            artifactId 'gradle-jaxb-plugin'
-            artifact source: jar, extension: 'jar'
+            from components.java
         }
     }
 
