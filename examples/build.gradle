@@ -2,31 +2,34 @@ buildscript {
     //********************************************************************************
     // uncomment for local testing
     //--------------------------------------------------------------------------------
-    repositories {
-        flatDir { dirs '../build/libs' }                          // gradle unversionedJar
-        //flatDir { dirs "/${gradle.gradleHomeDir}/lib/plugins" } // gradle installPlugin
-        jcenter()
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath ':gradle-jaxb-plugin'
-        classpath 'com.google.inject:guice:3.0'
-        classpath 'com.google.inject.extensions:guice-assistedinject:3.0'
-    }
-    //********************************************************************************
-
-    //********************************************************************************
-    // use artifacts from bintray
-    //--------------------------------------------------------------------------------
     //repositories {
-    //  jcenter()
-    //  mavenCentral()
+    //    flatDir { dirs '../build/libs' }                          // gradle unversionedJar
+    //    //flatDir { dirs "/${gradle.gradleHomeDir}/lib/plugins" } // gradle installPlugin
+    //    jcenter()
+    //    mavenCentral()
     //}
     //
     //dependencies {
-    //  classpath 'org.openrepose:gradle-jaxb-plugin:2.0'
+    //    classpath ':gradle-jaxb-plugin'
+    //    classpath 'com.google.inject:guice:3.0'
+    //    classpath 'com.google.inject.extensions:guice-assistedinject:3.0'
     //}
+    //********************************************************************************
+
+    //********************************************************************************
+    // use artifacts from Rackspace public repository
+    //--------------------------------------------------------------------------------
+    repositories {
+        jcenter()
+        mavenCentral()
+        maven {
+            url "https://maven.research.rackspacecloud.com/content/repositories/public/"
+        }
+    }
+
+    dependencies {
+        classpath 'org.openrepose:gradle-jaxb-plugin:2.0.2'
+    }
     //********************************************************************************
 }
 
