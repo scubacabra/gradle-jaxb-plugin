@@ -32,6 +32,7 @@ class JaxbPlugin implements Plugin<Project> {
   static final String JAXB_XSD_DEPENDENCY_TREE_TASK = 'xsd-dependency-tree'
   static final String JAXB_XJC_TASK = 'xjc'
   static final String JAXB_CONFIGURATION_NAME = 'jaxb'
+  static final String XJC_CONFIGURATION_NAME = 'xjc'
 
   static final Logger log = Logging.getLogger(JaxbPlugin.class)
 
@@ -48,6 +49,7 @@ class JaxbPlugin implements Plugin<Project> {
     configureJaxbExtension(project)
     configureJaxbConfiguration(project)
     JaxbDependencyTree jnt = configureJaxbDependencyTree(project, jaxbExtension, injector)
+    configureXjcConfiguration(project)
     configureJaxbXjc(project, jaxbExtension, jnt, injector)
   }
   
@@ -89,6 +91,19 @@ class JaxbPlugin implements Plugin<Project> {
       visible = true
       transitive = true
       description = "The JAXB XJC libraries to be used for this project."
+    }
+  }
+
+  /**
+   * Configures this plugins {@code xjc} configuration.
+   *
+   * @param project  This plugins gradle project
+   */
+  private void configureXjcConfiguration(final Project project) {
+    project.configurations.create(XJC_CONFIGURATION_NAME) {
+      visible = true
+      transitive = true
+      description = "The JAXB XJC plugin libraries to be used for this project."
     }
   }
 

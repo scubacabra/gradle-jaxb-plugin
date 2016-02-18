@@ -126,9 +126,10 @@ class JaxbXjc extends DefaultTask {
 
   def xjc(xsds, episodes, episodeFile) {
     def jaxbConfig = project.configurations[JaxbPlugin.JAXB_CONFIGURATION_NAME]
+    def xjcConfig = project.configurations[JaxbPlugin.XJC_CONFIGURATION_NAME]
     log.debug("episodes are '{}' is empty '{}'", episodes, episodes.isEmpty())
     new File((String)project.jaxb.xjc.destinationDir).mkdirs()
-    getXjc().execute(ant, project.jaxb.xjc, jaxbConfig.asPath, project.files(xsds),
+    getXjc().execute(ant, project.jaxb.xjc, jaxbConfig.asPath, xjcConfig.asPath, project.files(xsds),
                      getBindings(), project.files(episodes), episodeFile)
   }
 
