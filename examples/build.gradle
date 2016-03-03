@@ -28,7 +28,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'org.openrepose:gradle-jaxb-plugin:2.0.2'
+        classpath 'org.openrepose:gradle-jaxb-plugin:2.2.0'
     }
     //********************************************************************************
 }
@@ -86,9 +86,4 @@ tasks.withType(ScalaCompile) {
     }
     // 54.10. Incremental compilation
     scalaCompileOptions.useAnt = false
-}
-
-task xjc {
-    // This is needed for Java 8.
-    System.setProperty('javax.xml.accessExternalSchema', 'file')
 }

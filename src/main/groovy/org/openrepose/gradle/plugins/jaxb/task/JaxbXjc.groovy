@@ -8,13 +8,13 @@ import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
-import org.openrepose.gradle.plugins.jaxb.ant.AntExecutor
-import org.openrepose.gradle.plugins.jaxb.tree.TreeManager
-import org.openrepose.gradle.plugins.jaxb.tree.TreeNode
-import org.openrepose.gradle.plugins.jaxb.resolver.XjcResolver
 import org.openrepose.gradle.plugins.jaxb.JaxbPlugin
+import org.openrepose.gradle.plugins.jaxb.ant.AntExecutor
 import org.openrepose.gradle.plugins.jaxb.converter.NamespaceToEpisodeConverter
 import org.openrepose.gradle.plugins.jaxb.resolver.EpisodeDependencyResolver
+import org.openrepose.gradle.plugins.jaxb.resolver.XjcResolver
+import org.openrepose.gradle.plugins.jaxb.tree.TreeManager
+import org.openrepose.gradle.plugins.jaxb.tree.TreeNode
 import org.openrepose.gradle.plugins.jaxb.xsd.XsdNamespace
 
 /**
@@ -128,8 +128,21 @@ class JaxbXjc extends DefaultTask {
     def xjcConfig = project.configurations[JaxbPlugin.XJC_CONFIGURATION_NAME]
     log.debug("episodes are '{}' is empty '{}'", episodes, episodes.isEmpty())
     new File((String)project.jaxb.xjc.destinationDir).mkdirs()
-    getXjc().execute(ant, project.jaxb.xjc, jaxbConfig.asPath, xjcConfig.asPath, project.files(xsds),
-                     getBindings(), project.files(episodes), episodeFile)
+    log.info("   Locking XJC...")
+    synchronized (JaxbXjc.class) {
+      log.info("   Locked  XJC...")
+      getXjc().execute(
+              ant,
+              project.jaxb.xjc,
+              jaxbConfig.asPath,
+              xjcConfig.asPath,
+              project.files(xsds),
+              getBindings(),
+              project.files(episodes),
+              episodeFile
+      )
+      log.info("UN-Locked  XJC.")
+    }
   }
 
   def getEpisodeFile(xsdNamespace) {
