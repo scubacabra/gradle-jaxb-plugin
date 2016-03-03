@@ -74,7 +74,7 @@ class JaxbPlugin implements Plugin<Project> {
     }
     def xjcExtension = project.jaxb.extensions.create('xjc', XjcExtension)
     xjcExtension.with {
-      taskClassname = 'com.sun.tools.xjc.XJCTask'
+      taskClassname = 'com.sun.tools.xjc.XJC2Task'
       destinationDir = "${project.buildDir}/generated-sources/xjc"
       producesDir = "${project.buildDir}/generated-sources/xjc"
       extension = true
