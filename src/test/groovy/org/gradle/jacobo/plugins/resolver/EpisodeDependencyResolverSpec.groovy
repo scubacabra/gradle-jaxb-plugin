@@ -12,7 +12,7 @@ class EpisodeDependencyResolverSpec extends TreeFixture {
   
   def resolver = new EpisodeDependencyResolver()
 
-  def episodesDir = new File("/schemas/episodes")
+  def episodesDir = new File('/build/generated-resources/episodes')
   def externalNamespaces = ["E1", "E2", "E3", "E4"]
   def converter = Mock(NamespaceToEpisodeConverter)
 

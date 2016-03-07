@@ -1,5 +1,8 @@
 version = "0.1"
 
 jaxb { 
-  xsdDir = "schema/Import"
+  xsdDir = "${project.rootDir}/schema/Import"
+  xjc {
+    destinationDir = "${project.buildDir}/generated-sources/xjc"
+  }
 }

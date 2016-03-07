@@ -2,31 +2,27 @@ package org.gradle.jacobo.plugins
 
 import com.google.inject.Guice
 import com.google.inject.Injector
-
-import org.gradle.api.Project
 import org.gradle.api.Plugin
-
-import org.gradle.api.plugins.JavaPlugin
+import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
-import org.gradle.api.logging.Logging
 import org.gradle.api.logging.Logger
-
-import org.gradle.jacobo.plugins.task.JaxbDependencyTree
-import org.gradle.jacobo.plugins.task.JaxbXjc
-import org.gradle.jacobo.plugins.extension.JaxbExtension
-import org.gradle.jacobo.plugins.extension.XjcExtension
-import org.gradle.jacobo.plugins.guice.JaxbPluginModule
-import org.gradle.jacobo.schema.guice.DocSlurperModule
-
-import org.gradle.jacobo.plugins.factory.XsdDependencyTreeFactory
-import org.gradle.jacobo.plugins.resolver.ExternalDependencyResolver
-import org.gradle.jacobo.plugins.resolver.NamespaceResolver
-import org.gradle.jacobo.schema.factory.DocumentFactory
+import org.gradle.api.logging.Logging
+import org.gradle.api.plugins.JavaPlugin
 import org.gradle.jacobo.plugins.ant.AntXjc
 import org.gradle.jacobo.plugins.converter.NamespaceToEpisodeConverter
-import org.gradle.jacobo.plugins.resolver.XjcResolver
+import org.gradle.jacobo.plugins.extension.JaxbExtension
+import org.gradle.jacobo.plugins.extension.XjcExtension
+import org.gradle.jacobo.plugins.factory.XsdDependencyTreeFactory
+import org.gradle.jacobo.plugins.guice.JaxbPluginModule
 import org.gradle.jacobo.plugins.resolver.EpisodeDependencyResolver
+import org.gradle.jacobo.plugins.resolver.ExternalDependencyResolver
+import org.gradle.jacobo.plugins.resolver.NamespaceResolver
+import org.gradle.jacobo.plugins.resolver.XjcResolver
+import org.gradle.jacobo.plugins.task.JaxbDependencyTree
+import org.gradle.jacobo.plugins.task.JaxbXjc
+import org.gradle.jacobo.schema.factory.DocumentFactory
+import org.gradle.jacobo.schema.guice.DocSlurperModule
 
 /**
  * Defines the Jaxb Plugin.
@@ -36,10 +32,11 @@ class JaxbPlugin implements Plugin<Project> {
   static final String JAXB_XSD_DEPENDENCY_TREE_TASK = 'xsd-dependency-tree'
   static final String JAXB_XJC_TASK = 'xjc'
   static final String JAXB_CONFIGURATION_NAME = 'jaxb'
+  static final String XJC_CONFIGURATION_NAME = 'xjc'
 
   static final Logger log = Logging.getLogger(JaxbPlugin.class)
 
-  private JaxbExtension extension
+  private JaxbExtension jaxbExtension
 
   /**
    * Entry point for plugin.
@@ -51,8 +48,9 @@ class JaxbPlugin implements Plugin<Project> {
     Injector injector = Guice.createInjector([new JaxbPluginModule(), new DocSlurperModule()])
     configureJaxbExtension(project)
     configureJaxbConfiguration(project)
-    JaxbDependencyTree jnt = configureJaxbDependencyTree(project, extension, injector)
-    configureJaxbXjc(project, extension, jnt, injector)
+    JaxbDependencyTree jnt = configureJaxbDependencyTree(project, jaxbExtension, injector)
+    configureXjcConfiguration(project)
+    configureJaxbXjc(project, jaxbExtension, jnt, injector)
   }
   
   /**
@@ -62,22 +60,24 @@ class JaxbPlugin implements Plugin<Project> {
    * @see org.gradle.jacobo.plugins.extension.JaxbExtension
    * @see org.gradle.jacobo.plugins.extension.XjcExtension
    */
-  private void configureJaxbExtension(final Project project) { 
-    extension = project.extensions.create("jaxb", JaxbExtension, project)
-    extension.with { 
-      xsdDir = "schema"
-      episodesDir = "schema/episodes"
-      bindingsDir = "schema/bindings"
-      bindings = []
+  private void configureJaxbExtension(final Project project) {
+    jaxbExtension = project.extensions.create('jaxb', JaxbExtension, project)
+    jaxbExtension.with {
+      xsdDir = "${project.projectDir}/src/main/resources/schema"
+      xsdIncludes = ['**/*.xsd']
+      episodesDir = "${project.buildDir}/generated-resources/episodes"
+      bindingsDir = "${project.projectDir}/src/main/resources/schema"
+      bindings = ['**/*.xjb']
     }
-    def xjcExtension = project.jaxb.extensions.create("xjc", XjcExtension)
+    def xjcExtension = project.jaxb.extensions.create('xjc', XjcExtension)
     xjcExtension.with {
-      taskClassname = 'com.sun.tools.xjc.XJCTask'
-      destinationDir = "src/main/java"
-      producesDir = "src/main/java"
+      taskClassname = 'com.sun.tools.xjc.XJC2Task'
+      destinationDir = "${project.buildDir}/generated-sources/xjc"
+      producesDir = "${project.buildDir}/generated-sources/xjc"
       extension = true
       removeOldOutput = 'yes'
       header = true
+      accessExternalSchema = 'file'
     }
   }
 
@@ -91,6 +91,19 @@ class JaxbPlugin implements Plugin<Project> {
       visible = true
       transitive = true
       description = "The JAXB XJC libraries to be used for this project."
+    }
+  }
+
+  /**
+   * Configures this plugins {@code xjc} configuration.
+   *
+   * @param project  This plugins gradle project
+   */
+  private void configureXjcConfiguration(final Project project) {
+    project.configurations.create(XJC_CONFIGURATION_NAME) {
+      visible = true
+      transitive = true
+      description = "The JAXB XJC plugin libraries to be used for this project."
     }
   }
 
@@ -133,9 +146,11 @@ class JaxbPlugin implements Plugin<Project> {
       "and find all unique namespaces, create a namespace graph and parse in " +
       "the graph order with jaxb"
     jnt.group = JAXB_TASK_GROUP
-    jnt.conventionMapping.xsds = { project.fileTree( dir:
-	new File(project.rootDir,
-		 project.jaxb.xsdDir), include: '**/*.xsd')
+    jnt.conventionMapping.xsds = {
+      project.fileTree(
+              dir: new File((String)project.jaxb.xsdDir),
+              include: project.jaxb.xsdIncludes
+      )
     }
     jnt.conventionMapping.docFactory = {
       injector.getInstance(DocumentFactory.class)
@@ -161,7 +176,7 @@ class JaxbPlugin implements Plugin<Project> {
    *
    * @param project  This plugins gradle project
    * @param jaxb  This plugins extension
-   * @param jnt  This plugins {@code xsd-dependency-tree} task (dependended upon)
+   * @param jnt  This plugins {@code xsd-dependency-tree} task (depended upon)
    * @param injector  This pluings Guice injector
    * @return  this plugins xjc tree task, configured
    * @see org.gradle.jacobo.plugins.task.JaxbXjc
@@ -176,26 +191,33 @@ class JaxbPlugin implements Plugin<Project> {
     xjc.dependsOn(jnt)
     xjc.conventionMapping.manager = { project.jaxb.dependencyGraph }
     xjc.conventionMapping.episodeDirectory = {
-      new File(project.rootDir, project.jaxb.episodesDir) }
+      new File((String)project.jaxb.episodesDir)
+    }
     xjc.conventionMapping.bindings = {
        // empty filecollection if no bindings listed, so that
        // files.files == empty set
        project.jaxb.bindings.isEmpty() ? project.files() :
-       project.fileTree(dir:new File(project.rootDir, project.jaxb.bindingsDir),
-			include: project.jaxb.bindings)
+       project.fileTree(
+               dir:new File((String)project.jaxb.bindingsDir),
+               include: project.jaxb.bindings
+       )
      }
     // these two (generatedFilesDirectory and schemasDirectory)
     // are here so that gradle can check if anything
     // has changed in these folders and run this task again if so
     // they serve no other purpose than this
     xjc.conventionMapping.generatedFilesDirectory = {
-      new File(project.projectDir, project.jaxb.xjc.destinationDir) }
+      new File((String)project.jaxb.xjc.destinationDir)
+    }
     // this is here in case there are bindings present, in which case a dependency tree type
     // evaluation just won't work.
     xjc.conventionMapping.xsds = {
-      project.fileTree(dir: new File(project.rootDir, project.jaxb.xsdDir), include: '**/*.xsd') }
-    xjc.conventionMapping.schemasDirectory = {
-      new File(project.rootDir, project.jaxb.xsdDir) }
+      project.fileTree(
+              dir: new File((String)project.jaxb.xsdDir),
+              include: project.jaxb.xsdIncludes
+      )
+    }
+    xjc.conventionMapping.schemasDirectory = { new File((String)project.jaxb.xsdDir) }
     xjc.conventionMapping.xjc = { injector.getInstance(AntXjc.class) }
     xjc.conventionMapping.episodeConverter = {
       injector.getInstance(NamespaceToEpisodeConverter.class)

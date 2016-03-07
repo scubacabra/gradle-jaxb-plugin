@@ -13,8 +13,8 @@ class XjcExtension {
 
   /**
    * Destination directory for the generated output from the {@code xjc} task.
-   * Path is relative to this individual projects directory <b>NOT</b> the root
-   * directory.
+   * If the Path is not absolute, then it is assumed to be relative to this
+   * projects root directory.
    * See <a href="https://jaxb.java.net/2.2.4/docs/xjcTask.html">jaxb ant task</a>
    */
   String destinationDir
@@ -56,4 +56,9 @@ class XjcExtension {
    */
   List<String> args = []
 
+  /**
+   * The value to be used for the JVM System property {@code javax.xml.accessExternalSchema}
+   * See <a href="http://docs.oracle.com/javase/tutorial/jaxp/properties/properties.html">JAXP Properties</a>
+   */
+  String accessExternalSchema
 }

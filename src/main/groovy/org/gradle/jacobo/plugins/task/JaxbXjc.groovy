@@ -37,7 +37,7 @@ class JaxbXjc extends DefaultTask {
 
   /**
    * Directory where the generated java files from xjc would go
-   * Usually {@code <project-root>/src/main/java}
+   * Usually {@code <project-root>/build/generated-sources/xjc}
    */
   @OutputDirectory
   File generatedFilesDirectory
@@ -126,9 +126,11 @@ class JaxbXjc extends DefaultTask {
 
   def xjc(xsds, episodes, episodeFile) {
     def jaxbConfig = project.configurations[JaxbPlugin.JAXB_CONFIGURATION_NAME]
+    def xjcConfig = project.configurations[JaxbPlugin.XJC_CONFIGURATION_NAME]
     log.debug("episodes are '{}' is empty '{}'", episodes, episodes.isEmpty())
-    getXjc().execute(ant, project.jaxb.xjc, jaxbConfig.asPath, project.files(xsds),
-                     getBindings(), project.files(episodes), episodeFile)
+    new File((String)project.jaxb.xjc.destinationDir).mkdirs()
+    getXjc().execute(ant, project.jaxb.xjc, jaxbConfig.asPath, xjcConfig.asPath, project.files(xsds),
+                   getBindings(), project.files(episodes), episodeFile)
   }
 
   def getEpisodeFile(xsdNamespace) {

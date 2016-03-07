@@ -19,6 +19,11 @@ class JaxbExtension {
   String xsdDir
 
   /**
+   * User defined list of RegEx strings to include from the {@code xsdDir}.
+   */
+  List xsdIncludes
+
+  /**
    * Folder name (under {@link org.gradle.api.Project#getRootDir()}) containing
    * user defined binding files to bind during the {@code xjc} task.
    */
