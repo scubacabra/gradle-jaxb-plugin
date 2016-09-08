@@ -17,18 +17,18 @@ buildscript {
     //********************************************************************************
 
     //********************************************************************************
-    // use artifacts from Rackspace public repository
+    // use artifacts from the Gradle Plugin repository
     //--------------------------------------------------------------------------------
     repositories {
         jcenter()
         mavenCentral()
         maven {
-            url "https://maven.research.rackspacecloud.com/content/repositories/public/"
+            url "https://plugins.gradle.org/m2/"
         }
     }
 
     dependencies {
-        classpath 'org.openrepose:gradle-jaxb-plugin:2.2.1'
+        classpath 'org.openrepose:gradle-jaxb-plugin:2.2.2'
     }
     //********************************************************************************
 }
