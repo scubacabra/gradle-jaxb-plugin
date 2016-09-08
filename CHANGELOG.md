@@ -1,16 +1,24 @@
 # Gradle JAXB Plugin Changelog
 
+## 2.2.2
+- Finished cleaning up the changes and released to
+  http://plugins.gradle.org with JSE7 compatibility.
+
 ## 2.2.1
-- Removed the synchronization from the XJC Ant Task call in favor of changing the default to the multi-process safe XJC2Task.
+- Removed the synchronization from the XJC Ant Task call in favor of
+  changing the default to the multi-process safe XJC2Task.
 
 ## 2.2.0
-- Synchronized the XJC Ant Task call to allow for Gradle's new parallel project execution.
+- Synchronized the XJC Ant Task call to allow for Gradle's new parallel
+  project execution.
 
 ## 2.1.0
-- Exposed the XJC Ant Tasks's classpath argument out to the plugin so that XJC Plugins can be used.
+- Exposed the XJC Ant Tasks's classpath argument out to the plugin so
+  that XJC Plugins can be used.
 
 ## 2.0.2
-- Updated the examples build file to use the currently published version of the Rackspace flavored plugin.
+- Updated the examples build file to use the currently published version
+  of the Rackspace flavored plugin.
 
 ## 2.0.1
 - Updated the build to include the dependencies in the published POM.
@@ -29,7 +37,7 @@
 ## 1.3.5
 
 - plugin package/group name changed from `org.gradle.jacobo.plugins`
-to `com.github.jacobono`
+  to `com.github.jacobono`
 - ant `xjc` task is passing in the episode file to generate through
   `arg value` instead of `arg line` to prevent errors when file paths
   have spaces in them.
@@ -62,7 +70,8 @@ to `com.github.jacobono`
 - Using Guice for Dependency Injection
 - Complete code makeover
 - package renaming to one with base `org.gradle.jacobo.plugins`
-- adding Test Fixtures to properly test the different edge cases of this plugin
+- adding Test Fixtures to properly test the different edge cases of this
+  plugin
 - Tasks were renamed
 - Added support for xsd projects to declare they depend on another xsd
   project and have that project's `xjc` task run prior. 
