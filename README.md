@@ -36,12 +36,12 @@ projects by:
 Using The Plugin
 ================
 
-Now in the [gradle plugins repo](http://plugins.gradle.org/) :exclamation:
+Now in the [gradle plugins repo](http://plugins.gradle.org/).
 
 ## Using Gradle 2.10 plugins script block
 ```groovy
 plugins {
-    id 'org.openrepose:gradle-jaxb-plugin' version '2.0.0'
+    id 'org.openrepose:gradle-jaxb-plugin' version '2.2.2'
 }
 ```
 
