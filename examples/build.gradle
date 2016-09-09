@@ -28,7 +28,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'org.openrepose:gradle-jaxb-plugin:2.2.2'
+        classpath 'gradle.plugin.org.openrepose:gradle-jaxb-plugin:2.2.3'
     }
     //********************************************************************************
 }

@@ -1,5 +1,5 @@
 group = 'org.openrepose'
-version = '2.2.2'
+version = '2.2.3'
 description = "Gradle plugin to ease development with XSD's using the jaxb ant task"
 
 buildscript {
@@ -46,7 +46,7 @@ dependencies {
 // NOTE:    The gradle.publish.key and gradle.publish.secret need added to your ~/.gradle/gradle.properties as per the
 //          instructions located at https://plugins.gradle.org/docs/submit
 pluginBundle {
-    website = 'http://www.openrepose.org/'
+    website = 'https://github.com/rackerlabs/gradle-jaxb-plugin'
     vcsUrl = 'https://github.com/rackerlabs/gradle-jaxb-plugin'
     description = project.description
     tags = ['jaxb', 'xsd', 'xjc']

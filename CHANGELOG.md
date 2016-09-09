@@ -1,5 +1,8 @@
 # Gradle JAXB Plugin Changelog
 
+## 2.2.3
+- Updated examples to use http://plugins.gradle.org.
+
 ## 2.2.2
 - Finished cleaning up the changes and released to
   http://plugins.gradle.org with JSE7 compatibility.

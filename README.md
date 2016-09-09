@@ -36,14 +36,8 @@ projects by:
 Using The Plugin
 ================
 
-Now in the [gradle plugins repo](http://plugins.gradle.org/).
-
-## Using Gradle 2.10 plugins script block
-```groovy
-plugins {
-    id 'org.openrepose:gradle-jaxb-plugin' version '2.2.2'
-}
-```
+See this plugin's page in the
+[gradle plugins repo](https://plugins.gradle.org/plugin/org.openrepose.gradle.plugins.jaxb).
 
 Setting Up The JAXB Configurations
 ==================================
@@ -280,11 +274,18 @@ of the project this is defined in.
 Examples
 ========
 
-You can find some examples in the [examples folder](examples)
+You can find some small example projects using this plugin in the
+[examples folder](examples).
+
+For a basic example of using this plugin with multiple sub-projects that
+have interactions, please see this [test project](https://github.com/wdschei/gradle-jaxb-plugin-test).
+
+For a real world example of this plugin, please visit the main
+[Repose project](https://github.com/rackerlabs/repose).
 
 Improvements
 ============
 
 If you have an idea that would make something a little easier, we'd love
-to hear about it. If you think you can make this plugin better, we
-accept pull requests. Or just fork it like we did! 
+to hear about it. If you think you can make this plugin better, then
+simply fork it like we did and submit a pull request.
