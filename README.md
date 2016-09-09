@@ -1,23 +1,23 @@
 gradle-jaxb-plugin
 ==================
 
-[![Build Status](https://drone.io/github.com/jacobono/gradle-jaxb-plugin/status.png)
-](https://drone.io/github.com/jacobono/gradle-jaxb-plugin/latest)
-
-[ ![Download](https://api.bintray.com/packages/djmijares/gradle-plugins/gradle-jaxb-plugin/images/download.png)
-](https://bintray.com/djmijares/gradle-plugins/gradle-jaxb-plugin/_latestVersion)
-
-:boom: :collision:
-
 :exclamation:IMPORTANT PLUGIN ID CHANGES:exclamation:
 
-In compliance with the gradle plugin submission guidelines, this
-plugin's id is now *fully* qualified.
+This plugin is an update to the original project this was forked from.
+We acknowledge and are grateful to these developers for their
+contributions to open source. You can find the source code of their 
+original using the `forked from` link of this project. In compliance
+with the license chosen by the original author, we are publishing this
+modified version since they have not kept up with the maintenance needs. 
 
-It changed from `jaxb` to `com.github.jacobono.jaxb`.  This affects
-how you apply the plugin (`apply plugin: 'com.github.jacobono.jaxb'`)
+To prevent possible collisions and/or confusion if the original author
+decides to accept our PR's or to simply begin anew, we have changed the
+id and package names.
 
-:boom: :collision:
+In compliance with the gradle plugin submission guidelines, the plugin's
+id was changed from `com.github.jacobono.jaxb` to
+`org.openrepose.gradle.plugins.jaxb`.  This affects how you apply the
+plugin (`apply plugin: 'org.openrepose.gradle.plugins.jaxb'`)
 
 Gradle plugin that defines some conventions for xsd projects and
 provides some processing to ease some of the maintenance of these
@@ -36,52 +36,25 @@ projects by:
 Using The Plugin
 ================
 
-:boom: :collision:
-
-Now in the [gradle plugins repo](http://plugins.gradle.org/) :exclamation:
-
-:boom: :collision:
-
-new group id `org.openrepose` matches gradle plugin id.
-
-:boom: :collision:
-
-## Using Gradle 2.10 plugins script block
-```groovy
-plugins {
-    id 'org.openrepose:gradle-jaxb-plugin' version '2.0.0'
-}
-```
-
-## Using Straight-Up JCenter
-```groovy
-buildscript {
-  repositories {
-    jcenter()
-    mavenCentral()
-  }
-
-  dependencies {
-    classpath 'com.github.jacobono:gradle-jaxb-plugin:1.3.6'
-  }
-}
-
-apply plugin: 'com.github.jacobono.jaxb'
-```
+See this plugin's page in the
+[gradle plugins repo](https://plugins.gradle.org/plugin/org.openrepose.gradle.plugins.jaxb).
 
 Setting Up The JAXB Configurations
 ==================================
 
 You *need* the jaxb configuration to run the `xjc` task, but that is the
-only task that has an external dependency.
+only task that requires an external dependency.
+If an XJC plugin is used, then simply add it to the dependencies to
+have it included.
 
-Any version of jaxb that you care to use will work.  I try to stay with the latest releases.
+Any version of jaxb that you care to use will work.
 
 ```groovy
     dependencies { 
       jaxb 'com.sun.xml.bind:jaxb-xjc:2.2.7-b41'
       jaxb 'com.sun.xml.bind:jaxb-impl:2.2.7-b41'
       jaxb 'javax.xml.bind:jaxb-api:2.2.7'
+      xjc  'com.example:xjc-plugin:0.0.0'
     }
 ```
 
@@ -144,12 +117,13 @@ These defaults are changed via the `jaxb` closure.
   * file name List of strings found in `xsdDir`
   * The default glob pattern is `**/*.xsd`
 * `episodesDir`
-	* i.e. _"build/generated-resources/episodes"_, _"episodes"_, _"schema/episodes"_, _"xsd/episodes"_,
-      _"XMLSchema/episodes"_
-	* **All** generated episode files go directly under here, no subfolders.
+	* i.e. _"build/generated-resources/episodes"_, _"episodes"_,
+	    _"schema/episodes"_, _"xsd/episodes"_, _"XMLSchema/episodes"_
+	* **All** generated episode files go directly under here, no
+	    subfolders.
 * `bindingsDir`
-	* i.e. "src/main/resources/schema", "bindings", "schema/bindings", "xsd/bindings",
-      "XMLSchema/bindings"
+	* i.e. "src/main/resources/schema", "bindings", "schema/bindings",
+	    "xsd/bindings", "XMLSchema/bindings"
     * User defined binding files to pass in to the `xjc` task
 	* **All** files are directly under this folder, _no subfolders_.
 * `bindings`
@@ -168,15 +142,15 @@ Several sensible defaults are defined to be passed into the
 |`destinationDir` _(R)_	 | generated code will be written to this directory | `${project.buildDir}/generated-sources/xjc` | `String`  |
 |`extension` _(O)_		 | Run XJC compiler in extension mode			    | `true`		                | `boolean` |
 |`header` _(O)_			 | generates a header in each generated file	    | `true`		                | `boolean` |
-|`producesDir` _(O)(NI)_ | aids with XJC up-to-date check				    | `${project.buildDir}/generated-sources/xjc` | `String`  |
+|`producesDir` _(O)_ | aids with XJC up-to-date check				    | `${project.buildDir}/generated-sources/xjc` | `String`  |
 |`generatePackage` _(O)_ | specify a package to generate to				    | **none**		                | `String`  |
 |`args` _(O)_ | List of strings for extra arguments to pass that aren't listed | **none**                   | `List<String>` |
 |`removeOldOutput` _(O)_ | Only used with nested `<produces>` elements, when _'yes'_ all files are deleted before XJC is run | _'yes'_ | `String` |
 |`taskClassname` _(O)_ | Enables a custom task classname if using something other than jaxb | `com.sun.tools.xjc.XJCTask` | `String` |
+|`accessExternalSchema` _(O)_ | Enables setting the new `javax.xml.accessExternalSchema` system property that causes the plugin to not work as expected under JSE8. | **Implementation Specific** | `String` | 
 
 * (O) - optional argument
 * (R) - required argument
-* (NI) - not implemented / not working
 
 For more in depth description please see
 https://jaxb.java.net/2.2.7/docs/ch04.html#tools-xjc-ant-task -- or
@@ -241,8 +215,8 @@ jaxb {
 Defining The Plugin For All Projects
 ====================================
 
-I like to create a convention for xsd projects to have a suffix of
-`-schema`.  I find it easy to then write:
+Create a convention for xsd projects to have a suffix of `-schema`, then
+it is easy to write:
 
 ```groovy
 subproject { project ->
@@ -291,8 +265,8 @@ dependencies {
 }
 ```
 
-I like how this expresses that xsd's definitely depend on other xsd's
-outside of their parent folder `xsdDir`.
+This expresses that xsd's definitely depend on other xsd's outside of
+their parent folder `xsdDir`.
 
 This will run the xjc task on `common` before running the xjc task of
 of the project this is defined in.
@@ -300,10 +274,18 @@ of the project this is defined in.
 Examples
 ========
 
-You can find some examples in the [examples folder](examples)
+You can find some small example projects using this plugin in the
+[examples folder](examples).
+
+For a basic example of using this plugin with multiple sub-projects that
+have interactions, please see this [test project](https://github.com/wdschei/gradle-jaxb-plugin-test).
+
+For a real world example of this plugin, please visit the main
+[Repose project](https://github.com/rackerlabs/repose).
 
 Improvements
 ============
 
-If you think this plugin could be better, please fork it! If you have an idea
-that would make something a little easier, I'd love to hear about it.
+If you have an idea that would make something a little easier, we'd love
+to hear about it. If you think you can make this plugin better, then
+simply fork it like we did and submit a pull request.
