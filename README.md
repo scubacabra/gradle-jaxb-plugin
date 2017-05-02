@@ -219,7 +219,7 @@ Create a convention for xsd projects to have a suffix of `-schema`, then
 it is easy to write:
 
 ```groovy
-subproject { project ->
+subprojects { project ->
   if(project.name.endsWith("-schema")) { 
     apply plugin: 'org.openrepose.gradle.plugins.jaxb'
 
@@ -238,7 +238,7 @@ Another way to do this is by adding a boolean property to the
 `gradle.properties` file in the sub-projects. You can then use it this way:
   
 ```groovy
-subproject { project ->
+subprojects { project ->
   if(Boolean.valueOf(project.getProperties().getOrDefault('doJAXB', 'false'))) { 
     apply plugin: 'com.github.jacobono.jaxb'
 
