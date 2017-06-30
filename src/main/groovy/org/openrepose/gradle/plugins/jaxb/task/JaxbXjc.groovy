@@ -91,8 +91,7 @@ class JaxbXjc extends DefaultTask {
 
     if (!getBindings().isEmpty()) {
       // have bindings, can't use Node processing, one xjc run and exit
-      log.info("bindings are present, running ant xjc task on all xsds in '{}' and then exiting!",
-               getSchemasDirectory())
+      log.info("bindings are present, running ant xjc task on all xsds in '{}' and then exiting!", getSchemasDirectory())
       def namespace = manager.treeRoot.pop().data.namespace ?: "random-namespace"
       xjc(getXsds(), [], getEpisodeFile(namespace))
       return
@@ -115,15 +114,14 @@ class JaxbXjc extends DefaultTask {
    */
   def parseNode(TreeNode<XsdNamespace> node) {
     log.info("resolving necessary information for node '{}'", node)
-    def episodes = getDependencyResolver().resolve(node, getEpisodeConverter(),
-                                                   getEpisodeDirectory())
-    def xsds = getXjcResolver().resolve(node.data)
+    def episodes = getDependencyResolver().resolve(node, getEpisodeConverter(), getEpisodeDirectory())
+    def xsdFiles = getXjcResolver().resolve(node.data)
 
     log.info("running ant xjc task on node '{}'", node)
-    xjc(xsds, episodes, getEpisodeFile(node.data.namespace))
+    xjc(xsdFiles, episodes, getEpisodeFile(node.data.namespace))
   }
 
-  def xjc(xsds, episodes, episodeFile) {
+  def xjc(xsdFiles, episodes, episodeFile) {
     def jaxbConfig = project.configurations[JaxbPlugin.JAXB_CONFIGURATION_NAME]
     def xjcConfig = project.configurations[JaxbPlugin.XJC_CONFIGURATION_NAME]
     log.debug("episodes are '{}' is empty '{}'", episodes, episodes.isEmpty())
@@ -133,7 +131,7 @@ class JaxbXjc extends DefaultTask {
             project.jaxb.xjc,
             jaxbConfig.asPath,
             xjcConfig.asPath,
-            project.files(xsds),
+            project.files(xsdFiles),
             getBindings(),
             project.files(episodes),
             episodeFile
