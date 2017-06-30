@@ -31,8 +31,7 @@ class JaxbXjc extends DefaultTask {
   /**
    * Directory where all episode files are located.
    */
-  @OutputDirectory
-  File episodeDirectory
+  private File episodeDir
 
   /**
    * Directory where the generated java files from xjc would go
@@ -138,8 +137,23 @@ class JaxbXjc extends DefaultTask {
     )
   }
 
+  @OutputDirectory
+  def getEpisodeDirectory() {
+    if (project.jaxb.xjc.generateEpisodeFiles) {
+      this.episodeDir
+    }
+  }
+
+  def setEpisodeDirectory(File file) {
+    if (project.jaxb.xjc.generateEpisodeFiles) {
+      this.episodeDir = file
+    }
+  }
+
   def getEpisodeFile(xsdNamespace) {
-    def episode = getEpisodeConverter().convert(xsdNamespace)
-    return new File(getEpisodeDirectory(), episode)
+    if (project.jaxb.xjc.generateEpisodeFiles) {
+      def episode = getEpisodeConverter().convert(xsdNamespace)
+      new File(getEpisodeDirectory(), episode)
+    }
   }
 }
