@@ -77,6 +77,7 @@ class JaxbPlugin implements Plugin<Project> {
       taskClassname = 'com.sun.tools.xjc.XJC2Task'
       destinationDir = "${project.buildDir}/generated-sources/xjc"
       producesDir = "${project.buildDir}/generated-sources/xjc"
+      generateEpisodeFiles = true
       extension = true
       removeOldOutput = 'yes'
       header = true
@@ -188,8 +189,9 @@ class JaxbPlugin implements Plugin<Project> {
                                 def injector) {
     JaxbXjc xjc = project.tasks.create(JAXB_XJC_TASK, JaxbXjc)
     xjc.description = "run through the Directory Graph for " +
-      "${jaxb.xsdDir} and parse all schemas in order generating" +
-      " episode files to ${jaxb.episodesDir}"
+            "${jaxb.xsdDir} and parse all schemas in order while " +
+            (project.jaxb.xjc.generateEpisodeFiles ? "" : "not ") +
+            "generating episode files to ${jaxb.episodesDir}"
     xjc.group = JAXB_TASK_GROUP
     xjc.dependsOn(jnt)
     xjc.conventionMapping.manager = { project.jaxb.dependencyGraph }
