@@ -3,29 +3,29 @@ package org.openrepose.gradle.plugins.jaxb
 import com.google.inject.Guice
 import com.google.inject.Injector
 
-import org.gradle.api.Project
 import org.gradle.api.Plugin
 
-import org.gradle.api.plugins.JavaPlugin
+import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
-import org.gradle.api.logging.Logging
 import org.gradle.api.logging.Logger
 
-import org.openrepose.gradle.plugins.jaxb.task.JaxbDependencyTree
-import org.openrepose.gradle.plugins.jaxb.task.JaxbXjc
-import org.openrepose.gradle.plugins.jaxb.extension.XjcExtension
-import org.openrepose.gradle.plugins.jaxb.guice.JaxbPluginModule
-import org.openrepose.gradle.plugins.jaxb.factory.XsdDependencyTreeFactory
-import org.openrepose.gradle.plugins.jaxb.resolver.ExternalDependencyResolver
+import org.gradle.api.logging.Logging
+import org.gradle.api.plugins.JavaPlugin
 import org.openrepose.gradle.plugins.jaxb.ant.AntXjc
-import org.openrepose.gradle.plugins.jaxb.resolver.XjcResolver
 import org.openrepose.gradle.plugins.jaxb.converter.NamespaceToEpisodeConverter
 import org.openrepose.gradle.plugins.jaxb.extension.JaxbExtension
+import org.openrepose.gradle.plugins.jaxb.extension.XjcExtension
+import org.openrepose.gradle.plugins.jaxb.factory.XsdDependencyTreeFactory
+import org.openrepose.gradle.plugins.jaxb.guice.JaxbPluginModule
 import org.openrepose.gradle.plugins.jaxb.resolver.EpisodeDependencyResolver
+import org.openrepose.gradle.plugins.jaxb.resolver.ExternalDependencyResolver
 import org.openrepose.gradle.plugins.jaxb.resolver.NamespaceResolver
+import org.openrepose.gradle.plugins.jaxb.resolver.XjcResolver
 import org.openrepose.gradle.plugins.jaxb.schema.factory.DocumentFactory
 import org.openrepose.gradle.plugins.jaxb.schema.guice.DocSlurperModule
+import org.openrepose.gradle.plugins.jaxb.task.JaxbDependencyTree
+import org.openrepose.gradle.plugins.jaxb.task.JaxbXjc
 
 /**
  * Defines the Jaxb Plugin.
@@ -77,6 +77,7 @@ class JaxbPlugin implements Plugin<Project> {
       taskClassname = 'com.sun.tools.xjc.XJC2Task'
       destinationDir = "${project.buildDir}/generated-sources/xjc"
       producesDir = "${project.buildDir}/generated-sources/xjc"
+      generateEpisodeFiles = true
       extension = true
       removeOldOutput = 'yes'
       header = true
@@ -121,14 +122,13 @@ class JaxbPlugin implements Plugin<Project> {
    * @param otherProjectTaskName name of task in other projects
    * @param configurationName name of configuration to use to find the other projects
    */
-  private void addDependsOnTaskInOtherProjects(final Task task, boolean useDependedOn,
-					       String otherProjectTaskName,
-					       String configurationName) {
+  private void addDependsOnTaskInOtherProjects(final Task task,
+                                               boolean useDependedOn,
+                                               String otherProjectTaskName,
+                                               String configurationName) {
     Project project = task.getProject()
-    final Configuration configuration = project.getConfigurations().getByName(
-      configurationName)
-    task.dependsOn(configuration.getTaskDependencyFromProjectDependency(
-		     useDependedOn,otherProjectTaskName))
+    final Configuration configuration = project.getConfigurations().getByName(configurationName)
+    task.dependsOn(configuration.getTaskDependencyFromProjectDependency(useDependedOn,otherProjectTaskName))
   }
 
   /**
@@ -136,15 +136,14 @@ class JaxbPlugin implements Plugin<Project> {
    *
    * @param project  This plugins gradle project
    * @param jaxb  This plugins extension
-   * @param injector  This pluings Guice injector
+   * @param injector  This plugins Guice injector
    * @return  this plugins dependency tree task, configured
    * @see JaxbDependencyTree
    */
   private JaxbDependencyTree configureJaxbDependencyTree(final Project project,
-							JaxbExtension jaxb,
-						        def injector) {
-    JaxbDependencyTree jnt = project.tasks.create(JAXB_XSD_DEPENDENCY_TREE_TASK,
-						 JaxbDependencyTree)
+                                                         JaxbExtension jaxb,
+                                                         def injector) {
+    JaxbDependencyTree jnt = project.tasks.create(JAXB_XSD_DEPENDENCY_TREE_TASK, JaxbDependencyTree)
     jnt.description = "go through the folder ${jaxb.xsdDir} folder " +
       "and find all unique namespaces, create a namespace graph and parse in " +
       "the graph order with jaxb"
@@ -180,16 +179,19 @@ class JaxbPlugin implements Plugin<Project> {
    * @param project  This plugins gradle project
    * @param jaxb  This plugins extension
    * @param jnt  This plugins {@code xsd-dependency-tree} task (depended upon)
-   * @param injector  This pluings Guice injector
+   * @param injector  This plugins Guice injector
    * @return  this plugins xjc tree task, configured
    * @see JaxbXjc
    */
-  private void configureJaxbXjc(final Project project, JaxbExtension jaxb,
-				JaxbDependencyTree jnt, def injector) {
+  private void configureJaxbXjc(final Project project,
+                                JaxbExtension jaxb,
+                                JaxbDependencyTree jnt,
+                                def injector) {
     JaxbXjc xjc = project.tasks.create(JAXB_XJC_TASK, JaxbXjc)
     xjc.description = "run through the Directory Graph for " +
-      "${jaxb.xsdDir} and parse all schemas in order generating" +
-      " episode files to ${jaxb.episodesDir}"
+            "${jaxb.xsdDir} and parse all schemas in order while " +
+            (project.jaxb.xjc.generateEpisodeFiles ? "" : "not ") +
+            "generating episode files to ${jaxb.episodesDir}"
     xjc.group = JAXB_TASK_GROUP
     xjc.dependsOn(jnt)
     xjc.conventionMapping.manager = { project.jaxb.dependencyGraph }
@@ -197,7 +199,7 @@ class JaxbPlugin implements Plugin<Project> {
       new File((String)project.jaxb.episodesDir)
     }
     xjc.conventionMapping.bindings = {
-       // empty filecollection if no bindings listed, so that
+       // empty file collection if no bindings listed, so that
        // files.files == empty set
        project.jaxb.bindings.isEmpty() ? project.files() :
        project.fileTree(
@@ -222,9 +224,7 @@ class JaxbPlugin implements Plugin<Project> {
     }
     xjc.conventionMapping.schemasDirectory = { new File((String)project.jaxb.xsdDir) }
     xjc.conventionMapping.xjc = { injector.getInstance(AntXjc.class) }
-    xjc.conventionMapping.episodeConverter = {
-      injector.getInstance(NamespaceToEpisodeConverter.class)
-    }
+    xjc.conventionMapping.episodeConverter = { injector.getInstance(NamespaceToEpisodeConverter.class) }
     xjc.conventionMapping.xjcResolver = { injector.getInstance(XjcResolver.class) }
     xjc.conventionMapping.dependencyResolver = {
       injector.getInstance(EpisodeDependencyResolver.class)

@@ -27,6 +27,11 @@ class XjcExtension {
   String producesDir
 
   /**
+   * Indicates whether of not to generate the episode files.
+   */
+  boolean generateEpisodeFiles
+
+  /**
    * boolean argument for {@code xjc} task.
    * See <a href="https://jaxb.java.net/2.2.4/docs/xjcTask.html">jaxb ant task</a>
    */

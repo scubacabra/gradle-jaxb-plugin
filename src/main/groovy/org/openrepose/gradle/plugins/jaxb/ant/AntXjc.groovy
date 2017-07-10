@@ -32,8 +32,8 @@ class AntXjc implements AntExecutor {
    * @see org.gradle.api.file.FileCollection
    * @see XjcExtension
    */
-  public void execute(AntBuilder ant, Object... arguments) {
-    XjcExtension extension = arguments[0]
+  void execute(AntBuilder ant, Object... arguments) {
+    XjcExtension extension = arguments[0] as XjcExtension
     def classpath = arguments[1]
     def pluginsPath = arguments[2]
     def xsds = arguments[3]
@@ -70,8 +70,10 @@ class AntXjc implements AntExecutor {
       // ant's arg line is space delimited, won't work with spaces
       arg(value : "-classpath")
       arg(value : "$pluginsPath")
-      arg(value : "-episode")
-      arg(value : "$episodeFile")
+      if(episodeFile) {
+        arg(value: "-episode")
+        arg(value: "$episodeFile")
+      }
       for (String val : extension.args) {
         arg(value: val)
       }
