@@ -1,5 +1,5 @@
 group = 'org.openrepose'
-version = '2.2.3'
+version = '2.3.0'
 description = "Gradle plugin to ease development with XSD's using the jaxb ant task"
 
 buildscript {
