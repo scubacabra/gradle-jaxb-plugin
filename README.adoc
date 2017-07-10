@@ -33,14 +33,15 @@ If an XJC plugin is used, then simply add it to the dependencies to have it incl
 
 Any version of jaxb that you care to use will work.
 
-```groovy
+[source, groovy]
+----
 dependencies {
   jaxb 'com.sun.xml.bind:jaxb-xjc:2.2.7-b41'
   jaxb 'com.sun.xml.bind:jaxb-impl:2.2.7-b41'
   jaxb 'javax.xml.bind:jaxb-api:2.2.7'
   xjc  'com.example:xjc-plugin:0.0.0'
 }
-```
+----
 
 == Plugin Tasks
 
@@ -67,14 +68,15 @@ The `jaxb` convention defines the conventions for the whole plugin, and the `xjc
 
 You can change these defaults with a closure in your build script.
 
-```groovy
+[source, groovy]
+----
 jaxb {
   ...
   xjc {
     ...
   }
 }
-```
+----
 
 === JAXB Plugin Convention
 
@@ -196,17 +198,19 @@ https://jaxb.java.net/2.2.7/docs/ch04.html#tools-xjc-ant-task[XJC Ant Task docum
 
 If the default conventions aren't changed, the only thing to configure _(per project)_ is the `xsdDir`, and jaxb dependencies as described above.
 
-```groovy
+[source, groovy]
+----
 jaxb {
   xsdDir = "${project.projectDir}/schema/folder1"
 }
-```
+----
 
 === Default Example using JAXB2
 
 Customized to use the same `xjc` task that http://mojo.codehaus.org/jaxb2-maven-plugin/xjc-mojo.html[xjc-mojo] uses.
 
-```groovy
+[source, groovy]
+----
 dependencies {
   jaxb "org.jvnet.jaxb2_commons:jaxb2-basics-ant:0.6.5"
   jaxb "org.jvnet.jaxb2_commons:jaxb2-basics:0.6.4"
@@ -222,13 +226,14 @@ jaxb {
     args                 = ["-Xinheritance", "-Xannotate"]
   }
 }
-```
+----
 
 == Defining The Plugin For All Projects
 
 Create a convention for xsd projects to have a suffix of `-schema`, then it is easy to write:
 
-```groovy
+[source, groovy]
+----
 subprojects { project ->
   if(project.name.endsWith("-schema")) { 
     apply plugin: 'org.openrepose.gradle.plugins.jaxb'
@@ -240,14 +245,15 @@ subprojects { project ->
     }
   }
 }
-```
+----
 
 applying the plugin to all schema projects.
 
 Another way to do this is by adding a boolean property to the `gradle.properties` file in the sub-projects.
 You can then use it this way:
   
-```groovy
+[source, groovy]
+----
 subprojects { project ->
   if(Boolean.valueOf(project.getProperties().getOrDefault('doJAXB', 'false'))) { 
     apply plugin: 'com.github.jacobono.jaxb'
@@ -259,7 +265,7 @@ subprojects { project ->
     }
   }
 }
-```
+----
 
 == Other Features
 
@@ -268,11 +274,12 @@ subprojects { project ->
 This lets gradle know that the xjc task of a project is dependent on the xjc task of another project.
 This can be achieved with:
 
-```groovy
+[source, groovy]
+----
 dependencies {
   jaxb project(path: ':common', configuration: 'jaxb')
 }
-```
+----
 
 This expresses that xsd's definitely depend on other xsd's outside of their parent folder `xsdDir`.
 
