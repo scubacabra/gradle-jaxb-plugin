@@ -1,5 +1,6 @@
 group = 'org.openrepose'
-version = '2.3.0'
+def baseVersion = '2.3.1'
+version = project.hasProperty('release') ? baseVersion : "$baseVersion-SNAPSHOT"
 description = "Gradle plugin to ease development with XSD's using the jaxb ant task"
 
 buildscript {
@@ -83,7 +84,7 @@ task('tagVersion', description: 'Tag the repository with the current version.', 
     scmFactory.create().tag(version)
 }
 
-task('release', description: 'Release the project and publish to public repo.', group: 'release', dependsOn: [publish, tagVersion])
+task('release', description: 'Release the project and publish to public repo.', group: 'release', dependsOn: [publish, tagVersion, publishPlugins])
 
 task unversionedJar(type: Jar, dependsOn: 'jar') {
     version = null
