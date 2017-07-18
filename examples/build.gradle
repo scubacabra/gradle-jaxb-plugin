@@ -7,22 +7,22 @@ buildscript {
         }
     }
 
-    //********************************************************************************
-    // use local artifacts
-    //--------------------------------------------------------------------------------
-    dependencies {
-        classpath files('../build/libs/gradle-jaxb-plugin.jar')                          // gradle unversionedJar
-        //classpath files("/${gradle.gradleHomeDir}/lib/plugins/gradle-jaxb-plugin.jar") // gradle installPlugin
-        classpath 'com.google.inject:guice:3.0'
-        classpath 'com.google.inject.extensions:guice-assistedinject:3.0'
-    }
     ////********************************************************************************
-    //// use artifacts from the Gradle Plugin repository
+    //// use local artifacts
     ////--------------------------------------------------------------------------------
     //dependencies {
-    //    classpath 'gradle.plugin.org.openrepose:gradle-jaxb-plugin:2.3.0'
+    //    classpath files('../build/libs/gradle-jaxb-plugin.jar')                          // gradle unversionedJar
+    //    //classpath files("/${gradle.gradleHomeDir}/lib/plugins/gradle-jaxb-plugin.jar") // gradle installPlugin
+    //    classpath 'com.google.inject:guice:3.0'
+    //    classpath 'com.google.inject.extensions:guice-assistedinject:3.0'
     //}
-    ////********************************************************************************
+    //********************************************************************************
+    // use artifacts from the Gradle Plugin repository
+    //--------------------------------------------------------------------------------
+    dependencies {
+        classpath 'gradle.plugin.org.openrepose:gradle-jaxb-plugin:2.3.0'
+    }
+    //********************************************************************************
 }
 
 allprojects {
