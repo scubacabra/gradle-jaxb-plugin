@@ -1,24 +1,4 @@
 buildscript {
-    //********************************************************************************
-    // uncomment for local testing
-    //--------------------------------------------------------------------------------
-    //repositories {
-    //    flatDir { dirs '../build/libs' }                          // gradle unversionedJar
-    //    //flatDir { dirs "/${gradle.gradleHomeDir}/lib/plugins" } // gradle installPlugin
-    //    jcenter()
-    //    mavenCentral()
-    //}
-    //
-    //dependencies {
-    //    classpath ':gradle-jaxb-plugin'
-    //    classpath 'com.google.inject:guice:3.0'
-    //    classpath 'com.google.inject.extensions:guice-assistedinject:3.0'
-    //}
-    //********************************************************************************
-
-    //********************************************************************************
-    // use artifacts from the Gradle Plugin repository
-    //--------------------------------------------------------------------------------
     repositories {
         jcenter()
         mavenCentral()
@@ -27,10 +7,22 @@ buildscript {
         }
     }
 
-    dependencies {
-        classpath 'gradle.plugin.org.openrepose:gradle-jaxb-plugin:2.2.3'
-    }
     //********************************************************************************
+    // use local artifacts
+    //--------------------------------------------------------------------------------
+    dependencies {
+        classpath files('../build/libs/gradle-jaxb-plugin.jar')                          // gradle unversionedJar
+        //classpath files("/${gradle.gradleHomeDir}/lib/plugins/gradle-jaxb-plugin.jar") // gradle installPlugin
+        classpath 'com.google.inject:guice:3.0'
+        classpath 'com.google.inject.extensions:guice-assistedinject:3.0'
+    }
+    ////********************************************************************************
+    //// use artifacts from the Gradle Plugin repository
+    ////--------------------------------------------------------------------------------
+    //dependencies {
+    //    classpath 'gradle.plugin.org.openrepose:gradle-jaxb-plugin:2.3.0'
+    //}
+    ////********************************************************************************
 }
 
 allprojects {
