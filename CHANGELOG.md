@@ -1,5 +1,11 @@
 # Gradle JAXB Plugin Changelog
 
+## In Progress Work
+- Updated the plugin to delete the registered output directory when the **Up To Date** check fails.
+
+## 2.3.0
+- Added the new `generateEpisodeFiles` parameter to allow not creating the `.episode` files.
+
 ## 2.2.3
 - Updated examples to use http://plugins.gradle.org.
 
