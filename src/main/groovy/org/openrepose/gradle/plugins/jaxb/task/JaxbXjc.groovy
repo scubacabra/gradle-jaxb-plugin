@@ -124,7 +124,9 @@ class JaxbXjc extends DefaultTask {
     def jaxbConfig = project.configurations[JaxbPlugin.JAXB_CONFIGURATION_NAME]
     def xjcConfig = project.configurations[JaxbPlugin.XJC_CONFIGURATION_NAME]
     log.debug("episodes are '{}' is empty '{}'", episodes, episodes.isEmpty())
-    new File((String)project.jaxb.xjc.destinationDir).mkdirs()
+    def destinationDir = new File((String)project.jaxb.xjc.destinationDir)
+    destinationDir.deleteDir()
+    destinationDir.mkdirs()
     getXjc().execute(
             ant,
             project.jaxb.xjc,
