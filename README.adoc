@@ -141,6 +141,9 @@ If the **Default** is **none**, then the paramenter is **NOT** optional and a va
 
 |`destinationDir`
 | The directory relative to `project.rootDir` where generated code will be written to.
+
+  In order to automatically remove previously generated sources, this directory is deleted whenever the **Up To Date** check fails.
+  This should never point to a location under the main source directory.
 | `${project.buildDir}/generated-sources/xjc`
 | `String`
 
