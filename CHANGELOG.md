@@ -1,6 +1,6 @@
 # Gradle JAXB Plugin Changelog
 
-## In Progress Work
+## 2.4.1
 - Updated to the latest Gradle Plugin Portal's Publish plugin (v0.9.5 -> v0.9.7).
 
 ## 2.4.0
