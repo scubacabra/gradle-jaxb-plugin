@@ -12,7 +12,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath "com.gradle.publish:plugin-publish-plugin:0.9.5"
+        classpath "com.gradle.publish:plugin-publish-plugin:0.9.7"
         classpath( "com.netflix.nebula:gradle-git-scm-plugin:3.0.1")
     }
 }

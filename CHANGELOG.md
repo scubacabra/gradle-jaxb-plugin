@@ -1,5 +1,8 @@
 # Gradle JAXB Plugin Changelog
 
+## In Progress Work
+- Updated to the latest Gradle Plugin Portal's Publish plugin (v0.9.5 -> v0.9.7).
+
 ## 2.4.0
 - Updated the plugin to delete the registered output directory when the **Up To Date** check fails.
 
