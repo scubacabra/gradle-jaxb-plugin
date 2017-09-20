@@ -1,0 +1,3 @@
+Just some text, to test creating a document from something not either a
+
+wsdl or xsd file.

@@ -1,0 +1,8 @@
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:import namespace="some-imported-namespace"
+	            schemaLocation= "../schema/imported.xsd"/>
+	<xsd:import namespace="some-other-imported-namespace"
+	            schemaLocation= "../schema/other-imported.xsd"/>
+	<xsd:include schemaLocation= "../schema/included.xsd"/>
+	<xsd:include schemaLocation= "../schema/other-included.xsd"/>
+</xsd:schema>
