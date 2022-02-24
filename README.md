@@ -287,6 +287,118 @@ Examples
 
 You can find some examples in the [examples folder](examples)
 
+Differences and similarities with sibling project
+========
+
+The `jacobono/gradle-jaxb-plugin` uses relative directories and creates the destination directory :
+
+```groovy
+buildscript {
+  repositories {
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+  }
+  dependencies {
+    classpath "com.github.jacobono:gradle-jaxb-plugin:1.3.5"
+  }
+}
+
+apply plugin: "com.github.jacobono.jaxb"
+
+repositories {
+  mavenCentral()
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ["${project.buildDir}/generated-sources/xjc",'src/main/java']
+        }
+        resources {
+            srcDirs = ['src/main/resources']
+        }
+    }
+}
+
+dependencies {
+  jaxb 'org.jvnet.jaxb2_commons:jaxb2-basics-ant:1.11.1'
+  jaxb 'org.jvnet.jaxb2_commons:jaxb2-basics:1.11.1'
+  jaxb 'org.jvnet.jaxb2_commons:jaxb2-basics-annotate:1.1.0'
+  jaxb 'org.glassfish.jaxb:jaxb-xjc:2.2.11'
+  jaxb 'org.glassfish.jaxb:jaxb-runtime:2.2.11'
+  jaxb 'javax.xml.bind:jaxb-api:2.2.11'
+  jaxb 'org.slf4j:slf4j-nop:1.7.30'
+}
+
+jaxb {
+  xsdDir = "src/main/xsd"
+  xjc {
+     taskClassname        = "org.jvnet.jaxb2_commons.xjc.XJC2Task"
+     generatePackage      = "org.apache.maven.model"
+     destinationDir       = "build/generated-sources/xjc"
+     args                 = ["-Xinheritance", "-Xannotate"]
+  }
+}
+
+compileJava.dependsOn 'xjc'
+```
+
+The `rackerlabs/gradle-jaxb-plugin` uses absolute directories and creates the destination directory only if it's the default one `${project.buildDir}/generated-sources/xjc` :
+
+```groovy
+buildscript {
+  repositories {
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+  }
+  dependencies {
+    classpath 'gradle.plugin.org.openrepose:gradle-jaxb-plugin:2.5.0'
+  }
+}
+
+apply plugin: "org.openrepose.gradle.plugins.jaxb"
+
+repositories {
+  mavenCentral()
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ["${project.buildDir}/generated-sources/xjc",'src/main/java']
+        }
+        resources {
+            srcDirs = ['src/main/resources']
+        }
+    }
+}
+
+dependencies {
+  jaxb 'org.jvnet.jaxb2_commons:jaxb2-basics-ant:1.11.1'
+  jaxb 'org.jvnet.jaxb2_commons:jaxb2-basics:1.11.1'
+  jaxb 'org.jvnet.jaxb2_commons:jaxb2-basics-annotate:1.1.0'
+  jaxb 'org.glassfish.jaxb:jaxb-xjc:2.2.11'
+  jaxb 'org.glassfish.jaxb:jaxb-runtime:2.2.11'
+  jaxb 'javax.xml.bind:jaxb-api:2.2.11'
+  jaxb 'org.slf4j:slf4j-nop:1.7.30'
+}
+
+jaxb {
+  xsdDir = "${project.projectDir}/src/main/xsd"
+  xjc {
+     generateEpisodeFiles = false
+     taskClassname        = "org.jvnet.jaxb2_commons.xjc.XJC2Task"
+     generatePackage      = "org.apache.maven.model"
+     args                 = ["-Xinheritance", "-Xannotate"]
+  }
+}
+
+compileJava.dependsOn 'xjc'
+```
+
+
 Improvements
 ============
 
